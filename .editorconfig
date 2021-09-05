@@ -31,6 +31,9 @@ indent_size = 2
 [{**.yml,**.yaml}]
 indent_size = 2
 
+[{**.tml,**.toml}]
+indent_size = 2
+
 [{Makefile,**.mk}]
 # Use tabs for indentation (Makefiles require tabs)
 indent_style = tab

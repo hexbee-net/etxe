@@ -1,0 +1,281 @@
+rdl = _{ SOI ~ item* ~ EOI }
+
+// statement = { declaration | assignment | while_loop | conditional | (expr ~ semi) | comment }
+item = {
+  resource_block
+  | data_block
+  | provider_block
+  | module_block
+  | if_block
+  | variable_decl
+  | output_decl
+  | local_decl
+  | func_decl
+  | for_block
+  | terraform_block
+}
+
+// Blocks
+
+resource_block  = { "resource"  ~ block_id ~ block }
+data_block      = { "data"      ~ block_id ~ block }
+provider_block  = { "provider"  ~ block_id ~ block }
+module_block    = { "module"    ~ block_id ~ block }
+terraform_block = { "terraform "  ~ block }
+
+if_block = {
+  "if" ~ expr ~ block_start ~ item* ~ block_end
+  ~ ("elseif" ~ expr ~ block_start ~ item* ~ block_end)*
+  ~ ("else" ~ block_start ~ item* ~ block_end)?
+}
+
+for_block = {
+  "for" ~ (identifier ~ ("," ~ identifier)?) ~ "in" ~ expr ~ block_start
+  ~ item*
+  ~ block_end
+}
+
+block_id = {
+  ( identifier ~ ("." ~ identifier)* )
+  | (identifier+)
+}
+
+block = {
+  block_start
+  ~ ( (identifier ~ "=" ~ expr) | (identifier ~ block) )*
+  ~ block_end
+}
+
+
+////////////////////////////////////////
+// Expressions
+
+expr              = {
+  term
+  | func_call
+  | "(" ~ expr ~ ")"
+  | expr_list_access
+  | expr_map_access
+  | expr_unary
+  | expr_multiplicative
+  | expr_additive
+  | expr_shift
+  | expr_equality
+  | expr_bitwise_and
+  | expr_bitwise_xor
+  | expr_bitwise_or
+  | expr_logical_and
+  | expr_logical_or
+  | expr_conditional
+  | expr_for
+}
+
+expr_list_access    = { term ~ "[" ~ integer ~ "]" }
+expr_map_access     = { term ~ "[" ~ string ~ "]" }
+expr_splat_access   = { term ~ "[" ~ "*" ~ "]" }
+expr_unary          = { op_unary ~ term }
+expr_multiplicative = { term ~ (op_multiplicative ~ term) }
+expr_additive       = { term ~ (op_additive ~ term) }
+expr_shift          = { term ~ (op_shift ~ term) }
+expr_equality       = { term ~ (op_equality ~ term) }
+expr_bitwise_and    = { term ~ (op_bitwise_and ~ term) }
+expr_bitwise_xor    = { term ~ (op_bitwise_xor ~ term) }
+expr_bitwise_or     = { term ~ (op_bitwise_or ~ term) }
+expr_logical_and    = { term ~ (op_logical_and ~ term) }
+expr_logical_or     = { term ~ (op_logical_or ~ term) }
+expr_conditional    = { term ~ ("?" ~ term ~ (":" ~ term))}
+expr_for            = { "[" ~ "for" ~ (identifier ~ ("," ~ identifier)?) ~ "in" ~ expr ~ ":" ~ expr ~ ("if" ~ expr)? ~ "]" }
+// TODO: For with grouped results
+
+
+
+
+term = _{
+  literal_value
+  | var_access
+  | "(" ~ expr ~ ")"
+}
+
+op_unary          = _{ op_positive | op_negative | op_logical_not | op_bitwise_not }
+op_multiplicative = _{ op_multiplication | op_division | op_modulo }
+op_additive       = _{ op_addition | op_subtraction }
+op_shift          = _{ op_shift_left | op_shift_right }
+op_equality       = _{ op_equal | op_not_equal }
+
+op_positive       = _{ "+" }
+op_negative       = _{ "-" }
+op_logical_not    = _{ "!" }
+op_bitwise_not    = _{ "~" }
+op_multiplication = _{ "*" }
+op_division       = _{ "/" }
+op_modulo         = _{ "%" }
+op_addition       = _{ "+" }
+op_subtraction    = _{ "-" }
+op_shift_left     = _{ "<<" }
+op_shift_right    = _{ ">>" }
+op_lt             = _{ "<" }
+op_lte            = _{ "<=" }
+op_gt             = _{ ">" }
+op_gte            = _{ ">=" }
+op_equal          = _{ "==" }
+op_not_equal      = _{ "!=" }
+op_bitwise_and    = _{ "&" }
+op_bitwise_xor    = _{ "^" }
+op_bitwise_or     = _{ "|" }
+op_logical_and    = _{ "&&" }
+op_logical_or     = _{ "||" }
+
+
+////////////////////////////////////////
+// Variables
+
+// TODO: first term needs to be indexable foo[bar]
+var_access  = { identifier ~ ("." ~ identifier)* }
+
+variable_decl    = {
+  "variable" ~ variable_decl_id ~ block_start
+  ~ (
+    variable_decl_default
+    | variable_decl_type
+    | variable_decl_description
+    | variable_decl_validation
+    | variable_decl_sensitive
+  )*
+  ~ block_end
+}
+
+output_decl = {
+  "output" ~ variable_decl_id ~ block_start
+  ~ (output_decl_value | output_decl_sensitive)+
+  ~ block_end
+}
+output_decl_value     = { "value"     ~ "=" ~ expr }
+output_decl_sensitive = { "sensitive" ~ "=" ~ expr }
+
+out_decl = { "out" ~ identifier ~ "=" ~ expr }
+
+outputs_decl = {
+  "outputs" ~ block_start
+  ~ (identifier ~ "=" ~ expr)*
+  ~ block_end
+}
+
+local_decl = {
+  "locals" ~ block_start
+  ~ (identifier ~ "=" ~ expr)*
+  ~ block_end
+}
+
+variable_decl_id                       = _{ identifier | ("\"" ~ identifier  ~ "\"") }
+variable_decl_default                  = { "default" ~     "=" ~ expr }
+variable_decl_type                     = { "type" ~        "=" ~ type_decl }
+variable_decl_description              = { "description" ~ "=" ~ string }
+variable_decl_validation               = { "validation" ~  "=" ~ "{" ~ variable_decl_validation_block ~ "}" }
+  variable_decl_validation_block       = { (variable_decl_validation_condition ~ variable_decl_validation_error) | (variable_decl_validation_error ~ variable_decl_validation_condition) }
+    variable_decl_validation_condition = { "condition" ~ "=" ~ expr }
+    variable_decl_validation_error     = { "error_message " ~ "=" ~ string }
+variable_decl_sensitive                = { "sensitive" ~   "=" ~ expr }
+
+type_decl   = { type_string | type_number | type_bool | type_list | type_map | type_object | type_tuple }
+
+type_string = { "string" }
+type_number = { "number" }
+type_bool   = { "bool" }
+type_list   = { "list" ~ "(" ~ type_decl ~ ")" }
+type_set    = { "set" ~ "(" ~ type_decl ~ ")" }
+type_map    = { "map" ~ "(" ~ type_decl ~ ("," ~ type_decl)? ~ ")" }
+type_tuple  = { "tuple" ~ "(" ~ "[" ~ (type_decl ~ ",")* ~ type_decl? ~ "]" ~ ")" }
+type_object = { "object" ~ "(" ~ "{" ~ (identifier ~ "=" ~ type_decl)* ~ "}" ~ ")" }
+
+////////////////////////////////////////
+// Functions
+
+func_decl       = {
+  "func" ~ identifier ~ "(" ~ func_decl_args ~ ")" ~ block_start
+  // TODO: Function body
+  ~ block_end
+}
+func_decl_args  = { (func_decl_arg ~ ",")* ~ func_decl_arg? }
+func_decl_arg   = { identifier ~ (type_decl)? }
+
+
+func_call       = !{ identifier ~ "(" ~ func_args ~ ")" }
+func_args       = { (func_arg ~ ",")* ~ func_arg? }
+func_arg        = _{ expr }
+
+////////////////////////////////////////
+//  Strings
+
+string              = @{ str_multi | str_mono | str_multi_literal | str_mono_literal | heredoc_string }
+
+heredoc_string      = ${ heredoc_start ~ heredoc_inner ~ heredoc_end }
+heredoc_start 	    = { "<<" ~ heredoc_leading_tab ~ heredoc_id ~ str_whitespace* ~ NEWLINE }
+heredoc_leading_tab = { "-"? }
+heredoc_id          = _{ PUSH((!NEWLINE ~ ASCII_ALPHANUMERIC)+) }
+heredoc_inner 	    = @{ (!PEEK ~ ANY)* }
+heredoc_end   	    = _{ POP }
+
+str_mono            = ${ "\"" ~ (interpolation | directive | str_inner)* ~ "\"" }
+str_multi           = ${ "\"\"\"" ~ (!"\"\"\"" ~ (interpolation | directive | str_inner | NEWLINE))* ~ "\"\"\"" }
+
+str_mono_literal    = @{ "'" ~ (!"'" ~ !NEWLINE ~ ANY)* ~ "'" }
+str_multi_literal   = @{ "'''" ~ (!"'''" ~ ANY)* ~ "'''" }
+
+interpolation       = !{ interpolation_start ~ expr ~ interpolation_end }
+interpolation_start = _{ !"$$" ~ "${" }
+interpolation_end   = _{ "}" }
+
+directive           = !{ directive_start ~ str_inner ~ ("%{" ~ "else" ~ "}" ~ str_inner)? ~ directive_end}
+directive_start     = _{ !"%%" ~ "%{" ~ "if" ~ expr ~ "}" }
+directive_end       = _{ "%{" ~ "endif" ~ "}" }
+
+str_inner           = @{ (escape_sequence | str_char)+ }
+str_char            = _{ (!("\"" | "\\" | "${" | "%{") ~ ANY) }
+str_whitespace      = _{ " " | "\t" | "\u{000C}" }
+
+escape_sequence     = @{ "\\" ~ ("n" | "r" | "t" | "\"" | "\\" | unicode) | "$${" | "%%{"}
+unicode             = @{ "u" ~ ASCII_HEX_DIGIT{4} | "U" ~ ASCII_HEX_DIGIT{8} }
+
+////////////////////////////////////////
+// Atomics
+
+identifier = _{ XID_START ~ (XID_CONTINUE | HYPHEN)* }
+
+literal_value = {
+  number
+  | string
+  | bool_literal
+  | list_literal
+  | object_literal
+  | null
+}
+
+number  = @{ float | integer}
+integer = @{ ("+" | "-")? ~ int }
+float   = @{ ("+" | "-")? ~ int ~ ("." ~ digits ~ exp? | exp)? }
+int     = @{ "0" | (ASCII_NONZERO_DIGIT ~ digits?) }
+digits  = @{ (ASCII_DIGIT | ("_" ~ ASCII_DIGIT))+ }
+exp     = @{ ("E" | "e") ~ ("+" | "-")? ~ int }
+
+bool_literal    = @{ bool_true | bool_false }
+bool_true       = _{ "true" }
+bool_false      = _{ "false" }
+
+list_literal    = { "[" ~ (expr ~ ",")* ~ expr? ~ "]" }
+
+object_literal  = { "{" ~ (identifier ~ "=" ~ expr)* ~ "}" }
+
+null            = { "null" }
+
+////////////////////////////////////////
+// Base definitions
+
+WHITESPACE  = _{ " " | "\t" | "\u{000C}" | NEWLINE }
+COMMENT     = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+
+block_start = _{ "{" }
+block_end   = _{ "}" }
+
+line_comment    = _{ ("//" | "#") ~ (!NEWLINE ~ ANY)* ~ (NEWLINE | EOI) }
+// block_comment   = _{ "/*" ~ ((!"*/" ~ ANY) |  | block_comment)* ~ "*/" }
+// COMMENT         = @{ block_comment | line_comment }

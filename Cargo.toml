@@ -1,0 +1,18 @@
+[package]
+name          = "etxe"
+version       = "0.1.0-alpha.0"
+authors       = ["Xavier Basty-Kjellberg <xavier@hexbee.net>"]
+description   = "IaC done right."
+license       = "Apache-2.0"
+license-file  = "LICENSE"
+keywords      = ["iac", "hcl", "infrastructure"]
+categories    = ["config", "development-tools"]
+homepage      = "https://github.com/hexbee-net/etxe"
+repository    = "https://github.com/hexbee-net/etxe"
+readme        = "README.md"
+edition       = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pest = "2.1.3"
