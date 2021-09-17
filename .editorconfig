@@ -10,10 +10,11 @@ insert_final_newline = true
 max_line_length = 120
 trim_trailing_whitespace = true
 
-[**.go]
-indent_style = tab
+[**.rs]
+indent_size = 2
+tab_width = 2
 
-[**.pest]
+[{**.pest, **.lalrpop}]
 indent_size = 2
 tab_width = 2
 
@@ -28,12 +29,5 @@ tab_width = 2
 [{**.tf,**.hcl}]
 indent_size = 2
 
-[{**.yml,**.yaml}]
-indent_size = 2
-
 [{**.tml,**.toml}]
 indent_size = 2
-
-[{Makefile,**.mk}]
-# Use tabs for indentation (Makefiles require tabs)
-indent_style = tab

@@ -21,8 +21,8 @@ path = "src/lib.rs"
 
 
 [dependencies]
-pest = "2.1.0"
-pest_derive = "2.1.0"
+#pest = "2.1.0"
+#pest_derive = "2.1.0"
 clap = "2.33.3"
 colored = "2"
 textwrap = { version = "0.14", features = ["hyphenation", "terminal_size"] }
