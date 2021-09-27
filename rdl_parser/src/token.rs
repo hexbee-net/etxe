@@ -14,7 +14,7 @@ pub enum StringLiteral<S> {
   Raw(S),
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum StringDelimiter<S> {
   SingleLine,
   MultiLine,
