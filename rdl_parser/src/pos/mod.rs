@@ -6,4 +6,4 @@ pub use location::Location;
 pub use span::Span;
 pub use spanned::{spanned, Spanned};
 
-pub use codespan::{ByteIndex as BytePos, ByteOffset};
+pub use codespan::{ByteIndex, ByteOffset, RawIndex, RawOffset};

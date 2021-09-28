@@ -138,10 +138,7 @@ impl<T> Errors<T> {
     self.errors.iter()
   }
 
-  pub fn drain(
-    &mut self,
-    range: impl std::ops::RangeBounds<usize>,
-  ) -> impl Iterator<Item = T> + '_ {
+  pub fn drain(&mut self, range: impl std::ops::RangeBounds<usize>) -> impl Iterator<Item = T> + '_ {
     self.errors.drain(range)
   }
 }

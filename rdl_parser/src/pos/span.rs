@@ -46,10 +46,7 @@ impl<I: Ord> Span<I> {
     if start <= end {
       Span { start, end }
     } else {
-      Span {
-        start: end,
-        end: start,
-      }
+      Span { start: end, end: start }
     }
   }
 

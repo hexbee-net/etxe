@@ -11,4 +11,6 @@ extern crate quick_error;
 
 extern crate etxe_core as core;
 
+use parser_source::ParserSource;
+
 lalrpop_mod!(grammar);
