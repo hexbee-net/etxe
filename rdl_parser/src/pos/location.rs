@@ -1,6 +1,6 @@
-use std::ops;
 use std::cmp;
-use std::{fmt};
+use std::fmt;
+use std::ops;
 
 pub use codespan::{ByteIndex, ByteOffset, ColumnIndex, ColumnOffset, Index, LineIndex, LineOffset, RawIndex, RawOffset};
 use std::cmp::Ordering;
@@ -27,8 +27,8 @@ impl fmt::Debug for Location {
 }
 
 impl Location {
-  pub fn new(line: RawIndex, column: RawIndex, absolute: RawIndex)  -> Location {
-    Location{
+  pub fn new(line: RawIndex, column: RawIndex, absolute: RawIndex) -> Location {
+    Location {
       line: LineIndex::from(line),
       column: ColumnIndex::from(column),
       absolute: ByteIndex::from(absolute),

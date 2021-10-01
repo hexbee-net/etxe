@@ -1,23 +1,18 @@
-#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
 pub enum Token<S> {
   IntLiteral(i64),
 
-  StringDelimiter(StringDelimiter<S>),
+  SingleLineStringDelimiter,
+  MultiLineStringDelimiter,
+  HereDocStringDelimiter,
+
   StringLiteral(StringLiteral<S>),
 
   EOF,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub enum StringLiteral<S> {
   Escaped(S),
-  Raw(S),
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
-pub enum StringDelimiter<S> {
-  SingleLine,
-  MultiLine,
-  HereDoc(S),
   Raw(S),
 }
