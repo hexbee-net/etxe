@@ -5,10 +5,35 @@ use crate::pos::{self, Location, Spanned};
 use crate::token::Token;
 use crate::ParserSource;
 use itertools::{Itertools, MultiPeek};
+use ordered_float::NotNan;
 
 quick_error! {
-  #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+  #[derive(Clone, Debug, PartialEq, Eq)]
   pub enum Error {
+    NonParseableInt(err: std::num::ParseIntError) {
+      display("cannot parse integer")
+    }
+    NonParseableFloat(err: std::num::ParseFloatError) {
+      display("cannot parse float")
+    }
+    LiteralIncomplete {
+      display("cannot parse literal, incomplete")
+    }
+    HexLiteralOverflow {
+      display("cannot parse hex literal, overflow")
+    }
+    HexLiteralUnderflow {
+      display("cannot parse hex literal, underflow")
+    }
+    HexLiteralWrongPrefix {
+      display("wrong hex literal prefix, should start as '0x' or '-0x'")
+    }
+    BinLiteralWrongPrefix {
+      display("wrong bin literal prefix, should start as '0b' or '-0b'")
+    }
+    OctLiteralWrongPrefix {
+      display("wrong oct literal prefix, should start as '0o' or '-0o'")
+    }
     UnterminatedHeredocDelimiter {
       display("unterminated heredoc delimiter")
     }
@@ -50,7 +75,6 @@ enum Context<'input> {
 
 pub struct Lexer<'input> {
   input: &'input str,
-  // chars: MultiPeek<CharIndices<'input>>,
   chars: MultiPeek<Chars<'input>>,
   loc: Location,
   peek_loc: Location,
@@ -101,20 +125,18 @@ impl<'input> Lexer<'input> {
   // Iterator contexts /////////////////
 
   pub fn iter_base(&mut self) -> Option<LexerResult<'input>> {
-    while let Some((prev_loc, _, ch)) = self.bump() {
+    while let Some((start, _, ch)) = self.bump() {
       return match ch {
-        '"' => Some(self.string_start(prev_loc)),
-        '<' => Some(self.heredoc_start(prev_loc)),
+        '"' => Some(self.string_start(start)),
+        ch if ch == '<' && self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
+
+        ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) => Some(self.numeric_literal(start)),
         _ => None,
       };
     }
 
     let next_loc = self.next_loc()?;
     Some(Ok(pos::spanned(next_loc, next_loc, Token::EOF)))
-  }
-
-  fn iter_string(&self, _string_type: &Token<&'input str>) -> Option<LexerResult<'input>> {
-    todo!()
   }
 
   fn iter_single_line_string(&mut self) -> Option<LexerResult<'input>> {
@@ -151,14 +173,8 @@ impl<'input> Lexer<'input> {
   }
 
   fn heredoc_start(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
-    if !self.test_peek(|ch| ch == '<') {
-      self.reset_peek();
-      println!("not a heredoc");
-      todo!()
-    }
-
     // Skip the second '<' of the redirection operator.
-    self.catchup();
+    self.bump();
 
     // Check for a minus sign after the redirection operator.
     let skip_leading_tabs = self.test_peek(|ch| ch == '-');
@@ -205,6 +221,121 @@ impl<'input> Lexer<'input> {
     Ok(pos::spanned(start, end, Token::HereDocStringDelimiter))
   }
 
+  fn numeric_literal(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    let (end, int) = self.take_while(start, |ch| is_dec(ch) || ch == '_');
+
+    match self.peek() {
+      Some((_, '.')) => {
+        self.catchup();
+        let (end, float) = self.take_while(start, is_dec);
+
+        let (end, float) = if self.test_peek(|ch| ch == 'e' || ch == 'E') {
+          self.catchup();
+
+          if self.test_peek(|ch| ch == '-' || ch == '+') {
+            self.catchup();
+          }
+
+          self.take_while(start, |ch| is_dec(ch) || ch == '_')
+        } else {
+          (end, float)
+        };
+
+        self.parse_float(start, end, float)
+      }
+      Some((_, 'e')) | Some((_, 'E')) => {
+        self.catchup();
+
+        if self.test_peek(|ch| ch == '-' || ch == '+') {
+          self.catchup();
+        }
+
+        let (end, float) = self.take_while(start, |ch| is_dec(ch) || ch == '_');
+        self.parse_float(start, end, float)
+      }
+
+      Some((_, 'x')) => {
+        let hex_start = self.catchup();
+        let (end, hex) = self.take_while(hex_start, |ch| is_hex(ch) || ch == '_');
+
+        if int != "0" && int != "-0" {
+          self.errors.push(pos::spanned(start, end, Error::HexLiteralWrongPrefix));
+        }
+
+        if hex.is_empty() {
+          return self.recover(start, end, Error::LiteralIncomplete, Token::IntLiteral(0));
+        }
+
+        let is_positive = int == "0";
+        match i64_from_str_radix(hex, is_positive, 16) {
+          Ok(val) => Ok(pos::spanned(start, end, Token::IntLiteral(val))),
+          Err(err) => self.recover(start, end, err, Token::IntLiteral(0)),
+        }
+      }
+
+      Some((_, 'b')) => {
+        let bin_start = self.catchup();
+        let (end, bin) = self.take_while(bin_start, |ch| is_bin(ch) || ch == '_');
+
+        if int != "0" && int != "-0" {
+          self.errors.push(pos::spanned(start, end, Error::BinLiteralWrongPrefix));
+        }
+
+        if bin.is_empty() {
+          return self.recover(start, end, Error::LiteralIncomplete, Token::IntLiteral(0));
+        }
+
+        let is_positive = int == "0";
+        match i64_from_str_radix(bin, is_positive, 2) {
+          Ok(val) => Ok(pos::spanned(start, end, Token::IntLiteral(val))),
+          Err(err) => self.recover(start, end, err, Token::IntLiteral(0)),
+        }
+      }
+
+      Some((_, 'o')) => {
+        let oct_start = self.catchup();
+        let (end, oct) = self.take_while(oct_start, |ch| is_oct(ch) || ch == '_');
+
+        if int != "0" && int != "-0" {
+          self.errors.push(pos::spanned(start, end, Error::OctLiteralWrongPrefix));
+        }
+
+        if oct.is_empty() {
+          return self.recover(start, end, Error::LiteralIncomplete, Token::IntLiteral(0));
+        }
+
+        let is_positive = int == "0";
+        match i64_from_str_radix(oct, is_positive, 8) {
+          Ok(val) => Ok(pos::spanned(start, end, Token::IntLiteral(val))),
+          Err(err) => self.recover(start, end, err, Token::IntLiteral(0)),
+        }
+      }
+
+      None | Some(_) => self.parse_int(start, end, int),
+    }
+  }
+
+  fn parse_int(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
+    let v = v.replace('_', "");
+    match v.parse::<i64>() {
+      Ok(val) => Ok(pos::spanned(start, end, Token::IntLiteral(val))),
+      Err(e) => self.recover(start, end, Error::NonParseableInt(e), Token::IntLiteral(0)),
+    }
+  }
+
+  fn parse_float(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
+    let v = v.replace('_', "");
+    match v.parse::<f64>() {
+      Ok(val) => Ok(pos::spanned(start, end, Token::FloatLiteral(NotNan::new(val).unwrap()))),
+      Err(e) => self.recover(
+        start,
+        end,
+        Error::NonParseableFloat(e),
+        Token::FloatLiteral(NotNan::new(0.0).unwrap()),
+      ),
+    }
+  }
+
   // Utilities /////////////////////////
 
   fn bump(&mut self) -> Option<(Location, Location, char)> {
@@ -234,7 +365,7 @@ impl<'input> Lexer<'input> {
     let mut end = self.loc;
     self.reset_peek();
 
-    while let Some((l, ch)) = self.peek() {
+    while let Some((_, ch)) = self.peek() {
       if terminate(ch) {
         self.reset_peek();
         return end;
@@ -254,10 +385,11 @@ impl<'input> Lexer<'input> {
     res
   }
 
-  fn catchup(&mut self) {
+  fn catchup(&mut self) -> Location {
     while self.loc < self.peek_loc {
       self.chars.next().map(|ch| self.loc.shift(ch));
     }
+    self.loc
   }
 
   fn peek(&mut self) -> Option<(Location, char)> {
@@ -269,6 +401,12 @@ impl<'input> Lexer<'input> {
 
   fn test_peek<F: FnMut(char) -> bool>(&mut self, mut test: F) -> bool {
     self.peek().map_or(false, |(_, ch)| test(ch))
+  }
+
+  fn test_peek_reset<F: FnMut(char) -> bool>(&mut self, mut test: F) -> bool {
+    let r = self.peek().map_or(false, |(_, ch)| test(ch));
+    self.reset_peek();
+    r
   }
 
   fn reset_peek(&mut self) {
@@ -304,6 +442,17 @@ impl<'input> Lexer<'input> {
     &self.input[start..end]
   }
 
+  fn recover(
+    &mut self,
+    start: Location,
+    end: Location,
+    code: Error,
+    value: Token<&'input str>,
+  ) -> Result<SpannedToken<'input>, SpannedError> {
+    self.errors.push(pos::spanned(start, end, code));
+    Ok(pos::spanned(start, end, value))
+  }
+
   // Context manipulation //////////////
 
   fn context(&mut self) -> &Context<'input> {
@@ -320,6 +469,47 @@ impl<'input> Lexer<'input> {
     self.ctx = self.ctx_stack.pop();
     ctx
   }
+}
+
+fn is_dec(ch: char) -> bool {
+  ch.is_digit(10)
+}
+
+fn is_hex(ch: char) -> bool {
+  ch.is_digit(16)
+}
+
+fn is_bin(ch: char) -> bool {
+  ch.is_digit(2)
+}
+
+fn is_oct(ch: char) -> bool {
+  ch.is_digit(8)
+}
+
+fn i64_from_str_radix(hex: &str, is_positive: bool, radix: u32) -> Result<i64, Error> {
+  let sign: i64 = if is_positive { 1 } else { -1 };
+  let mut result = 0i64;
+
+  for c in hex.chars() {
+    if c == '_' {
+      continue;
+    }
+
+    let x = c.to_digit(radix).expect("invalid literal");
+    result = result
+      .checked_mul(radix as i64)
+      .and_then(|result| result.checked_add((x as i64) * sign))
+      .ok_or_else(|| {
+        if is_positive {
+          Error::HexLiteralOverflow
+        } else {
+          Error::HexLiteralUnderflow
+        }
+      })?;
+  }
+
+  Ok(result)
 }
 
 #[cfg(test)]
@@ -620,5 +810,120 @@ mod test {
     ];
 
     test(tests)
+  }
+
+  #[test]
+  fn numeric() {
+    let tests = vec![
+      ("1234", Ok(pos::spanned(loc(0), loc(4), Token::IntLiteral(1234))), Context::General),
+      (
+        "-1234",
+        Ok(pos::spanned(loc(0), loc(5), Token::IntLiteral(-1234))),
+        Context::General,
+      ),
+      ("12_34", Ok(pos::spanned(loc(0), loc(5), Token::IntLiteral(1234))), Context::General),
+      (
+        "12.34",
+        Ok(pos::spanned(loc(0), loc(5), Token::FloatLiteral(NotNan::new(12.34).unwrap()))),
+        Context::General,
+      ),
+      (
+        "-12.34",
+        Ok(pos::spanned(loc(0), loc(6), Token::FloatLiteral(NotNan::new(-12.34).unwrap()))),
+        Context::General,
+      ),
+      (
+        "123_456.0",
+        Ok(pos::spanned(loc(0), loc(9), Token::FloatLiteral(NotNan::new(123456.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "12.34e5",
+        Ok(pos::spanned(loc(0), loc(7), Token::FloatLiteral(NotNan::new(1234000.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "12.34e0_5",
+        Ok(pos::spanned(loc(0), loc(9), Token::FloatLiteral(NotNan::new(1234000.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234e5",
+        Ok(pos::spanned(loc(0), loc(6), Token::FloatLiteral(NotNan::new(123400000.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234e0_5",
+        Ok(pos::spanned(loc(0), loc(8), Token::FloatLiteral(NotNan::new(123400000.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234e-2",
+        Ok(pos::spanned(loc(0), loc(7), Token::FloatLiteral(NotNan::new(12.34).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234e+2",
+        Ok(pos::spanned(loc(0), loc(7), Token::FloatLiteral(NotNan::new(123400.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234.56e-2",
+        Ok(pos::spanned(loc(0), loc(10), Token::FloatLiteral(NotNan::new(12.3456).unwrap()))),
+        Context::General,
+      ),
+      (
+        "1234.56e+2",
+        Ok(pos::spanned(loc(0), loc(10), Token::FloatLiteral(NotNan::new(123456.0).unwrap()))),
+        Context::General,
+      ),
+      (
+        "0x1234",
+        Ok(pos::spanned(loc(0), loc(6), Token::IntLiteral(0x1234))),
+        Context::General,
+      ),
+      (
+        "-0x1234",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(-0x1234))),
+        Context::General,
+      ),
+      (
+        "0x12_34",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(0x1234))),
+        Context::General,
+      ),
+      (
+        "0b1010",
+        Ok(pos::spanned(loc(0), loc(6), Token::IntLiteral(0b1010))),
+        Context::General,
+      ),
+      (
+        "-0b1010",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(-0b1010))),
+        Context::General,
+      ),
+      (
+        "0b10_10",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(0b1010))),
+        Context::General,
+      ),
+      (
+        "0o1234",
+        Ok(pos::spanned(loc(0), loc(6), Token::IntLiteral(0o1234))),
+        Context::General,
+      ),
+      (
+        "-0o1234",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(-0o1234))),
+        Context::General,
+      ),
+      (
+        "0o12_34",
+        Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(0o1234))),
+        Context::General,
+      ),
+    ];
+
+    test(tests);
   }
 }
