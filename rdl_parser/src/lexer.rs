@@ -2,8 +2,9 @@ use std::str::Chars;
 
 use crate::core::error::Errors;
 use crate::pos::{self, Location, Spanned};
-use crate::token::Token;
+use crate::token::{Comment, CommentType, Token};
 use crate::ParserSource;
+use codespan::ByteOffset;
 use itertools::{Itertools, MultiPeek};
 use ordered_float::NotNan;
 
@@ -152,7 +153,6 @@ impl<'input> Lexer<'input> {
       };
     }
 
-    // TODO: this shouldn't be necessary
     let next_loc = self.next_loc()?;
     Some(Ok(pos::spanned(next_loc, next_loc, Token::EOF)))
   }
@@ -180,9 +180,7 @@ impl<'input> Lexer<'input> {
       (_end, r#""""#) => (start + '"', Token::SingleLineStringDelimiter),
       (_end, r#"""""#) | (_end, r#""""""""#) => (self.advance_by(2).unwrap(), Token::MultiLineStringDelimiter),
 
-      (end, _) => {
-        return Err(pos::spanned(start, end, Error::UnterminatedStringLiteral));
-      }
+      (end, _) => return self.error(start, end, Error::UnterminatedStringLiteral),
     };
 
     self.push_context(Context::String(token));
@@ -334,11 +332,52 @@ impl<'input> Lexer<'input> {
   }
 
   fn line_comment(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
-    todo!()
+    let (end, comment) = self.take_until(start, |ch| ch == '\n');
+
+    let token = if comment.starts_with("///") {
+      Token::DocComment(Comment {
+        typ: CommentType::Line,
+        content: comment[3..].trim(),
+      })
+    } else {
+      Token::Comment(Comment {
+        typ: CommentType::Line,
+        content: comment[2..].trim(),
+      })
+    };
+
+    Ok(pos::spanned(start, end, token))
   }
 
   fn block_comment(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
-    todo!()
+    self.bump(); // Skip first '*'
+
+    loop {
+      let (_, comment) = self.take_until(start, |ch| ch == '*');
+      self.bump(); // Skip next b'*'
+
+      match self.peek() {
+        Some((_, '/')) => {
+          let (_, end, _) = self.bump().unwrap();
+
+          let token = if comment.starts_with("/**") && comment != "/**" {
+            Token::DocComment(Comment {
+              typ: CommentType::Block,
+              content: comment[3..].trim(),
+            })
+          } else {
+            Token::Comment(Comment {
+              typ: CommentType::Block,
+              content: comment[2..].trim(),
+            })
+          };
+
+          return Ok(pos::spanned(start, end, token));
+        }
+        Some((_, _)) => continue,
+        None => return self.error(start, self.loc, Error::UnexpectedEof),
+      }
+    }
   }
 
   fn operator(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
@@ -433,6 +472,10 @@ impl<'input> Lexer<'input> {
     end
   }
 
+  fn skip_to_end(&mut self) {
+    while let Some(_) = self.bump() {}
+  }
+
   fn advance_by(&mut self, n: usize) -> Result<Location, usize> {
     let mut res = Ok(self.loc);
     for i in 0..n {
@@ -513,6 +556,11 @@ impl<'input> Lexer<'input> {
   ) -> Result<SpannedToken<'input>, SpannedError> {
     self.errors.push(pos::spanned(start, end, code));
     Ok(pos::spanned(start, end, value))
+  }
+
+  fn error<T>(&mut self, start: Location, end: Location, code: Error) -> Result<T, SpannedError> {
+    self.skip_to_end();
+    Err(pos::spanned(start, end, code))
   }
 
   // Context manipulation //////////////
@@ -1032,7 +1080,6 @@ mod test {
       ("..", Ok(pos::spanned(loc(0), loc(2), Token::DotDot)), Context::General),
       ("=", Ok(pos::spanned(loc(0), loc(1), Token::Assign)), Context::General),
       ("->", Ok(pos::spanned(loc(0), loc(2), Token::RArrow)), Context::General),
-
       (",", Ok(pos::spanned(loc(0), loc(1), Token::Comma)), Context::General),
       ("{", Ok(pos::spanned(loc(0), loc(1), Token::LBrace)), Context::General),
       ("[", Ok(pos::spanned(loc(0), loc(1), Token::LBracket)), Context::General),
@@ -1040,6 +1087,171 @@ mod test {
       ("}", Ok(pos::spanned(loc(0), loc(1), Token::RBrace)), Context::General),
       ("]", Ok(pos::spanned(loc(0), loc(1), Token::RBracket)), Context::General),
       (")", Ok(pos::spanned(loc(0), loc(1), Token::RParen)), Context::General),
+    ];
+
+    test(tests);
+  }
+
+  #[test]
+  fn line_comment() {
+    let tests = vec![
+      (
+        "// foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(6),
+          Token::Comment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "//foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(5),
+          Token::Comment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "//   foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(8),
+          Token::Comment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/// foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(7),
+          Token::DocComment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "///foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(6),
+          Token::DocComment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "///   foo",
+        Ok(pos::spanned(
+          loc(0),
+          loc(9),
+          Token::DocComment(Comment {
+            typ: CommentType::Line,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+    ];
+
+    test(tests);
+  }
+
+  #[test]
+  fn block_comment() {
+    let tests = vec![
+      (
+        "/* foo */",
+        Ok(pos::spanned(
+          loc(0),
+          loc(9),
+          Token::Comment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/*foo*/",
+        Ok(pos::spanned(
+          loc(0),
+          loc(7),
+          Token::Comment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/*   foo   */",
+        Ok(pos::spanned(
+          loc(0),
+          loc(13),
+          Token::Comment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/** foo */",
+        Ok(pos::spanned(
+          loc(0),
+          loc(10),
+          Token::DocComment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/**foo*/",
+        Ok(pos::spanned(
+          loc(0),
+          loc(8),
+          Token::DocComment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/**   foo   */",
+        Ok(pos::spanned(
+          loc(0),
+          loc(14),
+          Token::DocComment(Comment {
+            typ: CommentType::Block,
+            content: "foo",
+          }),
+        )),
+        Context::General,
+      ),
+      (
+        "/* foo *",
+        Err(pos::spanned(loc(0), loc(8), Error::UnexpectedEof)),
+        Context::General,
+      ),
     ];
 
     test(tests);

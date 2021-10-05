@@ -11,6 +11,9 @@ pub enum Token<S> {
 
   StringLiteral(StringLiteral<S>),
 
+  Comment(Comment<S>),
+  DocComment(Comment<S>),
+
   LogicalNot,        // !
   LogicalAnd,        // &&
   LogicalOr,         // ||
@@ -46,4 +49,16 @@ pub enum Token<S> {
 pub enum StringLiteral<S> {
   Escaped(S),
   Raw(S),
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+pub struct Comment<S = String> {
+  pub typ: CommentType,
+  pub content: S,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+pub enum CommentType {
+  Block,
+  Line,
 }
