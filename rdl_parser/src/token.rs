@@ -3,7 +3,6 @@ use ordered_float::NotNan;
 #[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
 pub enum Token<S> {
   IntLiteral(i64),
-  ByteLiteral(u8),
   FloatLiteral(NotNan<f64>),
 
   SingleLineStringDelimiter,
@@ -11,6 +10,34 @@ pub enum Token<S> {
   HereDocStringDelimiter,
 
   StringLiteral(StringLiteral<S>),
+
+  LogicalNot,        // !
+  LogicalAnd,        // &&
+  LogicalOr,         // ||
+  BitwiseNot,        // ~
+  BitwiseAnd,        // &
+  BitwiseOr,         // |
+  BitwiseShiftLeft,  // <:
+  BitwiseShiftRight, // :>
+  Multiplication,    // *
+  Division,          // /
+  Modulo,            // %
+  Addition,          // +
+  Subtraction,       // -
+  Equal,             // ==
+  NotEqual,          // !=
+  Dot,               // .
+  DotDot,            // ..
+  Assign,            // =
+  RArrow,            // ->
+
+  Comma,
+  LBrace,
+  LBracket,
+  LParen,
+  RBrace,
+  RBracket,
+  RParen,
 
   EOF,
 }

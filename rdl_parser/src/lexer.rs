@@ -125,16 +125,34 @@ impl<'input> Lexer<'input> {
   // Iterator contexts /////////////////
 
   pub fn iter_base(&mut self) -> Option<LexerResult<'input>> {
-    while let Some((start, _, ch)) = self.bump() {
+    while let Some((start, end, ch)) = self.bump() {
       return match ch {
-        '"' => Some(self.string_start(start)),
-        ch if ch == '<' && self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
+        ',' => Some(Ok(pos::spanned(start, end, Token::Comma))),
 
-        ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) => Some(self.numeric_literal(start)),
+        '{' => Some(Ok(pos::spanned(start, end, Token::LBrace))),
+        '[' => Some(Ok(pos::spanned(start, end, Token::LBracket))),
+        '(' => Some(Ok(pos::spanned(start, end, Token::LParen))),
+        '}' => Some(Ok(pos::spanned(start, end, Token::RBrace))),
+        ']' => Some(Ok(pos::spanned(start, end, Token::RBracket))),
+        ')' => Some(Ok(pos::spanned(start, end, Token::RParen))),
+
+        '/' if self.peek_is('/') => Some(self.line_comment(start)),
+        '/' if self.peek_is('*') => Some(self.block_comment(start)),
+
+        '"' => Some(self.string_start(start)),
+        '<' if self.peek_is('<') => Some(self.heredoc_start(start)), // :>
+
+        ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) || (ch == '+' && self.test_peek_reset(is_dec)) => {
+          Some(self.numeric_literal(start))
+        }
+
+        ch if is_operator_char(ch) => Some(self.operator(start)),
+
         _ => None,
       };
     }
 
+    // TODO: this shouldn't be necessary
     let next_loc = self.next_loc()?;
     Some(Ok(pos::spanned(next_loc, next_loc, Token::EOF)))
   }
@@ -315,6 +333,44 @@ impl<'input> Lexer<'input> {
     }
   }
 
+  fn line_comment(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    todo!()
+  }
+
+  fn block_comment(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    todo!()
+  }
+
+  fn operator(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    let (end, op) = self.take_while(start, is_operator_char);
+
+    let token = match op {
+      "!" => Token::LogicalNot,
+      "&&" => Token::LogicalAnd,
+      "||" => Token::LogicalOr,
+      "~" => Token::BitwiseNot,
+      "&" => Token::BitwiseAnd,
+      "|" => Token::BitwiseOr,
+      "<:" => Token::BitwiseShiftLeft,
+      ":>" => Token::BitwiseShiftRight,
+      "*" => Token::Multiplication,
+      "/" => Token::Division,
+      "%" => Token::Modulo,
+      "+" => Token::Addition,
+      "-" => Token::Subtraction,
+      "==" => Token::Equal,
+      "!=" => Token::NotEqual,
+      "." => Token::Dot,
+      ".." => Token::DotDot,
+      "=" => Token::Assign,
+      "->" => Token::RArrow,
+
+      _ => todo!(),
+    };
+
+    Ok(pos::spanned(start, end, token))
+  }
+
   fn parse_int(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
     let v = v.replace('_', "");
     match v.parse::<i64>() {
@@ -409,6 +465,12 @@ impl<'input> Lexer<'input> {
     r
   }
 
+  fn peek_is(&mut self, ch: char) -> bool {
+    let r = self.peek().map_or(false, |(_, c)| c == ch);
+    self.reset_peek();
+    r
+  }
+
   fn reset_peek(&mut self) {
     self.chars.reset_peek();
     self.peek_loc = self.loc;
@@ -485,6 +547,27 @@ fn is_bin(ch: char) -> bool {
 
 fn is_oct(ch: char) -> bool {
   ch.is_digit(8)
+}
+
+fn is_operator_char(ch: char) -> bool {
+  match ch {
+    '!' => true,
+    '%' => true,
+    '&' => true,
+    '*' => true,
+    '+' => true,
+    '-' => true,
+    '.' => true,
+    '/' => true,
+    ':' => true,
+    '<' => true,
+    '=' => true,
+    '>' => true,
+    '|' => true,
+    '~' => true,
+
+    _ => false,
+  }
 }
 
 fn i64_from_str_radix(hex: &str, is_positive: bool, radix: u32) -> Result<i64, Error> {
@@ -590,7 +673,7 @@ mod test {
 
   fn test(tests: Vec<TestCase>) {
     for (input, expected, expected_context) in tests {
-      let s = input.replace("~", "");
+      let s = input.replace("➖", "");
       let input = &*s;
       let mut lexer = Lexer::new(input);
 
@@ -605,37 +688,37 @@ mod test {
   fn string_start() {
     let tests = vec![
       (
-        r#"~"foo"~"#,
+        r#"➖"foo"➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
         Context::String(Token::SingleLineStringDelimiter),
       ),
       (
-        r#"~""~"#,
+        r#"➖""➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
         Context::String(Token::SingleLineStringDelimiter),
       ),
       (
-        r#"~"~"#,
+        r#"➖"➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
         Context::String(Token::SingleLineStringDelimiter),
       ),
       (
-        r#"~"""foo"""~"#,
+        r#"➖"""foo"""➖"#,
         Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
         Context::String(Token::MultiLineStringDelimiter),
       ),
       (
-        r#"~"""~"""~"#,
+        r#"➖"""➖"""➖"#,
         Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
         Context::String(Token::MultiLineStringDelimiter),
       ),
       (
-        r#"~"""~"#,
+        r#"➖"""➖"#,
         Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
         Context::String(Token::MultiLineStringDelimiter),
       ),
       (
-        r#"~""""~"#,
+        r#"➖""""➖"#,
         Err(pos::spanned(loc(0), loc(4), Error::UnterminatedStringLiteral)),
         Context::General,
       ),
@@ -922,6 +1005,41 @@ mod test {
         Ok(pos::spanned(loc(0), loc(7), Token::IntLiteral(0o1234))),
         Context::General,
       ),
+    ];
+
+    test(tests);
+  }
+
+  #[test]
+  fn operators() {
+    let tests = vec![
+      ("!", Ok(pos::spanned(loc(0), loc(1), Token::LogicalNot)), Context::General),
+      ("&&", Ok(pos::spanned(loc(0), loc(2), Token::LogicalAnd)), Context::General),
+      ("||", Ok(pos::spanned(loc(0), loc(2), Token::LogicalOr)), Context::General),
+      ("~", Ok(pos::spanned(loc(0), loc(1), Token::BitwiseNot)), Context::General),
+      ("&", Ok(pos::spanned(loc(0), loc(1), Token::BitwiseAnd)), Context::General),
+      ("|", Ok(pos::spanned(loc(0), loc(1), Token::BitwiseOr)), Context::General),
+      ("<:", Ok(pos::spanned(loc(0), loc(2), Token::BitwiseShiftLeft)), Context::General),
+      (":>", Ok(pos::spanned(loc(0), loc(2), Token::BitwiseShiftRight)), Context::General),
+      ("*", Ok(pos::spanned(loc(0), loc(1), Token::Multiplication)), Context::General),
+      ("/", Ok(pos::spanned(loc(0), loc(1), Token::Division)), Context::General),
+      ("%", Ok(pos::spanned(loc(0), loc(1), Token::Modulo)), Context::General),
+      ("+", Ok(pos::spanned(loc(0), loc(1), Token::Addition)), Context::General),
+      ("-", Ok(pos::spanned(loc(0), loc(1), Token::Subtraction)), Context::General),
+      ("==", Ok(pos::spanned(loc(0), loc(2), Token::Equal)), Context::General),
+      ("!=", Ok(pos::spanned(loc(0), loc(2), Token::NotEqual)), Context::General),
+      (".", Ok(pos::spanned(loc(0), loc(1), Token::Dot)), Context::General),
+      ("..", Ok(pos::spanned(loc(0), loc(2), Token::DotDot)), Context::General),
+      ("=", Ok(pos::spanned(loc(0), loc(1), Token::Assign)), Context::General),
+      ("->", Ok(pos::spanned(loc(0), loc(2), Token::RArrow)), Context::General),
+
+      (",", Ok(pos::spanned(loc(0), loc(1), Token::Comma)), Context::General),
+      ("{", Ok(pos::spanned(loc(0), loc(1), Token::LBrace)), Context::General),
+      ("[", Ok(pos::spanned(loc(0), loc(1), Token::LBracket)), Context::General),
+      ("(", Ok(pos::spanned(loc(0), loc(1), Token::LParen)), Context::General),
+      ("}", Ok(pos::spanned(loc(0), loc(1), Token::RBrace)), Context::General),
+      ("]", Ok(pos::spanned(loc(0), loc(1), Token::RBracket)), Context::General),
+      (")", Ok(pos::spanned(loc(0), loc(1), Token::RParen)), Context::General),
     ];
 
     test(tests);
