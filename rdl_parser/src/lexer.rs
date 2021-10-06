@@ -149,6 +149,8 @@ impl<'input> Lexer<'input> {
 
         ch if is_operator_char(ch) => Some(self.operator(start)),
 
+        ch if is_ident_start(ch) => Some(self.identifier(start)),
+
         _ => None,
       };
     }
@@ -410,6 +412,30 @@ impl<'input> Lexer<'input> {
     Ok(pos::spanned(start, end, token))
   }
 
+  fn identifier(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    let (end, ident) = self.take_while(start, is_ident_continue);
+
+    let token = match ident {
+      "true" => Token::BoolLiteral(true),
+      "false" => Token::BoolLiteral(false),
+
+      "let" => Token::Let,
+      "if" => Token::If,
+      "else" => Token::Else,
+      "for" => Token::Forall,
+      "in" => Token::In,
+      "while" => Token::Do,
+      "break" => Token::Break,
+      "continue" => Token::Continue,
+      "match" => Token::Match,
+      "return" => Token::Return,
+
+      src => Token::Identifier(src),
+    };
+
+    Ok(pos::spanned(start, end, token))
+  }
+
   fn parse_int(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
     let v = v.replace('_', "");
     match v.parse::<i64>() {
@@ -618,6 +644,14 @@ fn is_operator_char(ch: char) -> bool {
   }
 }
 
+fn is_ident_start(ch: char) -> bool {
+  unic_ucd_ident::is_xid_start(ch)
+}
+
+fn is_ident_continue(ch: char) -> bool {
+  unic_ucd_ident::is_xid_continue(ch) || ch == '-'
+}
+
 fn i64_from_str_radix(hex: &str, is_positive: bool, radix: u32) -> Result<i64, Error> {
   let sign: i64 = if is_positive { 1 } else { -1 };
   let mut result = 0i64;
@@ -715,6 +749,24 @@ mod test {
     let res = lexer.peek_until(loc(0), |c| c != '#');
 
     assert_eq!(res, (loc(2), "##"))
+  }
+
+  #[test]
+  fn ident_start() {
+    assert!(is_ident_start('a'));
+    assert!(is_ident_start('A'));
+    assert!(!is_ident_start('1'));
+    assert!(!is_ident_start('-'));
+    assert!(!is_ident_start('_'));
+  }
+
+  #[test]
+  fn ident_continue() {
+    assert!(is_ident_continue('a'));
+    assert!(is_ident_continue('A'));
+    assert!(is_ident_continue('1'));
+    assert!(is_ident_continue('-'));
+    assert!(is_ident_continue('_'));
   }
 
   type TestCase<'a> = (&'a str, Result<SpannedToken<'a>, SpannedError>, Context<'a>);
@@ -1252,6 +1304,29 @@ mod test {
         Err(pos::spanned(loc(0), loc(8), Error::UnexpectedEof)),
         Context::General,
       ),
+    ];
+
+    test(tests);
+  }
+
+  #[test]
+  fn identifier() {
+    let tests = vec![
+      ("true", Ok(pos::spanned(loc(0), loc(4), Token::BoolLiteral(true))), Context::General),
+      ("false", Ok(pos::spanned(loc(0), loc(5), Token::BoolLiteral(false))), Context::General),
+
+      ("let", Ok(pos::spanned(loc(0), loc(3), Token::Let)), Context::General),
+      ("if", Ok(pos::spanned(loc(0), loc(2), Token::If)), Context::General),
+      ("else", Ok(pos::spanned(loc(0), loc(4), Token::Else)), Context::General),
+      ("for", Ok(pos::spanned(loc(0), loc(3), Token::Forall)), Context::General),
+      ("in", Ok(pos::spanned(loc(0), loc(2), Token::In)), Context::General),
+      ("while", Ok(pos::spanned(loc(0), loc(5), Token::Do)), Context::General),
+      ("break", Ok(pos::spanned(loc(0), loc(5), Token::Break)), Context::General),
+      ("continue", Ok(pos::spanned(loc(0), loc(8), Token::Continue)), Context::General),
+      ("match", Ok(pos::spanned(loc(0), loc(5), Token::Match)), Context::General),
+      ("return", Ok(pos::spanned(loc(0), loc(6), Token::Return)), Context::General),
+
+      ("foo", Ok(pos::spanned(loc(0), loc(3), Token::Identifier("foo"))), Context::General),
     ];
 
     test(tests);

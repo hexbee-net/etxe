@@ -4,6 +4,7 @@ use ordered_float::NotNan;
 pub enum Token<S> {
   IntLiteral(i64),
   FloatLiteral(NotNan<f64>),
+  BoolLiteral(bool),
 
   SingleLineStringDelimiter,
   MultiLineStringDelimiter,
@@ -41,6 +42,18 @@ pub enum Token<S> {
   RBrace,
   RBracket,
   RParen,
+
+  Let,
+  If,
+  Else,
+  Forall,
+  In,
+  Do,
+  Break,
+  Continue,
+  Match,
+  Return,
+  Identifier(S),
 
   EOF,
 }
