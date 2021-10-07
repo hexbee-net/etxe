@@ -50,6 +50,11 @@ pub enum Token<S> {
   RBracket,
   RParen,
 
+  // Keywords
+  Resource,
+  Data,
+  Provider,
+  Module,
   Let,
   If,
   Else,
