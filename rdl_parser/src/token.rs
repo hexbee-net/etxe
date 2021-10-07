@@ -16,12 +16,14 @@ pub enum Token<S> {
   Comment(Comment<S>),
   DocComment(Comment<S>),
 
+  // Operators
   LogicalNot,        // !
   LogicalAnd,        // &&
   LogicalOr,         // ||
   BitwiseNot,        // ~
   BitwiseAnd,        // &
   BitwiseOr,         // |
+  BitwiseXOr,        // ^
   BitwiseShiftLeft,  // <:
   BitwiseShiftRight, // :>
   Multiplication,    // *
@@ -31,6 +33,10 @@ pub enum Token<S> {
   Subtraction,       // -
   Equal,             // ==
   NotEqual,          // !=
+  Less,              // <
+  LessOrEqual,       // <=
+  Greater,           // >
+  GreaterOrEqual,    // >=
   Dot,               // .
   DotDot,            // ..
   Assign,            // =
