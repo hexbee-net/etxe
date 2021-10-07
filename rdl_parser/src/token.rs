@@ -5,6 +5,7 @@ pub enum Token<S> {
   IntLiteral(i64),
   FloatLiteral(NotNan<f64>),
   BoolLiteral(bool),
+  CharLiteral(char),
 
   SingleLineStringDelimiter,
   MultiLineStringDelimiter,

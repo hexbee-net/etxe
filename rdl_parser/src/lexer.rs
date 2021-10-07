@@ -4,7 +4,6 @@ use crate::core::error::Errors;
 use crate::pos::{self, Location, Spanned};
 use crate::token::{Comment, CommentType, Token};
 use crate::ParserSource;
-use codespan::ByteOffset;
 use itertools::{Itertools, MultiPeek};
 use ordered_float::NotNan;
 
@@ -35,6 +34,12 @@ quick_error! {
     OctLiteralWrongPrefix {
       display("wrong oct literal prefix, should start as '0o' or '-0o'")
     }
+    EmptyCharLiteral {
+      display("empty char literal")
+    }
+    UnterminatedCharLiteral {
+      display("unterminated character literal")
+    }
     UnterminatedHeredocDelimiter {
       display("unterminated heredoc delimiter")
     }
@@ -52,6 +57,15 @@ quick_error! {
     }
     UnexpectedEscapeCode(ch: char) {
       display("unexpected escape code")
+    }
+    EmptyUnicodeEscape {
+      display("a unicode escape must have at least 1 hex digit")
+    }
+    MalformedUnicodeEscape {
+      display("format of unicode escape sequences uses braces")
+    }
+    InvalidUnicodeEscape {
+      display("invalid character in unicode escape")
     }
   }
 }
@@ -137,11 +151,12 @@ impl<'input> Lexer<'input> {
         ']' => Some(Ok(pos::spanned(start, end, Token::RBracket))),
         ')' => Some(Ok(pos::spanned(start, end, Token::RParen))),
 
-        '/' if self.peek_is('/') => Some(self.line_comment(start)),
-        '/' if self.peek_is('*') => Some(self.block_comment(start)),
+        '/' if self.test_peek_reset(|ch| ch == '/') => Some(self.line_comment(start)),
+        '/' if self.test_peek_reset(|ch| ch == '*') => Some(self.block_comment(start)),
 
         '"' => Some(self.string_start(start)),
-        '<' if self.peek_is('<') => Some(self.heredoc_start(start)), // :>
+        '<' if self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
+        '\'' => Some(self.char_literal(start)),
 
         ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) || (ch == '+' && self.test_peek_reset(is_dec)) => {
           Some(self.numeric_literal(start))
@@ -150,6 +165,8 @@ impl<'input> Lexer<'input> {
         ch if is_operator_char(ch) => Some(self.operator(start)),
 
         ch if is_ident_start(ch) => Some(self.identifier(start)),
+
+        ch if ch.is_whitespace() && ch != '\n' => continue,
 
         _ => None,
       };
@@ -237,6 +254,25 @@ impl<'input> Lexer<'input> {
 
     // Return the spanned token.
     Ok(pos::spanned(start, end, Token::HereDocStringDelimiter))
+  }
+
+  fn char_literal(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
+    let ch = match self.bump() {
+      Some((_, _, '\\')) => self.escape_code(start, '\'').unwrap_or_else(|e| {
+        self.errors.push(e);
+        self.bump_until(|ch| ch == '\'');
+        '\0'
+      }),
+      Some((_, end, '\'')) => return self.recover(start, end, Error::EmptyCharLiteral, Token::CharLiteral('\0')),
+      Some((_, _, ch)) => ch,
+      None => return self.recover(start, start, Error::UnexpectedEof, Token::CharLiteral('\0')),
+    };
+
+    match self.bump() {
+      Some((_, end, '\'')) => Ok(pos::spanned(start, end, Token::CharLiteral(ch))),
+      Some((_, end, _)) => self.recover(start, end, Error::UnterminatedCharLiteral, Token::CharLiteral(ch)),
+      None => return self.recover(start, start, Error::UnexpectedEof, Token::CharLiteral('\0')),
+    }
   }
 
   fn numeric_literal(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
@@ -457,6 +493,53 @@ impl<'input> Lexer<'input> {
     }
   }
 
+  fn escape_code(&mut self, start: Location, delimiter: char) -> Result<char, SpannedError> {
+    match self.bump() {
+      Some((_, _, 'n')) => Ok('\n'),
+      Some((_, _, 'r')) => Ok('\r'),
+      Some((_, _, 't')) => Ok('\t'),
+      Some((_, _, '\\')) => Ok('\\'),
+      Some((_, _, ch)) if ch == delimiter => Ok(ch),
+      Some((_, _, 'u')) => self.codepoint(start),
+
+      Some((_, end, ch)) => {
+        self.errors.push(pos::spanned(start, end, Error::UnexpectedEscapeCode(ch)));
+        Ok('\0')
+      }
+
+      None => {
+        self.errors.push(pos::spanned(start, start, Error::UnexpectedEof));
+        Ok('\0')
+      }
+    }
+  }
+
+  fn codepoint(&mut self, start: Location) -> Result<char, SpannedError> {
+    if self.test_peek(|ch| ch != '{') {
+      return Err(pos::spanned(start, start, Error::MalformedUnicodeEscape));
+    }
+    let code_start = self.catchup();
+
+    let (end, codepoint) = Lexer::take_while(self, code_start, is_hex);
+
+    if self.test_peek(|ch| ch != '}') {
+      return Err(pos::spanned(start, end, Error::MalformedUnicodeEscape));
+    }
+    self.catchup();
+
+    if codepoint.is_empty() {
+      return Err(pos::spanned(start, end, Error::EmptyUnicodeEscape));
+    }
+
+    match u32::from_str_radix(codepoint, 16) {
+      Ok(v) => match char::from_u32(v) {
+        None => Err(pos::spanned(start, end, Error::InvalidUnicodeEscape)),
+        Some(v) => Ok(v),
+      },
+      Err(_) => Err(pos::spanned(start, end, Error::InvalidUnicodeEscape)),
+    }
+  }
+
   // Utilities /////////////////////////
 
   fn bump(&mut self) -> Option<(Location, Location, char)> {
@@ -530,12 +613,6 @@ impl<'input> Lexer<'input> {
 
   fn test_peek_reset<F: FnMut(char) -> bool>(&mut self, mut test: F) -> bool {
     let r = self.peek().map_or(false, |(_, ch)| test(ch));
-    self.reset_peek();
-    r
-  }
-
-  fn peek_is(&mut self, ch: char) -> bool {
-    let r = self.peek().map_or(false, |(_, c)| c == ch);
     self.reset_peek();
     r
   }
@@ -749,6 +826,16 @@ mod test {
     let res = lexer.peek_until(loc(0), |c| c != '#');
 
     assert_eq!(res, (loc(2), "##"))
+  }
+
+  #[test]
+  fn codepoint() {
+    let input = "{2764}";
+    let mut lexer = Lexer::new(input);
+
+    let res = lexer.codepoint(loc(0));
+
+    assert_eq!(res, Ok('❤'))
   }
 
   #[test]
@@ -1111,6 +1198,55 @@ mod test {
   }
 
   #[test]
+  fn char_literal() {
+    let tests = vec![
+      ("'a'", Ok(pos::spanned(loc(0), loc(3), Token::CharLiteral('a'))), Context::General),
+      (
+        r#"'\n'"#,
+        Ok(pos::spanned(loc(0), loc(4), Token::CharLiteral('\n'))),
+        Context::General,
+      ),
+      (
+        r#"'\r'"#,
+        Ok(pos::spanned(loc(0), loc(4), Token::CharLiteral('\r'))),
+        Context::General,
+      ),
+      (
+        r#"'\t'"#,
+        Ok(pos::spanned(loc(0), loc(4), Token::CharLiteral('\t'))),
+        Context::General,
+      ),
+      (
+        r#"'\''"#,
+        Ok(pos::spanned(loc(0), loc(4), Token::CharLiteral('\''))),
+        Context::General,
+      ),
+      (
+        r#"'\u{2764}'"#,
+        Ok(pos::spanned(loc(0), loc(10), Token::CharLiteral('❤'))),
+        Context::General,
+      ),
+      (
+        r#"'\u{}'"#,
+        Ok(pos::spanned(loc(0), loc(6), Token::CharLiteral('\0'))),
+        Context::General,
+      ),
+      (
+        r#"'\u{k}'"#,
+        Ok(pos::spanned(loc(0), loc(7), Token::CharLiteral('\0'))),
+        Context::General,
+      ),
+      (
+        r#"'\"'"#,
+        Ok(pos::spanned(loc(0), loc(4), Token::CharLiteral('\0'))),
+        Context::General,
+      ),
+    ];
+
+    test(tests);
+  }
+
+  #[test]
   fn operators() {
     let tests = vec![
       ("!", Ok(pos::spanned(loc(0), loc(1), Token::LogicalNot)), Context::General),
@@ -1313,8 +1449,11 @@ mod test {
   fn identifier() {
     let tests = vec![
       ("true", Ok(pos::spanned(loc(0), loc(4), Token::BoolLiteral(true))), Context::General),
-      ("false", Ok(pos::spanned(loc(0), loc(5), Token::BoolLiteral(false))), Context::General),
-
+      (
+        "false",
+        Ok(pos::spanned(loc(0), loc(5), Token::BoolLiteral(false))),
+        Context::General,
+      ),
       ("let", Ok(pos::spanned(loc(0), loc(3), Token::Let)), Context::General),
       ("if", Ok(pos::spanned(loc(0), loc(2), Token::If)), Context::General),
       ("else", Ok(pos::spanned(loc(0), loc(4), Token::Else)), Context::General),
@@ -1325,7 +1464,6 @@ mod test {
       ("continue", Ok(pos::spanned(loc(0), loc(8), Token::Continue)), Context::General),
       ("match", Ok(pos::spanned(loc(0), loc(5), Token::Match)), Context::General),
       ("return", Ok(pos::spanned(loc(0), loc(6), Token::Return)), Context::General),
-
       ("foo", Ok(pos::spanned(loc(0), loc(3), Token::Identifier("foo"))), Context::General),
     ];
 
