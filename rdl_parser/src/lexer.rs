@@ -2,7 +2,7 @@ use std::str::Chars;
 
 use crate::core::error::Errors;
 use crate::pos::{self, Location, Spanned};
-use crate::token::{Comment, CommentType, Token};
+use crate::token::{Comment, CommentType, StringLiteral, Token};
 use crate::ParserSource;
 use itertools::{Itertools, MultiPeek};
 use ordered_float::NotNan;
@@ -177,7 +177,56 @@ impl<'input> Lexer<'input> {
   }
 
   fn iter_single_line_string(&mut self) -> Option<LexerResult<'input>> {
-    todo!()
+    let start = self.loc;
+
+    if self.test_peek_reset(|ch| ch == '"') {
+      let end = self.catchup();
+      self.pop_context();
+
+      return Some(Ok(pos::spanned(start, end, Token::SingleLineStringDelimiter)));
+    }
+
+    let mut string_end = start;
+    while let Some((end, ch)) = self.peek() {
+      match ch {
+        '$' if self.test_peek_reset(|ch| ch == '$') => {
+          self.bump();
+          continue;
+        }
+        '%' if self.test_peek_reset(|ch| ch == '%') => {
+          self.bump();
+          continue;
+        }
+        '\\' if self.test_peek_reset(|ch| ch == '\\') => {
+          self.bump();
+          continue;
+        }
+
+        '\\' => {
+          self.parse_escape_code(start, '"');
+          continue;
+        }
+
+        '$' if self.test_peek_reset(|ch| ch == '{') => todo!(),
+        '%' if self.test_peek_reset(|ch| ch == '{') => todo!(),
+
+        '"' => {
+          self.reset_peek();
+          return Some(Ok(pos::spanned(
+            start,
+            string_end,
+            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+          )));
+        }
+
+        _ => {
+          string_end = self.catchup();
+          continue;
+        }
+      }
+    }
+
+    Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)))
   }
 
   fn iter_multi_line_string(&mut self) -> Option<LexerResult<'input>> {
@@ -258,7 +307,7 @@ impl<'input> Lexer<'input> {
 
   fn char_literal(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
     let ch = match self.bump() {
-      Some((_, _, '\\')) => self.escape_code(start, '\'').unwrap_or_else(|e| {
+      Some((_, _, '\\')) => self.parse_escape_code(start, '\'').unwrap_or_else(|e| {
         self.errors.push(e);
         self.bump_until(|ch| ch == '\'');
         '\0'
@@ -295,7 +344,7 @@ impl<'input> Lexer<'input> {
           (end, float)
         };
 
-        self.parse_float(start, end, float)
+        self.float(start, end, float)
       }
       Some((_, 'e')) | Some((_, 'E')) => {
         self.catchup();
@@ -305,7 +354,7 @@ impl<'input> Lexer<'input> {
         }
 
         let (end, float) = self.take_while(start, |ch| is_dec(ch) || ch == '_');
-        self.parse_float(start, end, float)
+        self.float(start, end, float)
       }
 
       Some((_, 'x')) => {
@@ -365,7 +414,7 @@ impl<'input> Lexer<'input> {
         }
       }
 
-      None | Some(_) => self.parse_int(start, end, int),
+      None | Some(_) => self.int(start, end, int),
     }
   }
 
@@ -481,7 +530,7 @@ impl<'input> Lexer<'input> {
     Ok(pos::spanned(start, end, token))
   }
 
-  fn parse_int(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
+  fn int(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
     let v = v.replace('_', "");
     match v.parse::<i64>() {
       Ok(val) => Ok(pos::spanned(start, end, Token::IntLiteral(val))),
@@ -489,7 +538,7 @@ impl<'input> Lexer<'input> {
     }
   }
 
-  fn parse_float(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
+  fn float(&mut self, start: Location, end: Location, v: &str) -> Result<SpannedToken<'input>, SpannedError> {
     let v = v.replace('_', "");
     match v.parse::<f64>() {
       Ok(val) => Ok(pos::spanned(start, end, Token::FloatLiteral(NotNan::new(val).unwrap()))),
@@ -502,14 +551,14 @@ impl<'input> Lexer<'input> {
     }
   }
 
-  fn escape_code(&mut self, start: Location, delimiter: char) -> Result<char, SpannedError> {
+  fn parse_escape_code(&mut self, start: Location, delimiter: char) -> Result<char, SpannedError> {
     match self.bump() {
       Some((_, _, 'n')) => Ok('\n'),
       Some((_, _, 'r')) => Ok('\r'),
       Some((_, _, 't')) => Ok('\t'),
       Some((_, _, '\\')) => Ok('\\'),
       Some((_, _, ch)) if ch == delimiter => Ok(ch),
-      Some((_, _, 'u')) => self.codepoint(start),
+      Some((_, _, 'u')) => self.parse_codepoint(start),
 
       Some((_, end, ch)) => {
         self.errors.push(pos::spanned(start, end, Error::UnexpectedEscapeCode(ch)));
@@ -523,7 +572,7 @@ impl<'input> Lexer<'input> {
     }
   }
 
-  fn codepoint(&mut self, start: Location) -> Result<char, SpannedError> {
+  fn parse_codepoint(&mut self, start: Location) -> Result<char, SpannedError> {
     if self.test_peek(|ch| ch != '{') {
       return Err(pos::spanned(start, start, Error::MalformedUnicodeEscape));
     }
@@ -843,7 +892,7 @@ mod test {
     let input = "{2764}";
     let mut lexer = Lexer::new(input);
 
-    let res = lexer.codepoint(loc(0));
+    let res = lexer.parse_codepoint(loc(0));
 
     assert_eq!(res, Ok('❤'))
   }
@@ -1487,5 +1536,43 @@ mod test {
     ];
 
     test(tests);
+  }
+
+  #[test]
+  fn string_lit() {
+    let tests = vec![
+      (
+        r#"➖"foo"➖"#,
+        Ok(pos::spanned(loc(1), loc(4), Token::StringLiteral(StringLiteral::Escaped("foo")))),
+      ),
+      (
+        r#"➖"foo\n"➖"#,
+        Ok(pos::spanned(loc(1), loc(6), Token::StringLiteral(StringLiteral::Escaped("foo\\n")))),
+      ),
+    ];
+
+    for (input, expected) in tests {
+      let s = input.replace("➖", "");
+      let input = &*s;
+      let mut lexer = Lexer::new(input);
+
+      println!("input: {}", input);
+
+      let res = lexer.next().unwrap();
+      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)), res);
+      assert_eq!(&Context::String(Token::SingleLineStringDelimiter), lexer.context());
+
+
+      let res = lexer.next().unwrap();
+      assert_eq!(expected, res);
+      assert_eq!(&Context::String(Token::SingleLineStringDelimiter), lexer.context());
+
+      let res = lexer.next().unwrap();
+      if let Ok(Spanned{ span, value }) = res {
+        assert_eq!(Token::SingleLineStringDelimiter, value)
+      } else {
+        panic!("{:?}", res);
+      }
+    }
   }
 }
