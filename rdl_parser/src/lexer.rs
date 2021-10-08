@@ -80,12 +80,17 @@ type LexerResult<'a> = Result<SpannedToken<'a>, SpannedError>;
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Context<'input> {
   General,
-  String(Token<&'input str>),
+
+  SingleLineString,
+  MultiLineString,
   HereDocString {
     delimiter: &'input str,
     skip_leading_tabs: bool,
     quoted_delimiter: bool,
   },
+
+  StringInterpolation,
+  StringDirective,
 }
 
 pub struct Lexer<'input> {
@@ -106,8 +111,8 @@ impl<'input> Iterator for Lexer<'input> {
   fn next(&mut self) -> Option<LexerResult<'input>> {
     match *self.context() {
       Context::General => self.iter_base(),
-      Context::String(Token::SingleLineStringDelimiter) => self.iter_single_line_string(),
-      Context::String(Token::MultiLineStringDelimiter) => self.iter_multi_line_string(),
+      Context::SingleLineString => self.iter_single_line_string(),
+      Context::MultiLineString => self.iter_multi_line_string(),
       Context::HereDocString {
         delimiter,
         skip_leading_tabs,
@@ -183,21 +188,43 @@ impl<'input> Lexer<'input> {
       let end = self.catchup();
       self.pop_context();
 
-      return Some(Ok(pos::spanned(start, end, Token::SingleLineStringDelimiter)));
+      return Some(Ok(pos::spanned(start, end, Token::StringDelimiter)));
     }
 
+    match (self.peek(), self.peek()) {
+      (Some((_, '$')), Some((end, '{'))) => {
+        self.catchup();
+        self.push_context(Context::StringInterpolation);
+        return Some(Ok(pos::spanned(start, end, Token::StringInterpolation)));
+      }
+      (Some((_, '%')), Some((end, '{'))) => {
+        self.catchup();
+        self.push_context(Context::StringDirective);
+        return Some(Ok(pos::spanned(start, end, Token::StringDirective)));
+      }
+      _ => {}
+    };
+    self.reset_peek();
+
     let mut string_end = start;
-    while let Some((end, ch)) = self.peek() {
+    while let Some((_, ch)) = self.peek() {
+      let next = match self.peek() {
+        Some((_, ch)) => ch,
+        _ => {
+          return Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)));
+        }
+      };
+
       match ch {
-        '$' if self.test_peek_reset(|ch| ch == '$') => {
+        '$' if next == '$' => {
           self.bump();
           continue;
         }
-        '%' if self.test_peek_reset(|ch| ch == '%') => {
+        '%' if next == '%' => {
           self.bump();
           continue;
         }
-        '\\' if self.test_peek_reset(|ch| ch == '\\') => {
+        '\\' if next == '\\' => {
           self.bump();
           continue;
         }
@@ -207,8 +234,23 @@ impl<'input> Lexer<'input> {
           continue;
         }
 
-        '$' if self.test_peek_reset(|ch| ch == '{') => todo!(),
-        '%' if self.test_peek_reset(|ch| ch == '{') => todo!(),
+        '$' if next == '{' => {
+          self.reset_peek();
+          return Some(Ok(pos::spanned(
+            start,
+            string_end,
+            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+          )));
+        }
+
+        '%' if next == '{' => {
+          self.reset_peek();
+          return Some(Ok(pos::spanned(
+            start,
+            string_end,
+            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+          )));
+        }
 
         '"' => {
           self.reset_peek();
@@ -220,7 +262,7 @@ impl<'input> Lexer<'input> {
         }
 
         _ => {
-          string_end = self.catchup();
+          string_end = self.bump().unwrap().1;
           continue;
         }
       }
@@ -243,17 +285,24 @@ impl<'input> Lexer<'input> {
     let section = self.peek_while(start, |c| c == '"');
     self.reset_peek();
 
-    let (end, token) = match section {
-      (end, r#"""#) => (end, Token::SingleLineStringDelimiter),
-      (_end, r#""""#) => (start + '"', Token::SingleLineStringDelimiter),
-      (_end, r#"""""#) | (_end, r#""""""""#) => (self.advance_by(2).unwrap(), Token::MultiLineStringDelimiter),
+    let end = match section {
+      (end, r#"""#) => {
+        self.push_context(Context::SingleLineString);
+        end
+      }
+      (_end, r#""""#) => {
+        self.push_context(Context::SingleLineString);
+        start + '"'
+      }
+      (_end, r#"""""#) | (_end, r#""""""""#) => {
+        self.push_context(Context::MultiLineString);
+        self.advance_by(2).unwrap()
+      }
 
       (end, _) => return self.error(start, end, Error::UnterminatedStringLiteral),
     };
 
-    self.push_context(Context::String(token));
-
-    Ok(pos::spanned(start, end, token))
+    Ok(pos::spanned(start, end, Token::StringDelimiter))
   }
 
   fn heredoc_start(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
@@ -302,7 +351,7 @@ impl<'input> Lexer<'input> {
     });
 
     // Return the spanned token.
-    Ok(pos::spanned(start, end, Token::HereDocStringDelimiter))
+    Ok(pos::spanned(start, end, Token::StringDelimiter))
   }
 
   fn char_literal(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
@@ -935,33 +984,33 @@ mod test {
     let tests = vec![
       (
         r#"➖"foo"➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
-        Context::String(Token::SingleLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
+        Context::SingleLineString,
       ),
       (
         r#"➖""➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
-        Context::String(Token::SingleLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
+        Context::SingleLineString,
       ),
       (
         r#"➖"➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)),
-        Context::String(Token::SingleLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
+        Context::SingleLineString,
       ),
       (
         r#"➖"""foo"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
-        Context::String(Token::MultiLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
+        Context::MultiLineString,
       ),
       (
         r#"➖"""➖"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
-        Context::String(Token::MultiLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
+        Context::MultiLineString,
       ),
       (
         r#"➖"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::MultiLineStringDelimiter)),
-        Context::String(Token::MultiLineStringDelimiter),
+        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
+        Context::MultiLineString,
       ),
       (
         r#"➖""""➖"#,
@@ -978,7 +1027,7 @@ mod test {
     let tests = vec![
       (
         "<< EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(6), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -987,7 +1036,7 @@ mod test {
       ),
       (
         "<<EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(5), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(5), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -996,7 +1045,7 @@ mod test {
       ),
       (
         "<<   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -1005,7 +1054,7 @@ mod test {
       ),
       (
         "<<- EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(7), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(7), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1014,7 +1063,7 @@ mod test {
       ),
       (
         "<<-EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(6), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1023,7 +1072,7 @@ mod test {
       ),
       (
         "<<-   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(9), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(9), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1032,7 +1081,7 @@ mod test {
       ),
       (
         "<< - EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "- EOF",
           skip_leading_tabs: false,
@@ -1041,7 +1090,7 @@ mod test {
       ),
       (
         "<<   - EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "- EOF",
           skip_leading_tabs: false,
@@ -1050,7 +1099,7 @@ mod test {
       ),
       (
         "<< -   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "-   EOF",
           skip_leading_tabs: false,
@@ -1059,7 +1108,7 @@ mod test {
       ),
       (
         "<< \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -1068,7 +1117,7 @@ mod test {
       ),
       (
         "<<\"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(7), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(7), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -1077,7 +1126,7 @@ mod test {
       ),
       (
         "<<   \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: false,
@@ -1086,7 +1135,7 @@ mod test {
       ),
       (
         "<<- \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(9), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(9), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1095,7 +1144,7 @@ mod test {
       ),
       (
         "<<-\"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1104,7 +1153,7 @@ mod test {
       ),
       (
         "<<-   \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(11), Token::HereDocStringDelimiter)),
+        Ok(pos::spanned(loc(0), loc(11), Token::StringDelimiter)),
         Context::HereDocString {
           delimiter: "EOF",
           skip_leading_tabs: true,
@@ -1539,7 +1588,7 @@ mod test {
   }
 
   #[test]
-  fn string_lit() {
+  fn single_line_string_simple() {
     let tests = vec![
       (
         r#"➖"foo"➖"#,
@@ -1556,20 +1605,49 @@ mod test {
       let input = &*s;
       let mut lexer = Lexer::new(input);
 
-      println!("input: {}", input);
-
       let res = lexer.next().unwrap();
-      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::SingleLineStringDelimiter)), res);
-      assert_eq!(&Context::String(Token::SingleLineStringDelimiter), lexer.context());
-
+      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
+      assert_eq!(&Context::SingleLineString, lexer.context());
 
       let res = lexer.next().unwrap();
       assert_eq!(expected, res);
-      assert_eq!(&Context::String(Token::SingleLineStringDelimiter), lexer.context());
+      assert_eq!(&Context::SingleLineString, lexer.context());
 
       let res = lexer.next().unwrap();
-      if let Ok(Spanned{ span, value }) = res {
-        assert_eq!(Token::SingleLineStringDelimiter, value)
+      if let Ok(Spanned { span, value }) = res {
+        assert_eq!(Token::StringDelimiter, value)
+      } else {
+        panic!("{:?}", res);
+      }
+    }
+  }
+
+  #[test]
+  fn single_line_string_interpolation() {
+    let tests = vec![
+      (r#"➖"123${}"➖"#, Token::StringInterpolation),
+      (r#"➖"123%{}"➖"#, Token::StringDirective),
+    ];
+
+    for (input, expected) in tests {
+      let s = input.replace("➖", "");
+      let input = &*s;
+      let mut lexer = Lexer::new(input);
+
+      let res = lexer.next().unwrap();
+      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
+      assert_eq!(&Context::SingleLineString, lexer.context());
+
+      let res = lexer.next().unwrap();
+      assert_eq!(
+        Ok(pos::spanned(loc(1), loc(4), Token::StringLiteral(StringLiteral::Escaped("123")))),
+        res
+      );
+      assert_eq!(&Context::SingleLineString, lexer.context());
+
+      let res = lexer.next().unwrap();
+      if let Ok(Spanned { span, value }) = res {
+        assert_eq!(expected, value)
       } else {
         panic!("{:?}", res);
       }

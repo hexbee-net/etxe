@@ -7,11 +7,11 @@ pub enum Token<S> {
   BoolLiteral(bool),
   CharLiteral(char),
 
-  SingleLineStringDelimiter,
-  MultiLineStringDelimiter,
-  HereDocStringDelimiter,
-
+  StringDelimiter,
   StringLiteral(StringLiteral<S>),
+
+  StringInterpolation,
+  StringDirective,
 
   Comment(Comment<S>),
   DocComment(Comment<S>),
