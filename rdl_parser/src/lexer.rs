@@ -81,8 +81,7 @@ type LexerResult<'a> = Result<SpannedToken<'a>, SpannedError>;
 enum Context<'input> {
   General,
 
-  SingleLineString,
-  MultiLineString,
+  String,
   HereDocString {
     delimiter: &'input str,
     skip_leading_tabs: bool,
@@ -111,8 +110,7 @@ impl<'input> Iterator for Lexer<'input> {
   fn next(&mut self) -> Option<LexerResult<'input>> {
     match *self.context() {
       Context::General => self.iter_base(),
-      Context::SingleLineString => self.iter_single_line_string(),
-      Context::MultiLineString => self.iter_multi_line_string(),
+      Context::String => self.iter_single_line_string(),
       Context::HereDocString {
         delimiter,
         skip_leading_tabs,
@@ -159,7 +157,10 @@ impl<'input> Lexer<'input> {
         '/' if self.test_peek_reset(|ch| ch == '/') => Some(self.line_comment(start)),
         '/' if self.test_peek_reset(|ch| ch == '*') => Some(self.block_comment(start)),
 
-        '"' => Some(self.string_start(start)),
+        '"' => {
+          self.push_context(Context::String);
+          Some(Ok(pos::spanned(start, end, Token::StringDelimiter)))
+        }
         '<' if self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
         '\'' => Some(self.char_literal(start)),
 
@@ -183,6 +184,7 @@ impl<'input> Lexer<'input> {
 
   fn iter_single_line_string(&mut self) -> Option<LexerResult<'input>> {
     let start = self.loc;
+    dbg!(start);
 
     if self.test_peek_reset(|ch| ch == '"') {
       let end = self.catchup();
@@ -208,6 +210,15 @@ impl<'input> Lexer<'input> {
 
     let mut string_end = start;
     while let Some((_, ch)) = self.peek() {
+      if ch == '"' {
+        self.reset_peek();
+        return Some(Ok(pos::spanned(
+          start,
+          string_end,
+          Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+        )));
+      }
+
       let next = match self.peek() {
         Some((_, ch)) => ch,
         _ => {
@@ -230,7 +241,11 @@ impl<'input> Lexer<'input> {
         }
 
         '\\' => {
-          self.parse_escape_code(start, '"');
+          match self.parse_escape_code(start, '"') {
+            Err(err) => self.errors.push(err),
+            Ok(_) => {}
+          }
+
           continue;
         }
 
@@ -252,15 +267,6 @@ impl<'input> Lexer<'input> {
           )));
         }
 
-        '"' => {
-          self.reset_peek();
-          return Some(Ok(pos::spanned(
-            start,
-            string_end,
-            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
-          )));
-        }
-
         _ => {
           string_end = self.bump().unwrap().1;
           continue;
@@ -271,39 +277,11 @@ impl<'input> Lexer<'input> {
     Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)))
   }
 
-  fn iter_multi_line_string(&mut self) -> Option<LexerResult<'input>> {
-    todo!()
-  }
-
   fn iter_heredoc_string(&mut self, _delimiter: &str, _skip_leading_tabs: bool, _quoted_delimiter: bool) -> Option<LexerResult<'input>> {
     todo!()
   }
 
   // Token Lexers //////////////////////
-
-  fn string_start(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
-    let section = self.peek_while(start, |c| c == '"');
-    self.reset_peek();
-
-    let end = match section {
-      (end, r#"""#) => {
-        self.push_context(Context::SingleLineString);
-        end
-      }
-      (_end, r#""""#) => {
-        self.push_context(Context::SingleLineString);
-        start + '"'
-      }
-      (_end, r#"""""#) | (_end, r#""""""""#) => {
-        self.push_context(Context::MultiLineString);
-        self.advance_by(2).unwrap()
-      }
-
-      (end, _) => return self.error(start, end, Error::UnterminatedStringLiteral),
-    };
-
-    Ok(pos::spanned(start, end, Token::StringDelimiter))
-  }
 
   fn heredoc_start(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
     // Skip the second '<' of the redirection operator.
@@ -609,15 +587,8 @@ impl<'input> Lexer<'input> {
       Some((_, _, ch)) if ch == delimiter => Ok(ch),
       Some((_, _, 'u')) => self.parse_codepoint(start),
 
-      Some((_, end, ch)) => {
-        self.errors.push(pos::spanned(start, end, Error::UnexpectedEscapeCode(ch)));
-        Ok('\0')
-      }
-
-      None => {
-        self.errors.push(pos::spanned(start, start, Error::UnexpectedEof));
-        Ok('\0')
-      }
+      Some((_, end, ch)) => Err(pos::spanned(start, end, Error::UnexpectedEscapeCode(ch))),
+      None => Err(pos::spanned(start, start, Error::UnexpectedEof)),
     }
   }
 
@@ -690,14 +661,6 @@ impl<'input> Lexer<'input> {
 
   fn skip_to_end(&mut self) {
     while let Some(_) = self.bump() {}
-  }
-
-  fn advance_by(&mut self, n: usize) -> Result<Location, usize> {
-    let mut res = Ok(self.loc);
-    for i in 0..n {
-      res = self.bump().map(|(_, l, _)| l).ok_or(i);
-    }
-    res
   }
 
   fn catchup(&mut self) -> Location {
@@ -985,37 +948,17 @@ mod test {
       (
         r#"➖"foo"➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::SingleLineString,
+        Context::String,
       ),
       (
         r#"➖""➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::SingleLineString,
+        Context::String,
       ),
       (
         r#"➖"➖"#,
         Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::SingleLineString,
-      ),
-      (
-        r#"➖"""foo"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
-        Context::MultiLineString,
-      ),
-      (
-        r#"➖"""➖"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
-        Context::MultiLineString,
-      ),
-      (
-        r#"➖"""➖"#,
-        Ok(pos::spanned(loc(0), loc(3), Token::StringDelimiter)),
-        Context::MultiLineString,
-      ),
-      (
-        r#"➖""""➖"#,
-        Err(pos::spanned(loc(0), loc(4), Error::UnterminatedStringLiteral)),
-        Context::General,
+        Context::String,
       ),
     ];
 
@@ -1588,7 +1531,7 @@ mod test {
   }
 
   #[test]
-  fn single_line_string_simple() {
+  fn string_simple() {
     let tests = vec![
       (
         r#"➖"foo"➖"#,
@@ -1607,14 +1550,14 @@ mod test {
 
       let res = lexer.next().unwrap();
       assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
-      assert_eq!(&Context::SingleLineString, lexer.context());
+      assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
       assert_eq!(expected, res);
-      assert_eq!(&Context::SingleLineString, lexer.context());
+      assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
-      if let Ok(Spanned { span, value }) = res {
+      if let Ok(Spanned { span: _, value }) = res {
         assert_eq!(Token::StringDelimiter, value)
       } else {
         panic!("{:?}", res);
@@ -1623,7 +1566,7 @@ mod test {
   }
 
   #[test]
-  fn single_line_string_interpolation() {
+  fn string_interpolation() {
     let tests = vec![
       (r#"➖"123${}"➖"#, Token::StringInterpolation),
       (r#"➖"123%{}"➖"#, Token::StringDirective),
@@ -1636,17 +1579,17 @@ mod test {
 
       let res = lexer.next().unwrap();
       assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
-      assert_eq!(&Context::SingleLineString, lexer.context());
+      assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
       assert_eq!(
         Ok(pos::spanned(loc(1), loc(4), Token::StringLiteral(StringLiteral::Escaped("123")))),
         res
       );
-      assert_eq!(&Context::SingleLineString, lexer.context());
+      assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
-      if let Ok(Spanned { span, value }) = res {
+      if let Ok(Spanned { span: _, value }) = res {
         assert_eq!(expected, value)
       } else {
         panic!("{:?}", res);
