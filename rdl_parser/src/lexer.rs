@@ -87,6 +87,10 @@ enum Context<'input> {
     skip_leading_tabs: bool,
     quoted_delimiter: bool,
   },
+  HereDocStringEnd {
+    start: Location,
+    end: Location,
+  },
 
   StringInterpolation,
   StringDirective,
@@ -116,6 +120,7 @@ impl<'input> Iterator for Lexer<'input> {
         skip_leading_tabs,
         quoted_delimiter,
       } => self.iter_heredoc_string(delimiter, skip_leading_tabs, quoted_delimiter),
+      Context::HereDocStringEnd { start, end } => self.iter_heredoc_end(start, end),
       _ => unreachable!(),
     }
   }
@@ -184,7 +189,6 @@ impl<'input> Lexer<'input> {
 
   fn iter_single_line_string(&mut self) -> Option<LexerResult<'input>> {
     let start = self.loc;
-    dbg!(start);
 
     if self.test_peek_reset(|ch| ch == '"') {
       let end = self.catchup();
@@ -215,7 +219,7 @@ impl<'input> Lexer<'input> {
         return Some(Ok(pos::spanned(
           start,
           string_end,
-          Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+          Token::String(StringLiteral::Escaped(self.slice(start, string_end))),
         )));
       }
 
@@ -254,7 +258,7 @@ impl<'input> Lexer<'input> {
           return Some(Ok(pos::spanned(
             start,
             string_end,
-            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+            Token::String(StringLiteral::Escaped(self.slice(start, string_end))),
           )));
         }
 
@@ -263,7 +267,7 @@ impl<'input> Lexer<'input> {
           return Some(Ok(pos::spanned(
             start,
             string_end,
-            Token::StringLiteral(StringLiteral::Escaped(self.slice(start, string_end))),
+            Token::String(StringLiteral::Escaped(self.slice(start, string_end))),
           )));
         }
 
@@ -277,8 +281,102 @@ impl<'input> Lexer<'input> {
     Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)))
   }
 
-  fn iter_heredoc_string(&mut self, _delimiter: &str, _skip_leading_tabs: bool, _quoted_delimiter: bool) -> Option<LexerResult<'input>> {
-    todo!()
+  fn iter_heredoc_string(&mut self, delimiter: &str, skip_leading_tabs: bool, quoted_delimiter: bool) -> Option<LexerResult<'input>> {
+    let start = self.loc;
+
+    let mut tab_size = None;
+    let mut line_start = self.loc;
+    let mut line_end = self.loc;
+    let mut lines = Vec::new();
+    let end;
+
+    loop {
+      let prev_loc = self.loc;
+      match self.bump() {
+        Some((_, loc, '\n')) => {
+          let line = self.slice(line_start, prev_loc);
+          line_end = prev_loc;
+
+          if line == delimiter {
+            end = loc;
+            break;
+          }
+
+          // Keep track of leading tabs count if needed.
+          if skip_leading_tabs && !line.is_empty() {
+            let tab_count = line.find(|ch| !char::is_whitespace(ch)).unwrap_or(0);
+            if tab_size.is_none() || tab_count < tab_size.unwrap() {
+              tab_size = Some(tab_count);
+            }
+          }
+
+          lines.push(line);
+          line_start = loc;
+        }
+
+        // "$${" escapes to literal "${".
+        Some((_, _, '$')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '$') => {
+          self.bump();
+        }
+
+        // "%%{" escapes to literal "%{".
+        Some((_, _, '%')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '%') => {
+          self.bump();
+        }
+
+        // Interpolation start.
+        Some((_, _loc, '$')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '{') => {
+          todo!();
+        }
+
+        // Directive start.
+        Some((_, _loc, '%')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '{') => {
+          todo!();
+        }
+
+        Some((_, _, _)) => {}
+
+        // We reached end of file, check if the last line is the delimiter.
+        None => {
+          if line_start != prev_loc {
+            if self.slice(line_start, prev_loc) == delimiter {
+              end = prev_loc;
+              break;
+            }
+          }
+
+          return Some(Err(pos::spanned(start, prev_loc, Error::UnexpectedEof)));
+        }
+      }
+    }
+
+    self.push_context(Context::HereDocStringEnd { start: line_start, end });
+
+    if lines.is_empty() {
+      return Some(Ok(pos::spanned(start, end, Token::HeredocString(lines))));
+    }
+
+    // Remove leading tabs if needed.
+    tab_size.map(|tab_size| {
+      for i in 0..lines.len() {
+        if !lines[i].is_empty() {
+          lines[i] = &lines[i][tab_size..];
+        }
+      }
+    });
+
+    Some(Ok(pos::spanned(start, line_end, Token::HeredocString(lines))))
+  }
+
+  fn iter_heredoc_end(&mut self, start: Location, end: Location) -> Option<LexerResult<'input>> {
+    self.pop_context();
+
+    if let Some(Context::HereDocString { .. }) = self.pop_context() {
+    } else {
+      panic!("invalid context stack");
+    }
+
+    Some(Ok(pos::spanned(start, end, Token::StringDelimiter)))
   }
 
   // Token Lexers //////////////////////
@@ -308,6 +406,7 @@ impl<'input> Lexer<'input> {
     if delimiter.is_empty() {
       return Err(pos::spanned(start, end, Error::MissingHeredocDelimiter));
     }
+    self.bump();
 
     // If we have a quoted delimiter, check that the closing and the opening quotes match.
     if let Some(q) = quote_char {
@@ -1535,11 +1634,11 @@ mod test {
     let tests = vec![
       (
         r#"➖"foo"➖"#,
-        Ok(pos::spanned(loc(1), loc(4), Token::StringLiteral(StringLiteral::Escaped("foo")))),
+        Ok(pos::spanned(loc(1), loc(4), Token::String(StringLiteral::Escaped("foo")))),
       ),
       (
         r#"➖"foo\n"➖"#,
-        Ok(pos::spanned(loc(1), loc(6), Token::StringLiteral(StringLiteral::Escaped("foo\\n")))),
+        Ok(pos::spanned(loc(1), loc(6), Token::String(StringLiteral::Escaped("foo\\n")))),
       ),
     ];
 
@@ -1582,15 +1681,58 @@ mod test {
       assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
-      assert_eq!(
-        Ok(pos::spanned(loc(1), loc(4), Token::StringLiteral(StringLiteral::Escaped("123")))),
-        res
-      );
+      assert_eq!(Ok(pos::spanned(loc(1), loc(4), Token::String(StringLiteral::Escaped("123")))), res);
       assert_eq!(&Context::String, lexer.context());
 
       let res = lexer.next().unwrap();
       if let Ok(Spanned { span: _, value }) = res {
         assert_eq!(expected, value)
+      } else {
+        panic!("{:?}", res);
+      }
+    }
+  }
+
+  #[test]
+  fn heredoc() {
+    let tests = vec![(
+      // "<<EOF\n  foo\n    bar\nEOF",
+      // "<<EOF\n\n  foo\n    bar\nEOF\n",
+      "<<-EOF\n\n  foo\n    bar\nEOF",
+      Ok(pos::spanned(
+        Location::new(1, 0, 7),
+        Location::new(3, 7, 21),
+        Token::HeredocString(vec!["", "foo", "  bar"]),
+      )),
+      Context::HereDocString {
+        delimiter: "EOF",
+        skip_leading_tabs: true,
+        quoted_delimiter: false,
+      },
+      Context::HereDocStringEnd {
+        start: Location::new(4, 0, 22),
+        end: Location::new(4, 3, 25),
+      },
+    )];
+
+    for (input, expected, exp_ctx_inside, exp_ctx_after) in tests {
+      let s = input.replace("➖", "");
+      let input = &*s;
+      let mut lexer = Lexer::new(input);
+
+      println!("input:\n➖\n{}\n➖", input);
+
+      let res = lexer.next().unwrap();
+      assert_eq!(Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)), res);
+      assert_eq!(&exp_ctx_inside, lexer.context());
+
+      let res = lexer.next().unwrap();
+      assert_eq!(expected, res);
+      assert_eq!(&exp_ctx_after, lexer.context());
+
+      let res = lexer.next().unwrap();
+      if let Ok(Spanned { span: _, value }) = res {
+        assert_eq!(Token::StringDelimiter, value)
       } else {
         panic!("{:?}", res);
       }

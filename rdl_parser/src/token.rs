@@ -1,6 +1,6 @@
 use ordered_float::NotNan;
 
-#[derive(Clone, Copy, Eq, PartialEq, Hash, Debug)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
 pub enum Token<S> {
   IntLiteral(i64),
   FloatLiteral(NotNan<f64>),
@@ -8,7 +8,8 @@ pub enum Token<S> {
   CharLiteral(char),
 
   StringDelimiter,
-  StringLiteral(StringLiteral<S>),
+  String(StringLiteral<S>),
+  HeredocString(Vec<S>),
 
   StringInterpolation,
   StringDirective,
@@ -70,19 +71,19 @@ pub enum Token<S> {
   EOF,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum StringLiteral<S> {
   Escaped(S),
   Raw(S),
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub struct Comment<S = String> {
   pub typ: CommentType,
   pub content: S,
 }
 
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Hash)]
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub enum CommentType {
   Block,
   Line,
