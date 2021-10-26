@@ -78,7 +78,7 @@ pub type SpannedToken<'input> = Spanned<Token<&'input str>, Location>;
 type LexerResult<'a> = Result<SpannedToken<'a>, SpannedError>;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum Context<'input> {
+pub enum Context<'input> {
   General,
 
   String,
@@ -113,11 +113,11 @@ impl<'input> Iterator for Lexer<'input> {
 
   fn next(&mut self) -> Option<LexerResult<'input>> {
     match *self.context() {
-      Context::General => self.iter_base(),
+      Context::General => self.iter_general(),
 
-      Context::String => self.iter_single_line_string(),
-      Context::StringInterpolation => None,
-      Context::StringDirective => None,
+      Context::String => self.iter_string(),
+      Context::StringInterpolation => self.iter_string_interpolation(Token::StringInterpolation),
+      Context::StringDirective => self.iter_string_interpolation(Token::StringDirective),
 
       Context::HereDocString {
         delimiter,
@@ -150,39 +150,19 @@ impl<'input> Lexer<'input> {
 
   // Iterator contexts /////////////////
 
-  pub fn iter_base(&mut self) -> Option<LexerResult<'input>> {
+  fn iter_general(&mut self) -> Option<LexerResult<'input>> {
     while let Some((start, end, ch)) = self.bump() {
-      return match ch {
-        ',' => Some(Ok(pos::spanned(start, end, Token::Comma))),
+      return match self.expr(start, end, ch) {
+        None => match ch {
+          '{' => Some(Ok(pos::spanned(start, end, Token::LBrace))),
+          '}' => Some(Ok(pos::spanned(start, end, Token::RBrace))),
 
-        '{' => Some(Ok(pos::spanned(start, end, Token::LBrace))),
-        '[' => Some(Ok(pos::spanned(start, end, Token::LBracket))),
-        '(' => Some(Ok(pos::spanned(start, end, Token::LParen))),
-        '}' => Some(Ok(pos::spanned(start, end, Token::RBrace))),
-        ']' => Some(Ok(pos::spanned(start, end, Token::RBracket))),
-        ')' => Some(Ok(pos::spanned(start, end, Token::RParen))),
+          '\n' => Some(Ok(pos::spanned(start, end, Token::LineFeed))),
+          ch if ch.is_whitespace() && ch != '\n' => continue,
 
-        '/' if self.test_peek_reset(|ch| ch == '/') => Some(self.line_comment(start)),
-        '/' if self.test_peek_reset(|ch| ch == '*') => Some(self.block_comment(start)),
-
-        '"' => {
-          self.push_context(Context::String);
-          Some(Ok(pos::spanned(start, end, Token::StringDelimiter)))
-        }
-        '<' if self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
-        '\'' => Some(self.char_literal(start)),
-
-        ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) || (ch == '+' && self.test_peek_reset(is_dec)) => {
-          Some(self.numeric_literal(start))
-        }
-
-        ch if is_operator_char(ch) => Some(self.operator(start)),
-
-        ch if is_ident_start(ch) => Some(self.identifier(start)),
-
-        ch if ch.is_whitespace() && ch != '\n' => continue,
-
-        _ => None,
+          ch => Some(Err(pos::spanned(start, end, Error::UnexpectedChar(ch)))),
+        },
+        res => res,
       };
     }
 
@@ -190,56 +170,135 @@ impl<'input> Lexer<'input> {
     Some(Ok(pos::spanned(next_loc, next_loc, Token::EOF)))
   }
 
-  fn iter_single_line_string(&mut self) -> Option<LexerResult<'input>> {
+  fn iter_string_interpolation(&mut self, token: Token<&'input str>) -> Option<LexerResult<'input>> {
     let start = self.loc;
+    while let Some((start, end, ch)) = self.bump() {
+      return match self.expr(start, end, ch) {
+        None => match ch {
+          '{' => Some(Err(pos::spanned(start, end, Error::UnexpectedChar('{')))),
+          '}' => {
+            self.pop_context();
+            Some(Ok(pos::spanned(start, end, token)))
+          }
 
-    if self.test_peek_reset(|ch| ch == '"') {
-      let (_, end, _) = self.bump().unwrap();
-      self.pop_context();
+          '\n' => Some(Ok(pos::spanned(start, end, Token::LineFeed))),
+          ch if ch.is_whitespace() && ch != '\n' => continue,
 
-      return Some(Ok(pos::spanned(start, end, Token::StringDelimiter)));
+          ch => Some(Err(pos::spanned(start, end, Error::UnexpectedChar(ch)))),
+        },
+        res => res,
+      };
     }
 
+    Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)))
+  }
+
+  fn iter_string(&mut self) -> Option<LexerResult<'input>> {
+    let start = self.loc;
 
     loop {
-      match self.bump() {
-        Some((_, _, '\\')) if self.test_peek_reset(|ch| ch == '\\') => {
-          self.bump();
+      match (self.peek(), self.peek()) {
+        (Some((_, '\\')), Some((_, '\\'))) => {
+          self.catchup();
         }
-        Some((_, _, '$')) if self.test_peek_reset(|ch| ch == '$') => {
-          self.bump();
+        (Some((_, '$')), Some((_, '$'))) => {
+          self.catchup();
         }
-        Some((_, _, '%')) if self.test_peek_reset(|ch| ch == '%') => {
-          self.bump();
+        (Some((_, '%')), Some((_, '%'))) => {
+          self.catchup();
         }
 
-        Some((_, _, '\\')) => {
+        (Some((_, '\\')), Some(_)) => {
+          let (_, start, _) = self.bump().unwrap();
           if let Err(err) = self.parse_escape_code(start, '"') {
             self.errors.push(err);
           }
         }
 
-        Some((string_end, _, '$')) if self.test_peek_reset(|ch| ch == '{') => {
-          self.bump();
+        (Some((_, '$')), Some((_, '{'))) if self.loc == start => {
+          self.catchup();
           self.push_context(Context::StringInterpolation);
-          return Some(Ok(pos::spanned(start, string_end, Token::String(StringLiteral::Escaped(self.slice(start, string_end))))));
+          return Some(Ok(pos::spanned(start, self.loc, Token::StringInterpolation)));
         }
-        Some((string_end, _, '%')) if self.test_peek_reset(|ch| ch == '{') => {
-          self.bump();
+        (Some((_, '%')), Some((_, '{'))) if self.loc == start => {
+          self.catchup();
           self.push_context(Context::StringDirective);
-          return Some(Ok(pos::spanned(start, string_end, Token::String(StringLiteral::Escaped(self.slice(start, string_end))))));
+          return Some(Ok(pos::spanned(start, self.loc, Token::StringDirective)));
         }
 
-        Some(_) => {}
+        (Some((_, '"')), _) if self.loc == start => {
+          self.bump();
+          self.pop_context();
+          return Some(Ok(pos::spanned(start, self.loc, Token::StringDelimiter)));
+        }
 
-        None => {
+        (Some((_, '"')), _) | (Some((_, '$')), Some((_, '{'))) | (Some((_, '%')), Some((_, '{'))) => {
+          self.reset_peek();
+          return Some(Ok(pos::spanned(
+            start,
+            self.loc,
+            Token::String(StringLiteral::Escaped(self.slice(start, self.loc))),
+          )));
+        }
+
+        (Some(_), _) => {
+          self.bump();
+        }
+
+        (None, _) => {
           return Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)));
         }
       }
-
-      if self.test_peek_reset(|ch| ch == '"') {
-        return Some(Ok(pos::spanned(start, self.loc, Token::String(StringLiteral::Escaped(self.slice(start, self.loc))))));
-      }
+      // match self.bump() {
+      //   Some((_, _, '\\')) if self.test_peek_reset(|ch| ch == '\\') => {
+      //     self.bump();
+      //   }
+      //   Some((_, _, '$')) if self.test_peek_reset(|ch| ch == '$') => {
+      //     self.bump();
+      //   }
+      //   Some((_, _, '%')) if self.test_peek_reset(|ch| ch == '%') => {
+      //     self.bump();
+      //   }
+      //
+      //   Some((_, _, '\\')) => {
+      //     if let Err(err) = self.parse_escape_code(start, '"') {
+      //       self.errors.push(err);
+      //     }
+      //   }
+      //
+      //   Some((string_end, _, '$')) if self.test_peek_reset(|ch| ch == '{') => {
+      //     self.bump();
+      //     self.push_context(Context::StringInterpolation);
+      //     return Some(Ok(pos::spanned(
+      //       start,
+      //       string_end,
+      //       Token::String(StringLiteral::Escaped(self.slice(start, string_end))),
+      //     )));
+      //   }
+      //   Some((string_end, _, '%')) if self.test_peek_reset(|ch| ch == '{') => {
+      //     self.bump();
+      //     self.push_context(Context::StringDirective);
+      //     return Some(Ok(pos::spanned(
+      //       start,
+      //       string_end,
+      //       Token::String(StringLiteral::Escaped(self.slice(start, string_end))),
+      //     )));
+      //   }
+      //
+      //   Some(_) => {}
+      //
+      //   None => {
+      //     return Some(Err(pos::spanned(start, self.loc, Error::UnexpectedEof)));
+      //   }
+      // }
+      //
+      // if self.test_peek_reset(|ch| ch == '"') {
+      //   return Some(Ok(pos::spanned(
+      //     start,
+      //     self.loc,
+      //     Token::String(StringLiteral::Escaped(self.slice(start, self.loc))),
+      //   )));
+      // }
     }
   }
 
@@ -252,54 +311,72 @@ impl<'input> Lexer<'input> {
     let mut lines = Vec::new();
     let end;
 
+    let mut track_leading_tabs = |line: &str| {
+      if skip_leading_tabs && !line.trim_end().is_empty() {
+        let tab_count = line.find(|ch| !char::is_whitespace(ch)).unwrap_or(0);
+        if tab_size.is_none() || tab_count < tab_size.unwrap() {
+          tab_size = Some(tab_count);
+        }
+      }
+    };
+
     loop {
       let prev_loc = self.loc;
-      match self.bump() {
-        Some((_, loc, '\n')) => {
-          let line = self.slice(line_start, prev_loc);
-          line_end = prev_loc;
+      self.reset_peek();
+      match (self.peek(), self.peek()) {
+        (Some((loc, '\n')), _) => {
+          let line = self.slice(line_start, loc);
+          line_end = loc;
 
           if line == delimiter {
             end = loc;
             break;
           }
 
-          // Keep track of leading tabs count if needed.
-          if skip_leading_tabs && !line.is_empty() {
-            let tab_count = line.find(|ch| !char::is_whitespace(ch)).unwrap_or(0);
-            if tab_size.is_none() || tab_count < tab_size.unwrap() {
-              tab_size = Some(tab_count);
-            }
-          }
+          track_leading_tabs(line);
 
           lines.push(line);
           line_start = loc;
-        }
 
-        // "$${" escapes to literal "${".
-        Some((_, _, '$')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '$') => {
           self.bump();
         }
 
-        // "%%{" escapes to literal "%{".
-        Some((_, _, '%')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '%') => {
+        (Some((_, '$')), Some((_, '$'))) => {
+          self.catchup();
+        }
+        (Some((_, '%')), Some((_, '%'))) => {
+          self.catchup();
+        }
+
+        (Some((_, '$')), Some((_, '{'))) if !quoted_delimiter && self.loc == start => {
+          self.catchup();
+          self.push_context(Context::StringInterpolation);
+          return Some(Ok(pos::spanned(start, self.loc, Token::StringInterpolation)));
+        }
+        (Some((_, '%')), Some((_, '{'))) if !quoted_delimiter && self.loc == start => {
+          self.catchup();
+          self.push_context(Context::StringDirective);
+          return Some(Ok(pos::spanned(start, self.loc, Token::StringDirective)));
+        }
+
+        (Some((_, '$')), Some((_, '{'))) | (Some((_, '%')), Some((_, '{'))) if !quoted_delimiter => {
+          self.reset_peek();
+          let line = self.slice(line_start, prev_loc);
+
+          track_leading_tabs(line);
+
+          lines.push(line);
+
+          self.catchup();
+          return Some(Ok(pos::spanned(start, prev_loc, Token::HeredocString(lines))));
+        }
+
+        (Some((_, _)), _) => {
           self.bump();
         }
-
-        // Interpolation start.
-        Some((_, _loc, '$')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '{') => {
-          todo!();
-        }
-
-        // Directive start.
-        Some((_, _loc, '%')) if !quoted_delimiter && self.test_peek_reset(|ch| ch == '{') => {
-          todo!();
-        }
-
-        Some((_, _, _)) => {}
 
         // We reached end of file, check if the last line is the delimiter.
-        None => {
+        (None, _) => {
           if line_start != prev_loc {
             if self.slice(line_start, prev_loc) == delimiter {
               end = prev_loc;
@@ -321,7 +398,7 @@ impl<'input> Lexer<'input> {
     // Remove leading tabs if needed.
     tab_size.map(|tab_size| {
       for i in 0..lines.len() {
-        if !lines[i].is_empty() {
+        if !lines[i].trim_end().is_empty() {
           lines[i] = &lines[i][tab_size..];
         }
       }
@@ -339,6 +416,38 @@ impl<'input> Lexer<'input> {
     }
 
     Some(Ok(pos::spanned(start, end, Token::StringDelimiter)))
+  }
+
+  fn expr(&mut self, start: Location, end: Location, ch: char) -> Option<LexerResult<'input>> {
+    return match ch {
+      ',' => Some(Ok(pos::spanned(start, end, Token::Comma))),
+
+      '[' => Some(Ok(pos::spanned(start, end, Token::LBracket))),
+      '(' => Some(Ok(pos::spanned(start, end, Token::LParen))),
+      ']' => Some(Ok(pos::spanned(start, end, Token::RBracket))),
+      ')' => Some(Ok(pos::spanned(start, end, Token::RParen))),
+
+      '/' if self.test_peek_reset(|ch| ch == '/') => Some(self.line_comment(start)),
+      '/' if self.test_peek_reset(|ch| ch == '*') => Some(self.block_comment(start)),
+
+      '"' => {
+        self.push_context(Context::String);
+        Some(Ok(pos::spanned(start, end, Token::StringDelimiter)))
+      }
+
+      '<' if self.test_peek_reset(|ch| ch == '<') => Some(self.heredoc_start(start)),
+      '\'' => Some(self.char_literal(start)),
+
+      ch if is_dec(ch) || (ch == '-' && self.test_peek_reset(is_dec)) || (ch == '+' && self.test_peek_reset(is_dec)) => {
+        Some(self.numeric_literal(start))
+      }
+
+      ch if is_operator_char(ch) => Some(self.operator(start)),
+
+      ch if is_ident_start(ch) => Some(self.identifier(start)),
+
+      _ => None,
+    };
   }
 
   // Token Lexers //////////////////////
@@ -368,7 +477,6 @@ impl<'input> Lexer<'input> {
     if delimiter.is_empty() {
       return Err(pos::spanned(start, end, Error::MissingHeredocDelimiter));
     }
-    self.bump();
 
     // If we have a quoted delimiter, check that the closing and the opening quotes match.
     if let Some(q) = quote_char {
@@ -381,6 +489,9 @@ impl<'input> Lexer<'input> {
         }
       }
     }
+
+    // Skip the line-feed after the delimiter.
+    self.bump();
 
     // Push the new lexing context.
     self.push_context(Context::HereDocString {
@@ -799,7 +910,7 @@ impl<'input> Lexer<'input> {
 
   // Context manipulation //////////////
 
-  fn context(&mut self) -> &Context<'input> {
+  pub fn context(&mut self) -> &Context<'input> {
     self.ctx.as_ref().unwrap_or(&Context::General)
   }
 
@@ -1001,197 +1112,6 @@ mod test {
       assert_eq!(expected, res);
       assert_eq!(&expected_context, lexer.context());
     }
-  }
-
-  #[test]
-  fn string_start() {
-    let tests = vec![
-      (
-        r#"➖"foo"➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::String,
-      ),
-      (
-        r#"➖""➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::String,
-      ),
-      (
-        r#"➖"➖"#,
-        Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)),
-        Context::String,
-      ),
-    ];
-
-    test(tests)
-  }
-
-  #[test]
-  fn heredoc_start() {
-    let tests = vec![
-      (
-        "<< EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(5), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<- EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(7), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<-EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<-   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(9), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<< - EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "- EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<<   - EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "- EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<< -   EOF\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "-   EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: false,
-        },
-      ),
-      (
-        "<< \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<\"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(7), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<   \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(10), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: false,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<- \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(9), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<-\"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(8), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<-   \"EOF\"\nfoo\nEOF",
-        Ok(pos::spanned(loc(0), loc(11), Token::StringDelimiter)),
-        Context::HereDocString {
-          delimiter: "EOF",
-          skip_leading_tabs: true,
-          quoted_delimiter: true,
-        },
-      ),
-      (
-        "<<\nfoo\nEOF",
-        Err(pos::spanned(loc(0), loc(2), Error::MissingHeredocDelimiter)),
-        Context::General,
-      ),
-      (
-        "<< \"FOO\nfoo\nEOF",
-        Err(pos::spanned(loc(0), loc(7), Error::UnterminatedHeredocDelimiter)),
-        Context::General,
-      ),
-      (
-        "<< 'FOO\nfoo\nEOF",
-        Err(pos::spanned(loc(0), loc(7), Error::UnterminatedHeredocDelimiter)),
-        Context::General,
-      ),
-      (
-        "<< \"FOO'\nfoo\nEOF",
-        Err(pos::spanned(loc(0), loc(8), Error::UnterminatedHeredocDelimiter)),
-        Context::General,
-      ),
-      (
-        "<< 'FOO\"\nfoo\nEOF",
-        Err(pos::spanned(loc(0), loc(8), Error::UnterminatedHeredocDelimiter)),
-        Context::General,
-      ),
-    ];
-
-    test(tests)
   }
 
   #[test]
@@ -1589,115 +1509,5 @@ mod test {
     ];
 
     test(tests);
-  }
-
-  #[test]
-  fn string_simple() {
-    let tests = vec![
-      (
-        r#"➖"foo"➖"#,
-        Ok(pos::spanned(loc(1), loc(4), Token::String(StringLiteral::Escaped("foo")))),
-      ),
-      (
-        r#"➖"foo\n"➖"#,
-        Ok(pos::spanned(loc(1), loc(6), Token::String(StringLiteral::Escaped("foo\\n")))),
-      ),
-    ];
-
-    for (input, expected) in tests {
-      let s = input.replace("➖", "");
-      let input = &*s;
-      let mut lexer = Lexer::new(input);
-
-      let res = lexer.next().unwrap();
-      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
-      assert_eq!(&Context::String, lexer.context());
-
-      let res = lexer.next().unwrap();
-      assert_eq!(expected, res);
-      assert_eq!(&Context::String, lexer.context());
-
-      let res = lexer.next().unwrap();
-      if let Ok(Spanned { span: _, value }) = res {
-        assert_eq!(Token::StringDelimiter, value)
-      } else {
-        panic!("{:?}", res);
-      }
-    }
-  }
-
-  #[test]
-  fn string_interpolation() {
-    let tests: Vec<(&str, Token<&str>, Context<'_>)> = vec![
-      (r#"➖"123${}"➖"#, Token::StringInterpolation, Context::StringInterpolation),
-      (r#"➖"123%{}"➖"#, Token::StringDirective, Context::StringDirective),
-    ];
-
-    for (input, expected, exp_ctx) in tests {
-      let s = input.replace("➖", "");
-      let input = &*s;
-      let mut lexer = Lexer::new(input);
-
-      let res = lexer.next().unwrap();
-      assert_eq!(Ok(pos::spanned(loc(0), loc(1), Token::StringDelimiter)), res);
-      assert_eq!(&Context::String, lexer.context());
-
-      let res = lexer.next().unwrap();
-      assert_eq!(Ok(pos::spanned(loc(1), loc(4), Token::String(StringLiteral::Escaped("123")))), res);
-      assert_eq!(&exp_ctx, lexer.context());
-
-      let res = lexer.next();
-      if let Some(Ok(Spanned{ span: _, value })) = res {
-        dbg!(value);
-      } else {
-        panic!("res: {:?}", res);
-      }
-    }
-  }
-
-  #[test]
-  fn heredoc() {
-    let tests = vec![(
-      // "<<EOF\n  foo\n    bar\nEOF",
-      // "<<EOF\n\n  foo\n    bar\nEOF\n",
-      "<<-EOF\n\n  foo\n    bar\nEOF",
-      Ok(pos::spanned(
-        Location::new(1, 0, 7),
-        Location::new(3, 7, 21),
-        Token::HeredocString(vec!["", "foo", "  bar"]),
-      )),
-      Context::HereDocString {
-        delimiter: "EOF",
-        skip_leading_tabs: true,
-        quoted_delimiter: false,
-      },
-      Context::HereDocStringEnd {
-        start: Location::new(4, 0, 22),
-        end: Location::new(4, 3, 25),
-      },
-    )];
-
-    for (input, expected, exp_ctx_inside, exp_ctx_after) in tests {
-      let s = input.replace("➖", "");
-      let input = &*s;
-      let mut lexer = Lexer::new(input);
-
-      println!("input:\n➖\n{}\n➖", input);
-
-      let res = lexer.next().unwrap();
-      assert_eq!(Ok(pos::spanned(loc(0), loc(6), Token::StringDelimiter)), res);
-      assert_eq!(&exp_ctx_inside, lexer.context());
-
-      let res = lexer.next().unwrap();
-      assert_eq!(expected, res);
-      assert_eq!(&exp_ctx_after, lexer.context());
-
-      let res = lexer.next().unwrap();
-      if let Ok(Spanned { span: _, value }) = res {
-        assert_eq!(Token::StringDelimiter, value)
-      } else {
-        panic!("{:?}", res);
-      }
-    }
   }
 }

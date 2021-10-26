@@ -68,6 +68,7 @@ pub enum Token<S> {
   Return,
   Identifier(S),
 
+  LineFeed,
   EOF,
 }
 
