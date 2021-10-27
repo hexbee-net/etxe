@@ -2,7 +2,7 @@ use std::fmt;
 
 use crate::pos::Span;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, Eq, Default)]
 pub struct Spanned<T, Pos> {
   pub span: Span<Pos>,
   pub value: T,
@@ -20,10 +20,7 @@ impl<T, Pos> From<(T, Span<Pos>)> for Spanned<T, Pos> {
   }
 }
 
-impl<T, Pos> From<T> for Spanned<T, Pos>
-where
-  Pos: Default,
-{
+impl<T, Pos: Default> From<T> for Spanned<T, Pos> {
   fn from(value: T) -> Self {
     Spanned {
       span: Span::default(),
@@ -32,10 +29,7 @@ where
   }
 }
 
-impl<T, Pos> PartialEq<T> for Spanned<T, Pos>
-where
-  T: PartialEq,
-{
+impl<T: PartialEq, Pos> PartialEq<T> for Spanned<T, Pos> {
   fn eq(&self, other: &T) -> bool {
     self.value == *other
   }
@@ -54,11 +48,7 @@ impl<T, Pos> std::ops::DerefMut for Spanned<T, Pos> {
   }
 }
 
-impl<T, U, Pos> AsRef<U> for Spanned<T, Pos>
-where
-  T: AsRef<U>,
-  U: ?Sized,
-{
+impl<T: AsRef<U>, U: ?Sized, Pos> AsRef<U> for Spanned<T, Pos> {
   fn as_ref(&self) -> &U {
     self.value.as_ref()
   }
@@ -76,6 +66,16 @@ where
     self.span.start().hash(state);
     self.span.end().hash(state);
     self.value.hash(state);
+  }
+}
+
+impl<T, Pos> PartialEq for Spanned<T, Pos>
+where
+  T: std::cmp::PartialEq,
+  Pos: std::cmp::PartialEq,
+{
+  fn eq(&self, other: &Self) -> bool {
+    self.span == other.span && self.value == other.value
   }
 }
 

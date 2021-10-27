@@ -7,7 +7,7 @@ use std::cmp::Ordering;
 use std::fmt::Formatter;
 
 /// A location in a source file
-#[derive(Copy, Clone, Default, Eq, PartialEq, Hash, Ord)]
+#[derive(Copy, Clone, Default, Eq, PartialEq, Hash)]
 pub struct Location {
   pub line: LineIndex,
   pub column: ColumnIndex,
@@ -64,5 +64,11 @@ impl ops::Add<char> for Location {
 impl cmp::PartialOrd for Location {
   fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
     Some(self.absolute.cmp(&other.absolute))
+  }
+}
+
+impl cmp::Ord for Location {
+  fn cmp(&self, other: &Self) -> Ordering {
+    self.absolute.cmp(&other.absolute)
   }
 }

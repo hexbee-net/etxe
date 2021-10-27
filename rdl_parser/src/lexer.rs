@@ -377,11 +377,9 @@ impl<'input> Lexer<'input> {
 
         // We reached end of file, check if the last line is the delimiter.
         (None, _) => {
-          if line_start != prev_loc {
-            if self.slice(line_start, prev_loc) == delimiter {
-              end = prev_loc;
-              break;
-            }
+          if line_start != prev_loc && self.slice(line_start, prev_loc) == delimiter {
+            end = prev_loc;
+            break;
           }
 
           return Some(Err(pos::spanned(start, prev_loc, Error::UnexpectedEof)));
@@ -396,13 +394,14 @@ impl<'input> Lexer<'input> {
     }
 
     // Remove leading tabs if needed.
-    tab_size.map(|tab_size| {
+    if let Some(tab_size) = tab_size {
+      #[allow(clippy::needless_range_loop)]
       for i in 0..lines.len() {
         if !lines[i].trim_end().is_empty() {
           lines[i] = &lines[i][tab_size..];
         }
       }
-    });
+    }
 
     Some(Ok(pos::spanned(start, line_end, Token::HeredocString(lines))))
   }
@@ -519,7 +518,7 @@ impl<'input> Lexer<'input> {
     match self.bump() {
       Some((_, end, '\'')) => Ok(pos::spanned(start, end, Token::CharLiteral(ch))),
       Some((_, end, _)) => self.recover(start, end, Error::UnterminatedCharLiteral, Token::CharLiteral(ch)),
-      None => return self.recover(start, start, Error::UnexpectedEof, Token::CharLiteral('\0')),
+      None => self.recover(start, start, Error::UnexpectedEof, Token::CharLiteral('\0')),
     }
   }
 
@@ -620,10 +619,10 @@ impl<'input> Lexer<'input> {
   fn line_comment(&mut self, start: Location) -> Result<SpannedToken<'input>, SpannedError> {
     let (end, comment) = self.take_until(start, |ch| ch == '\n');
 
-    let token = if comment.starts_with("///") {
+    let token = if let Some(stripped) = comment.strip_prefix("///") {
       Token::DocComment(Comment {
         typ: CommentType::Line,
-        content: comment[3..].trim(),
+        content: stripped.trim(),
       })
     } else {
       Token::Comment(Comment {
@@ -832,12 +831,14 @@ impl<'input> Lexer<'input> {
   }
 
   fn skip_to_end(&mut self) {
-    while let Some(_) = self.bump() {}
+    while self.bump().is_some() {}
   }
 
   fn catchup(&mut self) -> Location {
     while self.loc < self.peek_loc {
-      self.chars.next().map(|ch| self.loc.shift(ch));
+      if let Some(ch) = self.chars.next() {
+        self.loc.shift(ch)
+      }
     }
     self.loc
   }
@@ -862,22 +863,6 @@ impl<'input> Lexer<'input> {
   fn reset_peek(&mut self) {
     self.chars.reset_peek();
     self.peek_loc = self.loc;
-  }
-
-  fn peek_while<F: FnMut(char) -> bool>(&mut self, start: Location, mut keep_going: F) -> (Location, &'input str) {
-    self.peek_until(start, |c| !keep_going(c))
-  }
-
-  fn peek_until<F: FnMut(char) -> bool>(&mut self, start: Location, mut terminate: F) -> (Location, &'input str) {
-    let mut end = self.peek_loc;
-    while let Some((l, ch)) = self.peek() {
-      if terminate(ch) {
-        return (end, self.slice(start, end));
-      }
-      end = l;
-    }
-
-    (end, self.slice(start, end))
   }
 
   fn next_loc(&mut self) -> Option<Location> {
@@ -915,7 +900,9 @@ impl<'input> Lexer<'input> {
   }
 
   fn push_context(&mut self, context: Context<'input>) {
-    self.ctx.map(|c| self.ctx_stack.push(c));
+    if let Some(c) = self.ctx {
+      self.ctx_stack.push(c)
+    }
     self.ctx = Some(context);
   }
 
@@ -943,25 +930,10 @@ fn is_oct(ch: char) -> bool {
 }
 
 fn is_operator_char(ch: char) -> bool {
-  match ch {
-    '!' => true,
-    '%' => true,
-    '&' => true,
-    '*' => true,
-    '+' => true,
-    '-' => true,
-    '.' => true,
-    '/' => true,
-    ':' => true,
-    '<' => true,
-    '=' => true,
-    '>' => true,
-    '^' => true,
-    '|' => true,
-    '~' => true,
-
-    _ => false,
-  }
+  matches!(
+    ch,
+    '!' | '%' | '&' | '*' | '+' | '-' | '.' | '/' | ':' | '<' | '=' | '>' | '^' | '|' | '~'
+  )
 }
 
 fn is_ident_start(ch: char) -> bool {
@@ -1049,26 +1021,6 @@ mod test {
     let res: Option<(Location, char)> = lexer.peek();
 
     assert_eq!(res, Some((loc(1), '#')))
-  }
-
-  #[test]
-  fn peek_while() {
-    let input = "##foo##";
-    let mut lexer = Lexer::new(input);
-
-    let res = lexer.peek_while(loc(0), |c| c == '#');
-
-    assert_eq!(res, (loc(2), "##"))
-  }
-
-  #[test]
-  fn peek_until() {
-    let input = "##foo##";
-    let mut lexer = Lexer::new(input);
-
-    let res = lexer.peek_until(loc(0), |c| c != '#');
-
-    assert_eq!(res, (loc(2), "##"))
   }
 
   #[test]
