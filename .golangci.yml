@@ -1,0 +1,148 @@
+# For more settings have a look at:
+# https://golangci-lint.run/usage/configuration/
+# https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+
+# Options for analysis running.
+run:
+  tests: false
+  modules-download-mode: readonly
+  allow-parallel-runners: false
+
+linters:
+  disable-all: true
+  enable:
+    - bidichk
+    - containedctx
+    - deadcode
+    - decorder
+    - dogsled
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forcetypeassert
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - godot
+    - goerr113
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - govet
+    - grouper
+    - ifshort
+    - ineffassign
+    - makezero
+    - misspell
+    - nilnil
+    - nlreturn
+    - nolintlint
+    - paralleltest
+    - predeclared
+    - revive
+    - tagliatelle
+    - tenv
+    - thelper
+    - typecheck
+    - unconvert
+    - varcheck
+    - wrapcheck
+
+linters-settings:
+  errcheck:
+    # Report about not checking of errors in type assertions: `a := b.(MyStruct)`.
+    check-type-assertions: true
+
+  errchkjson:
+    # Issue on struct encoding that doesn't have exported fields.
+    report-no-exported: true
+
+  exhaustive:
+    # Presence of "default" case in switch statements satisfies exhaustiveness,
+    # even if all enum members are not listed.
+    default-signifies-exhaustive: true
+
+  gci:
+    # Section configuration to compare against.
+    # Section names are case-insensitive and may contain parameters in ().
+    # Default: ["standard", "default"]
+    sections:
+      - standard                          # Captures all standard packages if they do not match another section.
+      - default                           # Contains all imports that could not be matched to another section type.
+      - prefix(github.com/hexbee-net/etxe) # Groups all imports with the specified Prefix.
+
+  gocognit:
+    # Minimal code complexity to report
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 30
+
+  goconst:
+    # Search also for duplicated numbers.
+    numbers: true
+
+  godot:
+    # Comments to be checked: `declarations`, `toplevel`, or `all`.
+    scope: all
+    # List of regexps for excluding particular comment lines from check.
+    exclude:
+      # Exclude todo and fixme comments.
+      - "^fixme:"
+      - "^todo:"
+    # Check that each sentence ends with a period.
+    period: true
+    # Check that each sentence starts with a capital letter.
+    capital: true
+
+  gomnd:
+    # List of enabled checks, see https://github.com/tommy-muehle/go-mnd/#checks for description.
+    checks:
+      - argument
+      - case
+      - condition
+      - operation
+      - return
+      - assign
+
+  grouper:
+    # Require the use of a single 'import' declaration only.
+    import-require-single-import: true
+
+    # Require the use of a single global 'var' declaration only.
+    var-require-single-var: true
+    # Require the use of grouped global 'var' declarations.
+    var-require-grouping: true
+
+  misspell:
+    # Correct spellings using locale preferences for US or UK.
+    # Setting locale to US will correct the British spelling of 'colour' to 'color'.
+    # Default is to use a neutral variety of English.
+    locale: US
+    ignore-words:
+      - someword
+
+  nolintlint:
+    # Enable to require an explanation of nonzero length after each nolint directive.
+    require-explanation: true
+    # Enable to require nolint directives to mention the specific linter being suppressed.
+    require-specific: true
+
+  tagliatelle:
+    # Check the struck tag name case.
+    case:
+      # Use the struct field name to check the name of the struct tag.
+      # Default: false
+      use-field-name: true
+      rules:
+        # Any struct tag type can be used.
+        # Support string case: `camel`, `pascal`, `kebab`, `snake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`
+        json: goSnake
+        yaml: goCamel
+        bson: goCamel
+        avro: snake
+        mapstructure: kebab
