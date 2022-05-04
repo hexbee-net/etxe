@@ -5,15 +5,14 @@ import (
 	"strings"
 )
 
-type String struct {
-	Fragments []*Fragment `parser:"String @@* StringEnd"`
-}
+type String []*Fragment
 
-func (s *String) String() string {
+func (s String) String() string {
 	var sb strings.Builder
-	for _, f := range s.Fragments {
+	for _, f := range s {
 		sb.WriteString(f.String())
 	}
+
 	return sb.String()
 }
 

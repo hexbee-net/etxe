@@ -2,7 +2,7 @@ package etx
 
 type Expr struct {
 	Left  *Terminal `parser:"@@"`
-	Op    string    `parser:"( @Oper"`
+	Op    string    `parser:"( @Operator"`
 	Right *Terminal `parser:"  @@)?"`
 }
 
