@@ -14,12 +14,12 @@ func main() {
 		Usage: "infrastructure as code done right",
 		Action: func(c *cli.Context) error {
 			fmt.Println("boom! I say!")
+
 			return nil
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
