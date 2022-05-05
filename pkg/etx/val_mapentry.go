@@ -9,7 +9,7 @@ type MapEntry struct {
 
 	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
 
-	Key   *Value `parser:"@@ ':'" json:"key"`
+	Key   *Value `parser:"@@ Whitespace? ':' Whitespace?" json:"key"`
 	Value *Value `parser:"@@" json:"value"`
 }
 

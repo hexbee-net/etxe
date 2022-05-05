@@ -11,15 +11,14 @@ type Value struct {
 
 	Bool             *Bool       `parser:"(  @('true' | 'false')" json:"bool,omitempty"`
 	Number           *Number     `parser:" | @Number" json:"number,omitempty"`
-	Type             *string     `parser:" | @('number':Ident | 'string':Ident | 'boolean':Ident)" json:"type,omitempty"`
 	Str              String      `parser:" | String @@* StringEnd"`
 	Ident            *string     `parser:" | @Ident" json:"ident,omitempty"`
 	HeredocDelimiter string      `parser:" | (@Heredoc" json:"heredoc_delimiter,omitempty"`
 	Heredoc          *string     `parser:"     @(Body | EOL)* End)" json:"heredoc,omitempty"`
 	HaveList         bool        `parser:" | ( @'['" json:"have_list,omitempty"` // Need this to detect empty lists.
-	List             []*Value    `parser:"     ( @@ ( ',' @@ )* )? ','? ']' )" json:"list,omitempty"`
+	List             []*Value    `parser:"     ( Whitespace? @@ ( Whitespace?',' Whitespace? @@ )* )? Whitespace? ','? Whitespace? ']' )" json:"list,omitempty"`
 	HaveMap          bool        `parser:" | ( @'{'" json:"have_map,omitempty"` // Need this to detect empty maps.
-	Map              []*MapEntry `parser:"     ( @@ ( ',' @@ )* ','? )? '}' ) )" json:"map,omitempty"`
+	Map              []*MapEntry `parser:"     ( Whitespace? @@ ( Whitespace? ',' Whitespace? @@ )* Whitespace? ','? )? Whitespace? '}' ) )" json:"map,omitempty"`
 }
 
 // Clone the AST.

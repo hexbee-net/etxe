@@ -24,7 +24,9 @@ func (n *Number) Capture(values []string) error {
 		value = "0o" + value[1:]
 	}
 	n.Float = big.NewFloat(0)
-	_, _, err := n.Float.Parse(value, 0)
+	if _, _, err := n.Float.Parse(value, 0); err != nil {
+		return fmt.Errorf("failed to parse number value '%s': %w", value, err)
+	}
 
-	return fmt.Errorf("failed to parse number value '%s': %w", value, err)
+	return nil
 }
