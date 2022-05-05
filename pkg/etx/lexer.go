@@ -4,8 +4,37 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
-func lex() *lexer.StatefulDefinition {
-	return lexer.MustStateful(lexer.Rules{
+const (
+	TokenOpBitwiseAnd        = `&`
+	TokenOpBitwiseNot        = `~`
+	TokenOpBitwiseOr         = `\|`
+	TokenOpBitwiseShiftLeft  = `<<`
+	TokenOpBitwiseShiftRight = `>>`
+	TokenOpBitwiseXOr        = `\^`
+	TokenOpColon             = `:`
+	TokenOpCondition         = `\?`
+	TokenOpDivision          = `\/`
+	TokenOpEqual             = `==`
+	TokenOpLBracket          = `\[`
+	TokenOpLParen            = `\(`
+	TokenOpLess              = `<`
+	TokenOpLessOrEqual       = `<=`
+	TokenOpLogicalAnd        = `&&`
+	TokenOpLogicalNot        = `!`
+	TokenOpLogicalOr         = `\|\|`
+	TokenOpMinus             = `-`
+	TokenOpModulo            = `%`
+	TokenOpMore              = `>`
+	TokenOpMoreOrEqual       = `>=`
+	TokenOpMultiplication    = `\*`
+	TokenOpNotEqual          = `!=`
+	TokenOpPlus              = `\+`
+	TokenOpRBracket          = `\]`
+	TokenOpRParen            = `\)`
+)
+
+func lexRules() lexer.Rules {
+	return lexer.Rules{
 		"Root": {
 			{Name: "Ident", Pattern: `\b[[:alpha:]]\w*(-\w+)*\b`},
 			{Name: "Number", Pattern: `[-+]?(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
@@ -36,8 +65,35 @@ func lex() *lexer.StatefulDefinition {
 		},
 		"Expr": {
 			{Name: "ExprEnd", Pattern: `}`, Action: lexer.Pop()},
+
+			{Name: `OpEqual`, Pattern: TokenOpEqual},
+			{Name: `OpNotEqual`, Pattern: TokenOpNotEqual},
+			{Name: `OpLogicalAnd`, Pattern: TokenOpLogicalAnd},
+			{Name: `OpLogicalOr`, Pattern: TokenOpLogicalOr},
+			{Name: `OpBitwiseShiftLeft`, Pattern: TokenOpBitwiseShiftLeft},
+			{Name: `OpBitwiseShiftRight`, Pattern: TokenOpBitwiseShiftRight},
+			{Name: `OpLogicalNot`, Pattern: TokenOpLogicalNot},
+			{Name: `OpBitwiseNot`, Pattern: TokenOpBitwiseNot},
+			{Name: `OpBitwiseAnd`, Pattern: TokenOpBitwiseAnd},
+			{Name: `OpBitwiseOr`, Pattern: TokenOpBitwiseOr},
+			{Name: `OpBitwiseXOr`, Pattern: TokenOpBitwiseXOr},
+			{Name: `OpMultiplication`, Pattern: TokenOpMultiplication},
+			{Name: `OpDivision`, Pattern: TokenOpDivision},
+			{Name: `OpModulo`, Pattern: TokenOpModulo},
+			{Name: `OpPlus`, Pattern: TokenOpPlus},
+			{Name: `OpMinus`, Pattern: TokenOpMinus},
+			{Name: `OpLessOrEqual`, Pattern: TokenOpLessOrEqual},
+			{Name: `OpMoreOrEqual`, Pattern: TokenOpMoreOrEqual},
+			{Name: `OpLess`, Pattern: TokenOpLess},
+			{Name: `OpMore`, Pattern: TokenOpMore},
+			{Name: `OpCondition`, Pattern: TokenOpCondition},
+			{Name: `OpColon`, Pattern: TokenOpColon},
+			{Name: `OpLParen`, Pattern: TokenOpLParen},
+			{Name: `OpRParen`, Pattern: TokenOpRParen},
+			{Name: `OpLBracket`, Pattern: TokenOpLBracket},
+			{Name: `OpRBracket`, Pattern: TokenOpRBracket},
+
 			lexer.Include("Root"),
-			{Name: `Operator`, Pattern: `[-+/*%]`},
 		},
-	})
+	}
 }

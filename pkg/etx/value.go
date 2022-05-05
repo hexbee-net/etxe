@@ -10,6 +10,7 @@ type Value struct {
 	Parent Node           `parser:"" json:"-"`
 
 	Bool             *Bool       `parser:"(  @('true' | 'false')" json:"bool,omitempty"`
+	Nil              bool        `parser:" | @'nil'" json:"nil,omitempty"`
 	Number           *Number     `parser:" | @Number" json:"number,omitempty"`
 	Str              String      `parser:" | String @@* StringEnd"`
 	Ident            *string     `parser:" | @Ident" json:"ident,omitempty"`

@@ -2,6 +2,7 @@ package etx
 
 import (
 	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math/big"
@@ -346,7 +347,7 @@ func TestNumber_Parsing(t *testing.T) {
 			type Num struct {
 				Number *Number `parser:"@Number" json:"number,omitempty"`
 			}
-			parser := participle.MustBuild(&Num{}, participle.Lexer(lex()))
+			parser := participle.MustBuild(&Num{}, participle.Lexer(lexer.MustStateful(lexRules())))
 
 			res := &Num{}
 			err := parser.ParseString("", tt.args.Input, res)

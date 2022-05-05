@@ -2,6 +2,7 @@ package etx
 
 import (
 	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math/big"
@@ -152,7 +153,7 @@ FOO`,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := lex()
+			l := lexer.MustStateful(lexRules())
 			parser := participle.MustBuild(&Value{}, participle.Lexer(l))
 
 			res := &Value{}
