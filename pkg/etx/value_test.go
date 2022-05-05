@@ -2,7 +2,6 @@ package etx
 
 import (
 	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/repr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math/big"
@@ -164,8 +163,6 @@ FOO`,
 			} else {
 				require.NoError(t, err)
 			}
-
-			repr.Println(res)
 
 			assert.Equal(t, tt.want, res)
 		})

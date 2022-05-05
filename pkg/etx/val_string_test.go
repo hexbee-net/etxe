@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/repr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -189,8 +188,6 @@ func TestString_Parsing(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
-
-			repr.Println(res)
 
 			want := &Str{
 				Str: tt.want,

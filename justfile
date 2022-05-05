@@ -1,9 +1,5 @@
 set dotenv-load
 
-export BI_LDFLAGS := env_var_or_default("BI_LDFLAGS", '')
-export GOOS       := env_var_or_default("GOOS", 'linux')
-export GOARCH     := env_var_or_default("GOARCH", 'amd64')
-
 # Lint and run all test
 default: lint test
 
@@ -22,4 +18,4 @@ gci:
 
 # Run all tests
 test:
-  go test -trimpath {{ if BI_LDFLAGS != "" { "-ldflags=\"$BI_LDFLAGS\"" } else { "" } }} ./...
+  go test ./...

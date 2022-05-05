@@ -8,7 +8,7 @@ func lex() *lexer.StatefulDefinition {
 	return lexer.MustStateful(lexer.Rules{
 		"Root": {
 			{Name: "Ident", Pattern: `\b[[:alpha:]]\w*(-\w+)*\b`},
-			{Name: "Number", Pattern: `^[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
+			{Name: "Number", Pattern: `[-+]?(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
 			{Name: "Heredoc", Pattern: `<<[-]?(\w+\b)`, Action: lexer.Push("Heredoc")},
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push("String")},
 			{Name: "Punctuation", Pattern: `[][{}=:,]`},
