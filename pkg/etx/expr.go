@@ -9,9 +9,9 @@ type Expr struct {
 type Conditional struct {
 	Condition    *LogicalOr `parser:"@@"`
 	ConditionOp  string     `parser:"[ Whitespace? @OpCondition Whitespace?"`
-	Left         *LogicalOr `parser:"  @@"`
+	True         *LogicalOr `parser:"  @@"`
 	ConditionSep string     `parser:"  Whitespace? @OpColon Whitespace?"`
-	Right        *LogicalOr `parser:"  @@ ]"`
+	False        *LogicalOr `parser:"  @@ ]"`
 }
 
 type LogicalOr struct {
@@ -97,126 +97,168 @@ func (e *Expr) String() string {
 }
 
 func (e *Conditional) String() string {
-	if e.ConditionOp != "" {
-		return fmt.Sprintf("%s %s %s %s %s", e.Condition, e.ConditionOp, e.Left, e.ConditionSep, e.Right)
-	}
+	switch {
+	case e.ConditionOp != "" && e.ConditionSep == "",
+		e.ConditionOp == "" && e.ConditionSep != "":
+		panic("both operators need to be set")
 
-	return e.Condition.String()
+	case e.ConditionOp != "" && e.ConditionSep != "":
+		switch {
+		case e.True == nil && e.False == nil:
+			panic("true and false expressions must be set when operators are set")
+		case e.True == nil:
+			panic("true expression must be set when operators are set")
+		case e.False == nil:
+			panic("false expression must be set when operators are set")
+		default:
+			return fmt.Sprintf("%s %s %s %s %s", e.Condition, e.ConditionOp, e.True, e.ConditionSep, e.False)
+		}
+
+	case e.Condition != nil:
+		return e.Condition.String()
+
+	default:
+		panic("condition cannot be <nil>")
+	}
 }
 
 func (e *LogicalOr) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *LogicalAnd) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *BitwiseOr) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *BitwiseXor) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *BitwiseAnd) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Equality) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Relational) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Shift) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Additive) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Multiplicative) String() string {
 	switch {
-	case e.Op != "":
+	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
+	case e.Op != "" && e.Right == nil:
+		panic("operator with <nil> right side")
 	case e.Left != nil:
 		return e.Left.String()
 	default:
-		return ""
+		panic("left side cannot be <nil>")
 	}
 }
 
 func (e *Unary) String() string {
 	if e.Postfix != nil {
 		return e.Postfix.String()
+	}
+
+	if e.Unary == nil {
+		panic("postfix and unary cannot both be <nil>")
 	}
 
 	return fmt.Sprintf("%s%s", e.Op, e.Unary)
@@ -231,13 +273,192 @@ func (e *Postfix) String() string {
 }
 
 func (e *Primary) String() string {
-	if e.SubExpression != nil {
+	switch {
+	case e.SubExpression != nil:
 		return e.SubExpression.String()
-	}
-
-	if e.Value != nil {
+	case e.Value != nil:
 		return e.Value.String()
+	default:
+		return ""
+	}
+}
+
+// /////////////////////////////////////
+
+func (e *Expr) Clone() *Expr {
+	if e == nil {
+		return nil
 	}
 
-	return ""
+	return &Expr{
+		Left: e.Left.Clone(),
+	}
+}
+
+func (e *Conditional) Clone() *Conditional {
+	if e == nil {
+		return nil
+	}
+
+	return &Conditional{
+		Condition:    e.Condition.Clone(),
+		ConditionOp:  e.ConditionOp,
+		True:         e.True.Clone(),
+		ConditionSep: e.ConditionSep,
+		False:        e.False.Clone(),
+	}
+}
+
+func (e *LogicalOr) Clone() *LogicalOr {
+	if e == nil {
+		return nil
+	}
+
+	return &LogicalOr{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *LogicalAnd) Clone() *LogicalAnd {
+	if e == nil {
+		return nil
+	}
+
+	return &LogicalAnd{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *BitwiseOr) Clone() *BitwiseOr {
+	if e == nil {
+		return nil
+	}
+
+	return &BitwiseOr{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *BitwiseXor) Clone() *BitwiseXor {
+	if e == nil {
+		return nil
+	}
+
+	return &BitwiseXor{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *BitwiseAnd) Clone() *BitwiseAnd {
+	if e == nil {
+		return nil
+	}
+
+	return &BitwiseAnd{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Equality) Clone() *Equality {
+	if e == nil {
+		return nil
+	}
+
+	return &Equality{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Relational) Clone() *Relational {
+	if e == nil {
+		return nil
+	}
+
+	return &Relational{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Shift) Clone() *Shift {
+	if e == nil {
+		return nil
+	}
+
+	return &Shift{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Additive) Clone() *Additive {
+	if e == nil {
+		return nil
+	}
+
+	return &Additive{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Multiplicative) Clone() *Multiplicative {
+	if e == nil {
+		return nil
+	}
+
+	return &Multiplicative{
+		Left:  e.Left.Clone(),
+		Op:    e.Op,
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Unary) Clone() *Unary {
+	if e == nil {
+		return nil
+	}
+
+	return &Unary{
+		Op:      e.Op,
+		Unary:   e.Unary.Clone(),
+		Postfix: e.Postfix.Clone(),
+	}
+}
+
+func (e *Postfix) Clone() *Postfix {
+	if e == nil {
+		return nil
+	}
+
+	return &Postfix{
+		Left:  e.Left.Clone(),
+		Right: e.Right.Clone(),
+	}
+}
+
+func (e *Primary) Clone() *Primary {
+	if e == nil {
+		return nil
+	}
+
+	return &Primary{
+		SubExpression: e.SubExpression.Clone(),
+		Value:         e.Value.Clone(),
+	}
 }

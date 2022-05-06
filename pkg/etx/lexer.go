@@ -1,36 +1,38 @@
 package etx
 
 import (
+	"regexp"
+
 	"github.com/alecthomas/participle/v2/lexer"
 )
 
 const (
 	TokenOpBitwiseAnd        = `&`
 	TokenOpBitwiseNot        = `~`
-	TokenOpBitwiseOr         = `\|`
+	TokenOpBitwiseOr         = `|`
 	TokenOpBitwiseShiftLeft  = `<<`
 	TokenOpBitwiseShiftRight = `>>`
-	TokenOpBitwiseXOr        = `\^`
+	TokenOpBitwiseXOr        = `^`
 	TokenOpColon             = `:`
-	TokenOpCondition         = `\?`
-	TokenOpDivision          = `\/`
+	TokenOpCondition         = `?`
+	TokenOpDivision          = `/`
 	TokenOpEqual             = `==`
-	TokenOpLBracket          = `\[`
-	TokenOpLParen            = `\(`
+	TokenOpLBracket          = `[`
+	TokenOpLParen            = `(`
 	TokenOpLess              = `<`
 	TokenOpLessOrEqual       = `<=`
 	TokenOpLogicalAnd        = `&&`
 	TokenOpLogicalNot        = `!`
-	TokenOpLogicalOr         = `\|\|`
+	TokenOpLogicalOr         = `||`
 	TokenOpMinus             = `-`
 	TokenOpModulo            = `%`
 	TokenOpMore              = `>`
 	TokenOpMoreOrEqual       = `>=`
-	TokenOpMultiplication    = `\*`
+	TokenOpMultiplication    = `*`
 	TokenOpNotEqual          = `!=`
-	TokenOpPlus              = `\+`
-	TokenOpRBracket          = `\]`
-	TokenOpRParen            = `\)`
+	TokenOpPlus              = `+`
+	TokenOpRBracket          = `]`
+	TokenOpRParen            = `)`
 )
 
 func lexRules() lexer.Rules {
@@ -66,32 +68,32 @@ func lexRules() lexer.Rules {
 		"Expr": {
 			{Name: "ExprEnd", Pattern: `}`, Action: lexer.Pop()},
 
-			{Name: `OpEqual`, Pattern: TokenOpEqual},
-			{Name: `OpNotEqual`, Pattern: TokenOpNotEqual},
-			{Name: `OpLogicalAnd`, Pattern: TokenOpLogicalAnd},
-			{Name: `OpLogicalOr`, Pattern: TokenOpLogicalOr},
-			{Name: `OpBitwiseShiftLeft`, Pattern: TokenOpBitwiseShiftLeft},
-			{Name: `OpBitwiseShiftRight`, Pattern: TokenOpBitwiseShiftRight},
-			{Name: `OpLogicalNot`, Pattern: TokenOpLogicalNot},
-			{Name: `OpBitwiseNot`, Pattern: TokenOpBitwiseNot},
-			{Name: `OpBitwiseAnd`, Pattern: TokenOpBitwiseAnd},
-			{Name: `OpBitwiseOr`, Pattern: TokenOpBitwiseOr},
-			{Name: `OpBitwiseXOr`, Pattern: TokenOpBitwiseXOr},
-			{Name: `OpMultiplication`, Pattern: TokenOpMultiplication},
-			{Name: `OpDivision`, Pattern: TokenOpDivision},
-			{Name: `OpModulo`, Pattern: TokenOpModulo},
-			{Name: `OpPlus`, Pattern: TokenOpPlus},
-			{Name: `OpMinus`, Pattern: TokenOpMinus},
-			{Name: `OpLessOrEqual`, Pattern: TokenOpLessOrEqual},
-			{Name: `OpMoreOrEqual`, Pattern: TokenOpMoreOrEqual},
-			{Name: `OpLess`, Pattern: TokenOpLess},
-			{Name: `OpMore`, Pattern: TokenOpMore},
-			{Name: `OpCondition`, Pattern: TokenOpCondition},
-			{Name: `OpColon`, Pattern: TokenOpColon},
-			{Name: `OpLParen`, Pattern: TokenOpLParen},
-			{Name: `OpRParen`, Pattern: TokenOpRParen},
-			{Name: `OpLBracket`, Pattern: TokenOpLBracket},
-			{Name: `OpRBracket`, Pattern: TokenOpRBracket},
+			{Name: `OpEqual`, Pattern: regexp.QuoteMeta(TokenOpEqual)},
+			{Name: `OpNotEqual`, Pattern: regexp.QuoteMeta(TokenOpNotEqual)},
+			{Name: `OpLogicalAnd`, Pattern: regexp.QuoteMeta(TokenOpLogicalAnd)},
+			{Name: `OpLogicalOr`, Pattern: regexp.QuoteMeta(TokenOpLogicalOr)},
+			{Name: `OpBitwiseShiftLeft`, Pattern: regexp.QuoteMeta(TokenOpBitwiseShiftLeft)},
+			{Name: `OpBitwiseShiftRight`, Pattern: regexp.QuoteMeta(TokenOpBitwiseShiftRight)},
+			{Name: `OpLogicalNot`, Pattern: regexp.QuoteMeta(TokenOpLogicalNot)},
+			{Name: `OpBitwiseNot`, Pattern: regexp.QuoteMeta(TokenOpBitwiseNot)},
+			{Name: `OpBitwiseAnd`, Pattern: regexp.QuoteMeta(TokenOpBitwiseAnd)},
+			{Name: `OpBitwiseOr`, Pattern: regexp.QuoteMeta(TokenOpBitwiseOr)},
+			{Name: `OpBitwiseXOr`, Pattern: regexp.QuoteMeta(TokenOpBitwiseXOr)},
+			{Name: `OpMultiplication`, Pattern: regexp.QuoteMeta(TokenOpMultiplication)},
+			{Name: `OpDivision`, Pattern: regexp.QuoteMeta(TokenOpDivision)},
+			{Name: `OpModulo`, Pattern: regexp.QuoteMeta(TokenOpModulo)},
+			{Name: `OpPlus`, Pattern: regexp.QuoteMeta(TokenOpPlus)},
+			{Name: `OpMinus`, Pattern: regexp.QuoteMeta(TokenOpMinus)},
+			{Name: `OpLessOrEqual`, Pattern: regexp.QuoteMeta(TokenOpLessOrEqual)},
+			{Name: `OpMoreOrEqual`, Pattern: regexp.QuoteMeta(TokenOpMoreOrEqual)},
+			{Name: `OpLess`, Pattern: regexp.QuoteMeta(TokenOpLess)},
+			{Name: `OpMore`, Pattern: regexp.QuoteMeta(TokenOpMore)},
+			{Name: `OpCondition`, Pattern: regexp.QuoteMeta(TokenOpCondition)},
+			{Name: `OpColon`, Pattern: regexp.QuoteMeta(TokenOpColon)},
+			{Name: `OpLParen`, Pattern: regexp.QuoteMeta(TokenOpLParen)},
+			{Name: `OpRParen`, Pattern: regexp.QuoteMeta(TokenOpRParen)},
+			{Name: `OpLBracket`, Pattern: regexp.QuoteMeta(TokenOpLBracket)},
+			{Name: `OpRBracket`, Pattern: regexp.QuoteMeta(TokenOpRBracket)},
 
 			lexer.Include("Root"),
 		},

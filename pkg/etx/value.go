@@ -2,6 +2,7 @@ package etx
 
 import (
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/alecthomas/participle/lexer"
@@ -37,7 +38,9 @@ func (v *Value) Clone() *Value {
 
 	switch {
 	case out.Number != nil:
-		out.Number = &Number{}
+		out.Number = &Number{
+			Float: big.NewFloat(0),
+		}
 		out.Number.Float.Copy(v.Number.Float)
 
 	case out.Str != nil:

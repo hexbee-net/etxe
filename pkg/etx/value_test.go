@@ -135,7 +135,7 @@ FOO`,
 			wantErr: false,
 			want: &Value{
 				HeredocDelimiter: "<<FOO",
-				// Heredoc:          func() *string { v := ""; return &v }(),
+				Heredoc:          nil,
 			},
 		},
 		{
@@ -170,3 +170,5 @@ FOO`,
 		})
 	}
 }
+
+func TestValue_Clone(t *testing.T) {}

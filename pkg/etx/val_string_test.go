@@ -123,28 +123,28 @@ func TestString_Parsing(t *testing.T) {
 			},
 		},
 
-		// {
-		// 	name: "Expression - Only",
-		// 	args: args{
-		// 		Input: `"${foo}"`,
-		// 	},
-		// 	wantErr: false,
-		// 	want: String{
-		// 		{Expr: &Expr{Left: &Primary{Ident: "foo"}}},
-		// 	},
-		// },
-		// {
-		// 	name: "Expression - In Text",
-		// 	args: args{
-		// 		Input: `"hello ${foo} world"`,
-		// 	},
-		// 	wantErr: false,
-		// 	want: String{
-		// 		{Text: `hello `},
-		// 		{Expr: &Expr{Left: &Primary{Ident: "foo"}}},
-		// 		{Text: ` world`},
-		// 	},
-		// },
+		{
+			name: "Expression - Only",
+			args: args{
+				Input: `"${foo}"`,
+			},
+			wantErr: false,
+			want: String{
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+			},
+		},
+		{
+			name: "Expression - In Text",
+			args: args{
+				Input: `"hello ${foo} world"`,
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Text: ` world`},
+			},
+		},
 		{
 			name: "Non-Expression",
 			args: args{
@@ -158,18 +158,18 @@ func TestString_Parsing(t *testing.T) {
 			},
 		},
 
-		// {
-		// 	name: "Directive",
-		// 	args: args{
-		// 		Input: `"hello %{foo} world"`,
-		// 	},
-		// 	wantErr: false,
-		// 	want: String{
-		// 		{Text: `hello `},
-		// 		{Directive: &Expr{Left: &Primary{Ident: "foo"}}},
-		// 		{Text: ` world`},
-		// 	},
-		// },
+		{
+			name: "Directive",
+			args: args{
+				Input: `"hello %{foo} world"`,
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Text: ` world`},
+			},
+		},
 		{
 			name: "Non-Directive",
 			args: args{
@@ -219,6 +219,16 @@ func TestString_String(t *testing.T) {
 		want    string
 	}{
 		{
+			name: "Empty String",
+			args: args{
+				Input: String{
+					{Text: ``},
+				},
+			},
+			wantErr: false,
+			want:    ``,
+		},
+		{
 			name: "One Text Fragment",
 			args: args{
 				Input: String{
@@ -263,35 +273,160 @@ func TestString_String(t *testing.T) {
 			wantErr: false,
 			want:    `hello \u1234 world`,
 		},
-		// {
-		// 	name: "Text and Expression",
-		// 	args: args{
-		// 		Input: String{
-		// 			{Text: `hello `},
-		// 			{Expr: &Expr{Left: &Primary{Ident: "foo"}}},
-		// 			{Text: ` world`},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// 	want:    `hello ${foo} world`,
-		// },
-		// {
-		// 	name: "Text and Directive",
-		// 	args: args{
-		// 		Input: String{
-		// 			{Text: `hello `},
-		// 			{Directive: &Expr{Left: &Primary{Ident: "foo"}}},
-		// 			{Text: ` world`},
-		// 		},
-		// 	},
-		// 	wantErr: false,
-		// 	want:    `hello %{foo} world`,
-		// },
+		{
+			name: "Text and Expression",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want:    `hello ${foo} world`,
+		},
+		{
+			name: "Text and Directive",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want:    `hello %{foo} world`,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, tt.args.Input.String())
+		})
+	}
+}
+
+func TestString_Clone(t *testing.T) {
+	type args struct {
+		Input String
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		want    String
+	}{
+		{
+			name: "Nil String",
+			args: args{
+				Input: nil,
+			},
+			wantErr: false,
+			want:    nil,
+		},
+		{
+			name: "Empty String",
+			args: args{
+				Input: String{},
+			},
+			wantErr: false,
+			want:    String{},
+		},
+		{
+			name: "One Text Fragment",
+			args: args{
+				Input: String{
+					{Text: `hello world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello world`},
+			},
+		},
+		{
+			name: "Several Text Fragments",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Text: `world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Text: `world`},
+			},
+		},
+		{
+			name: "Text and Escaped",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Escaped: `\t`},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Escaped: `\t`},
+				{Text: ` world`},
+			},
+		},
+		{
+			name: "Text and Unicode",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Unicode: `1234`},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Unicode: `1234`},
+				{Text: ` world`},
+			},
+		},
+		{
+			name: "Text and Expression",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Text: ` world`},
+			},
+		},
+		{
+			name: "Text and Expression",
+			args: args{
+				Input: String{
+					{Text: `hello `},
+					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Text: ` world`},
+				},
+			},
+			wantErr: false,
+			want: String{
+				{Text: `hello `},
+				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Text: ` world`},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
 		})
 	}
 }

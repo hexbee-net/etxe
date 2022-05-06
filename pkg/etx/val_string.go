@@ -17,7 +17,16 @@ func (s String) String() string {
 }
 
 func (s String) Clone() String {
-	panic("TODO: Implement me")
+	if s == nil {
+		return nil
+	}
+
+	out := make(String, 0, len(s))
+	for _, f := range s {
+		out = append(out, f.Clone())
+	}
+
+	return out
 }
 
 type Fragment struct {
@@ -29,21 +38,41 @@ type Fragment struct {
 }
 
 func (f *Fragment) String() string {
-	if f.Escaped != "" {
+	switch {
+	case f.Escaped != "":
 		return f.Escaped
-	}
-	if f.Unicode != "" {
+	case f.Unicode != "":
 		return fmt.Sprintf("\\u%s", f.Unicode)
-	}
-	if f.Expr != nil {
+	case f.Expr != nil:
 		return fmt.Sprintf("${%s}", f.Expr)
-	}
-	if f.Directive != nil {
+	case f.Directive != nil:
 		return fmt.Sprintf("%%{%s}", f.Directive)
-	}
-	if f.Text != "" {
+	case f.Text != "":
 		return f.Text
+	default:
+		return ""
+	}
+}
+
+func (f *Fragment) Clone() *Fragment {
+	if f == nil {
+		return nil
 	}
 
-	return ""
+	out := &Fragment{}
+
+	switch {
+	case f.Escaped != "":
+		out.Escaped = f.Escaped
+	case f.Unicode != "":
+		out.Unicode = f.Unicode
+	case f.Expr != nil:
+		out.Expr = f.Expr.Clone()
+	case f.Directive != nil:
+		out.Directive = f.Directive.Clone()
+	case f.Text != "":
+		out.Text = f.Text
+	}
+
+	return out
 }
