@@ -1,12 +1,13 @@
 package etx
 
 import (
+	"math/big"
+	"testing"
+
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"testing"
 )
 
 func TestNumber_Parsing(t *testing.T) {

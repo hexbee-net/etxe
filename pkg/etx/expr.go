@@ -99,107 +99,117 @@ func (e *Expr) String() string {
 func (e *Conditional) String() string {
 	if e.ConditionOp != "" {
 		return fmt.Sprintf("%s %s %s %s %s", e.Condition, e.ConditionOp, e.Left, e.ConditionSep, e.Right)
-	} else {
-		return e.Condition.String()
 	}
+
+	return e.Condition.String()
 }
 
 func (e *LogicalOr) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *LogicalAnd) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *BitwiseOr) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *BitwiseXor) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *BitwiseAnd) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *Equality) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *Relational) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *Shift) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *Additive) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
 
 func (e *Multiplicative) String() string {
-	if e.Op != "" {
+	switch {
+	case e.Op != "":
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	} else if e.Left != nil {
+	case e.Left != nil:
 		return e.Left.String()
-	} else {
+	default:
 		return ""
 	}
 }
@@ -215,9 +225,9 @@ func (e *Unary) String() string {
 func (e *Postfix) String() string {
 	if e.Right != nil {
 		return fmt.Sprintf("%s[%s]", e.Left, e.Right)
-	} else {
-		return e.Left.String()
 	}
+
+	return e.Left.String()
 }
 
 func (e *Primary) String() string {

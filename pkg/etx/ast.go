@@ -13,10 +13,6 @@ type Node interface {
 // AST for HCL.
 type AST struct {
 	Pos lexer.Position `parser:"" json:"-"`
-
-	// Entries          []*Entry `parser:"@@*" json:"entries,omitempty"`
-	// TrailingComments []string `parser:"@Comment*" json:"trailing_comments,omitempty"`
-	// Schema           bool     `parser:"" json:"schema,omitempty"`
 }
 
 func (a *AST) children() (children []Node) {

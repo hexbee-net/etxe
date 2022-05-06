@@ -92,8 +92,10 @@ linters-settings:
     # List of regexps for excluding particular comment lines from check.
     exclude:
       # Exclude todo and fixme comments.
-      - "^fixme:"
-      - "^todo:"
+      - "^ FIXME:"
+      - "^ TODO:"
+      - "^ /////////////////////////////////////"
+      - "^ /////////////////////////////////////////////////////////////////////////////"
     # Check that each sentence ends with a period.
     period: true
     # Check that each sentence starts with a capital letter.

@@ -1,10 +1,10 @@
 package etx
 
 import (
-	"github.com/alecthomas/participle/v2/lexer"
 	"testing"
 
 	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -1,14 +1,15 @@
 package etx
 
 import (
+	"math/big"
+	"reflect"
+	"testing"
+
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/alecthomas/repr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"math/big"
-	"reflect"
-	"testing"
 )
 
 func testBuildExprTree[E any](t *testing.T, value interface{}) E {

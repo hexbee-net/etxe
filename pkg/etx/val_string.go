@@ -16,6 +16,10 @@ func (s String) String() string {
 	return sb.String()
 }
 
+func (s String) Clone() String {
+	panic("TODO: Implement me")
+}
+
 type Fragment struct {
 	Escaped   string `parser:"(  @Escaped"`
 	Unicode   string `parser:" | Unicode@(UnicodeLong|UnicodeShort)"`
