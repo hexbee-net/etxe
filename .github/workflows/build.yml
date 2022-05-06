@@ -1,0 +1,60 @@
+name: "Build"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+
+jobs:
+  go-lint:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.18.x"
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.1.0
+        with:
+          version: latest
+          args: --timeout 5m
+
+  go-test:
+    name: Test Go Code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.18.x"
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/pkg/mod
+            ~/bin
+            ~/.cache/go-build
+          key: ${{ env.cache-name }}-go-build-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ env.cache-name }}-go-build-
+
+      - name: Go Test
+        run: go test -v -coverprofile=profile.cov ./...
+
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./profile.cov
+          fail_ci_if_error: true
