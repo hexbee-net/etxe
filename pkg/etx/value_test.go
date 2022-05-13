@@ -69,7 +69,9 @@ func TestValue_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: &Value{
-				Ident: func() *string { v := "var"; return &v }(),
+				Ident: &Ident{
+					Parts: []string{"var"},
+				},
 			},
 		},
 		{
@@ -116,12 +118,12 @@ func TestValue_Parsing(t *testing.T) {
 				HaveMap: true,
 				Map: []*MapEntry{
 					{
-						Key:   &Value{Ident: func() *string { v := "foo"; return &v }()},
-						Value: &Value{Ident: func() *string { v := "bar"; return &v }()},
+						Key:   &Value{Ident: &Ident{Parts: []string{"foo"}}},
+						Value: &Value{Ident: &Ident{Parts: []string{"bar"}}},
 					},
 					{
-						Key:   &Value{Ident: func() *string { v := "baz"; return &v }()},
-						Value: &Value{Ident: func() *string { v := "qux"; return &v }()},
+						Key:   &Value{Ident: &Ident{Parts: []string{"baz"}}},
+						Value: &Value{Ident: &Ident{Parts: []string{"qux"}}},
 					},
 				},
 			},

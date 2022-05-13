@@ -5,9 +5,6 @@ import (
 	"strings"
 )
 
-// TODO: function calls
-// TODO: dot expressions a.b.c
-
 type Expr struct {
 	Left   *ExprConditional `parser:"(   @@  " json:"left,omitempty"`
 	If     *ExprIf          `parser:"  | @@  " json:"if,omitempty"`
@@ -116,8 +113,14 @@ type ExprPostfix struct {
 }
 
 type ExprPrimary struct {
-	SubExpression *Expr  `parser:"  OpLParen Whitespace? @@ Whitespace? OpRParen"`
-	Value         *Value `parser:"| @@"`
+	SubExpression *Expr           `parser:"  OpLParen Whitespace? @@ Whitespace? OpRParen"`
+	Invocation    *ExprInvocation `parser:"| @@"`
+	Value         *Value          `parser:"| @@"`
+}
+
+type ExprInvocation struct {
+	Ident      *Ident  `parser:"@@"`
+	Parameters []*Expr `parser:"OpLParen (@@ ( Whitespace? ',' Whitespace? @@ )*)? OpRParen"`
 }
 
 // /////////////////////////////////////
@@ -366,11 +369,22 @@ func (e *ExprPrimary) String() string {
 	switch {
 	case e.SubExpression != nil:
 		return e.SubExpression.String()
+	case e.Invocation != nil:
+		return e.Invocation.String()
 	case e.Value != nil:
 		return e.Value.String()
 	default:
 		return ""
 	}
+}
+
+func (e *ExprInvocation) String() string {
+	params := make([]string, 0, len(e.Parameters))
+	for _, p := range e.Parameters {
+		params = append(params, p.String())
+	}
+
+	return fmt.Sprintf("%s(%s)", e.Ident, strings.Join(params, ", "))
 }
 
 // /////////////////////////////////////
@@ -406,11 +420,14 @@ func (e *ExprSwitch) Clone() *ExprSwitch {
 
 	out := &ExprSwitch{
 		Selector: e.Selector.Clone(),
-		Cases:    make([]*ExprCase, 0, len(e.Cases)),
+		Cases:    nil,
 	}
 
-	for _, c := range e.Cases {
-		out.Cases = append(out.Cases, c.Clone())
+	if e.Cases != nil {
+		out.Cases = make([]*ExprCase, 0, len(e.Cases))
+		for _, c := range e.Cases {
+			out.Cases = append(out.Cases, c.Clone())
+		}
 	}
 
 	return out
@@ -422,13 +439,16 @@ func (e *ExprCase) Clone() *ExprCase {
 	}
 
 	out := &ExprCase{
-		Conditions: make([]*ExprLogicalOr, 0, len(e.Conditions)),
+		Conditions: nil,
 		Default:    e.Default,
 		Expr:       e.Expr.Clone(),
 	}
 
-	for _, c := range e.Conditions {
-		out.Conditions = append(out.Conditions, c.Clone())
+	if e.Conditions != nil {
+		out.Conditions = make([]*ExprLogicalOr, 0, len(e.Conditions))
+		for _, c := range e.Conditions {
+			out.Conditions = append(out.Conditions, c.Clone())
+		}
 	}
 
 	return out

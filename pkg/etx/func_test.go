@@ -41,7 +41,7 @@ func TestFunc_Parsing(t *testing.T) {
 					{
 						Label: "bar",
 						Type: &ParameterType{
-							Ident: "bool",
+							Ident: &Ident{Parts: []string{"bool"}},
 						},
 					},
 				},
@@ -59,13 +59,13 @@ func TestFunc_Parsing(t *testing.T) {
 					{
 						Label: "bar",
 						Type: &ParameterType{
-							Ident: "bool",
+							Ident: &Ident{Parts: []string{"bool"}},
 						},
 					},
 					{
 						Label: "baz",
 						Type: &ParameterType{
-							Ident: "number",
+							Ident: &Ident{Parts: []string{"number"}},
 						},
 					},
 				},
@@ -80,7 +80,7 @@ func TestFunc_Parsing(t *testing.T) {
 			want: &Func{
 				Label: "foo",
 				Return: &ParameterType{
-					Ident: "bool",
+					Ident: &Ident{Parts: []string{"bool"}},
 				},
 			},
 		},
@@ -99,10 +99,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Type: &ParameterType{
 							Func: &FuncSignature{
 								Parameters: []*ParameterType{
-									{Ident: "int"},
+									{Ident: &Ident{Parts: []string{"int"}}},
 								},
 								Return: &ParameterType{
-									Ident: "bool",
+									Ident: &Ident{Parts: []string{"bool"}},
 								},
 							},
 						},
@@ -124,10 +124,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Type: &ParameterType{
 							Func: &FuncSignature{
 								Parameters: []*ParameterType{
-									{Ident: "int"},
+									{Ident: &Ident{Parts: []string{"int"}}},
 								},
 								Return: &ParameterType{
-									Ident: "bool",
+									Ident: &Ident{Parts: []string{"bool"}},
 								},
 							},
 						},
@@ -137,10 +137,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Type: &ParameterType{
 							Func: &FuncSignature{
 								Parameters: []*ParameterType{
-									{Ident: "bool"},
+									{Ident: &Ident{Parts: []string{"bool"}}},
 								},
 								Return: &ParameterType{
-									Ident: "int",
+									Ident: &Ident{Parts: []string{"int"}},
 								},
 							},
 						},
@@ -159,10 +159,10 @@ func TestFunc_Parsing(t *testing.T) {
 				Return: &ParameterType{
 					Func: &FuncSignature{
 						Parameters: []*ParameterType{
-							{Ident: "int"},
+							{Ident: &Ident{Parts: []string{"int"}}},
 						},
 						Return: &ParameterType{
-							Ident: "bool",
+							Ident: &Ident{Parts: []string{"bool"}},
 						},
 					},
 				},
@@ -200,18 +200,18 @@ func TestFunc_Parsing(t *testing.T) {
 		// 					{
 		// 						Label: "bar",
 		// 						Type: &ParameterType{
-		// 							Ident: "bool",
+		// 							Ident: &Ident{Parts: []string{"bool"}},
 		// 						},
 		// 					},
 		// 					{
 		// 						Label: "baz",
 		// 						Type: &ParameterType{
-		// 							Ident: "number",
+		// 							Ident: &Ident{Parts: []string{"bar"}},
 		// 						},
 		// 					},
 		// 				},
 		// 				Return: &ParameterType{
-		// 					Ident: "bool",
+		// 					Ident: &Ident{Parts: []string{"bool"}},
 		// 				},
 		// 				Body: &FuncBody{
 		// 					Todo: "body",

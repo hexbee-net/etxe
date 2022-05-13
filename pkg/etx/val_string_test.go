@@ -130,7 +130,7 @@ func TestString_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: String{
-				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 			},
 		},
 		{
@@ -141,7 +141,7 @@ func TestString_Parsing(t *testing.T) {
 			wantErr: false,
 			want: String{
 				{Text: `hello `},
-				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 				{Text: ` world`},
 			},
 		},
@@ -166,7 +166,7 @@ func TestString_Parsing(t *testing.T) {
 			wantErr: false,
 			want: String{
 				{Text: `hello `},
-				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 				{Text: ` world`},
 			},
 		},
@@ -213,10 +213,9 @@ func TestString_String(t *testing.T) {
 		Input String
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-		want    string
+		name string
+		args args
+		want string
 	}{
 		{
 			name: "Empty String",
@@ -225,8 +224,7 @@ func TestString_String(t *testing.T) {
 					{Text: ``},
 				},
 			},
-			wantErr: false,
-			want:    ``,
+			want: ``,
 		},
 		{
 			name: "One Text Fragment",
@@ -235,8 +233,7 @@ func TestString_String(t *testing.T) {
 					{Text: `hello world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello world`,
+			want: `hello world`,
 		},
 		{
 			name: "Several Text Fragments",
@@ -246,8 +243,7 @@ func TestString_String(t *testing.T) {
 					{Text: `world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello world`,
+			want: `hello world`,
 		},
 		{
 			name: "Text and Escaped",
@@ -258,8 +254,7 @@ func TestString_String(t *testing.T) {
 					{Text: ` world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello \t world`,
+			want: `hello \t world`,
 		},
 		{
 			name: "Text and Unicode",
@@ -270,32 +265,29 @@ func TestString_String(t *testing.T) {
 					{Text: ` world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello \u1234 world`,
+			want: `hello \u1234 world`,
 		},
 		{
 			name: "Text and Expression",
 			args: args{
 				Input: String{
 					{Text: `hello `},
-					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 					{Text: ` world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello ${foo} world`,
+			want: `hello ${foo} world`,
 		},
 		{
 			name: "Text and Directive",
 			args: args{
 				Input: String{
 					{Text: `hello `},
-					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 					{Text: ` world`},
 				},
 			},
-			wantErr: false,
-			want:    `hello %{foo} world`,
+			want: `hello %{foo} world`,
 		},
 	}
 
@@ -395,14 +387,14 @@ func TestString_Clone(t *testing.T) {
 			args: args{
 				Input: String{
 					{Text: `hello `},
-					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 					{Text: ` world`},
 				},
 			},
 			wantErr: false,
 			want: String{
 				{Text: `hello `},
-				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 				{Text: ` world`},
 			},
 		},
@@ -411,14 +403,14 @@ func TestString_Clone(t *testing.T) {
 			args: args{
 				Input: String{
 					{Text: `hello `},
-					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+					{Directive: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 					{Text: ` world`},
 				},
 			},
 			wantErr: false,
 			want: String{
 				{Text: `hello `},
-				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: testValPtr(t, "foo")})},
+				{Directive: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
 				{Text: ` world`},
 			},
 		},

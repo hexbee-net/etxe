@@ -54,6 +54,8 @@ func testBuildExprTree[E any](t *testing.T, value interface{}) E {
 			return build(&ExprUnary{Postfix: v}, stop)
 		case *ExprPrimary:
 			return build(&ExprPostfix{Left: v}, stop)
+		case *ExprInvocation:
+			return build(&ExprPrimary{Invocation: v}, stop)
 		case *Value:
 			return build(&ExprPrimary{Value: v}, stop)
 		default:

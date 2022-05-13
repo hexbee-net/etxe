@@ -38,6 +38,7 @@ const (
 	TokenOpLBrace            = `{`
 	TokenOpRBrace            = `}`
 	TokenOpComma             = `,`
+	TokenOpDot               = `.`
 
 	TokenKeywordInput   = `input`
 	TokenKeywordOutput  = `output`
@@ -73,21 +74,21 @@ func lexRules() lexer.Rules {
 			{Name: "Val", Pattern: `\b(` + TokenKeywordVal + `)\b`},
 			{Name: "Type", Pattern: `\b(` + TokenKeywordType + `)\b`},
 			{Name: "Func", Pattern: `\b(def)\b`, Action: lexer.Push(lexerFunc)},
-			{Name: "Punctuation", Pattern: `[][{}=:,]`},
 
 			lexer.Include(lexerCore),
 		},
 		lexerCore: {
+			{Name: "Lambda", Pattern: regexp.QuoteMeta(TokenOpLambda), Action: lexer.Push(lexerStringExpr)},
+			{Name: "LambdaDef", Pattern: regexp.QuoteMeta(TokenOpLambdaDef)},
+			{Name: "Punctuation", Pattern: `[][{}=:,]`},
 			{Name: "Ident", Pattern: `\b[[:alpha:]]\w*(-\w+)*\b`},
 			{Name: "Number", Pattern: `[-+]?(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
 			{Name: "Heredoc", Pattern: `<<[-]?(\w+\b)`, Action: lexer.Push(lexerHeredoc)},
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
+			{Name: "Dot", Pattern: regexp.QuoteMeta(TokenOpDot)},
 			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?$)|\/\*.*?\*\/`},
 			{Name: `Whitespace`, Pattern: `\s+`},
 			{Name: `NewLine`, Pattern: `(\n|\n\r)+`},
-
-			{Name: "Lambda", Pattern: regexp.QuoteMeta(TokenOpLambda), Action: lexer.Push(lexerStringExpr)},
-			{Name: "LambdaDef", Pattern: regexp.QuoteMeta(TokenOpLambdaDef)},
 		},
 
 		lexerString: {

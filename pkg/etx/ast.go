@@ -84,38 +84,12 @@ type Attribute struct {
 	Optional bool `parser:"" json:"optional,omitempty"`
 }
 
-// Decl is an `input`, `output`, `const` or `val` short form declaration.
-type Decl struct {
-	Pos    lexer.Position `parser:"" json:"-"`
-	Parent Node           `parser:"" json:"-"`
-
-	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
-
-	DeclType string `parser:"@(Input | Output | Const | Val) Whitespace" json:"decl_type"`
-	Label    string `parser:"@Ident" json:"label"`
-	Type     string `parser:"(Whitespace? ':' Whitespace? @Ident)?" json:"type"` // TODO: ParameterType
-	Value    *Value `parser:"(Whitespace? '=' Whitespace? @@)?" json:"value"`
-}
-
 type ParameterType struct {
-	Ident string         `parser:"(   @Ident  " json:"ident"`
-	Func  *FuncSignature `parser:"  | @@     )" json:"func"`
+	Ident *Ident         `parser:"(   @@   " json:"ident"`
+	Func  *FuncSignature `parser:"  | @@  )" json:"func"`
 }
 
 type FuncSignature struct {
 	Parameters []*ParameterType `parser:"'(' (@@ ( Whitespace? ',' Whitespace? @@ )*)? ')' Whitespace? LambdaDef" json:"parameters,omitempty"`
 	Return     *ParameterType   `parser:"Whitespace? @@" json:"return,omitempty"`
-}
-
-type Lambda struct {
-	Parameters []*LambdaParameter `parser:"'(' (@@ ( Whitespace? ',' Whitespace? @@ )*)? ')' Whitespace? Lambda Whitespace?" json:"parameters,omitempty"`
-	Expr       *Expr              `parser:"@@"`
-}
-
-type LambdaParameter struct {
-	Label string         `parser:"@Ident" json:"label"`
-	Type  *ParameterType `parser:"(Whitespace? ':' Whitespace? @@)?" json:"type"`
-}
-
-type Type struct {
 }

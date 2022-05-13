@@ -6,6 +6,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/alecthomas/repr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +22,46 @@ func TestExpr_Parsing(t *testing.T) {
 		want    *Expr
 	}{
 		{
+			name: "Invocation",
+			args: args{
+				Input: `foo(bar, baz)`,
+			},
+			wantErr: false,
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: &Ident{
+						Parts: []string{"foo"},
+					},
+					Parameters: []*Expr{
+						testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+						testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+					},
+				}),
+			},
+		},
+		{
+			name: "Dot Invocation",
+			args: args{
+				Input: `foo.bar(baz, qux)`,
+			},
+			wantErr: false,
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: &Ident{
+						Parts: []string{
+							"foo",
+							"bar",
+						},
+					},
+					Parameters: []*Expr{
+						testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+						testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"qux"}}}),
+					},
+				}),
+			},
+		},
+
+		{
 			name: "If with empty body",
 			args: args{
 				Input: `if foo { }`,
@@ -28,7 +69,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				If: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      nil,
 					Right:     nil,
 				},
@@ -42,7 +83,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				If: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right:     nil,
 				},
@@ -56,7 +97,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				If: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right:     testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
@@ -72,7 +113,7 @@ switch foo {}`[1:],
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases:    nil,
 				},
 			},
@@ -88,7 +129,7 @@ switch foo {
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -111,7 +152,7 @@ switch foo {
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -136,7 +177,7 @@ switch foo {
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -165,7 +206,7 @@ switch foo {
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: nil,
@@ -188,7 +229,7 @@ switch foo {
 			wantErr: false,
 			want: &Expr{
 				Switch: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -927,14 +968,95 @@ switch foo {
 				require.NoError(t, err)
 			}
 
-			assert.Equal(t, tt.want, res.Expr)
+			if !assert.Equal(t, tt.want, res.Expr) {
+				repr.Println(res.Expr)
+			}
 		})
 	}
 }
 
 // /////////////////////////////////////
 
-func TestExpr_String(t *testing.T) {}
+func TestExpr_String(t *testing.T) {
+	type args struct {
+		Input *Expr
+	}
+	tests := []struct {
+		name        string
+		description string
+		args        args
+		wantPanic   bool
+		want        string
+	}{
+		{
+			name:        "Left",
+			description: "",
+			args: args{
+				Input: &Expr{
+					Left: testBuildExprTree[*ExprConditional](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				},
+			},
+			wantPanic: false,
+			want:      "1",
+		},
+		{
+			name:        "Empty",
+			description: "",
+			args: args{
+				Input: &Expr{},
+			},
+			wantPanic: true,
+			want:      "expression not set",
+		},
+		{
+			name:        "If",
+			description: "",
+			args: args{
+				Input: &Expr{
+					If: &ExprIf{
+						Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+						Left:      nil,
+						Right:     nil,
+					},
+				},
+			},
+			wantPanic: false,
+			want:      `if foo { }`,
+		},
+		{
+			name:        "Switch",
+			description: "",
+			args: args{
+				Input: &Expr{
+					Switch: &ExprSwitch{
+						Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+						Cases:    nil,
+					},
+				},
+			},
+			wantPanic: false,
+			want:      `switch foo { }`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				if tt.want != "" {
+					assert.PanicsWithValuef(t, tt.want, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				} else {
+					assert.Panicsf(t, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				}
+			} else {
+				assert.Equal(t, tt.want, tt.args.Input.String())
+			}
+		})
+	}
+}
 
 func TestExprIf_String(t *testing.T) {
 	type args struct {
@@ -967,7 +1089,7 @@ func TestExprIf_String(t *testing.T) {
 			name: "If with empty body",
 			args: args{
 				Input: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      nil,
 					Right:     nil,
 				},
@@ -978,7 +1100,7 @@ func TestExprIf_String(t *testing.T) {
 			name: "If",
 			args: args{
 				Input: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right:     nil,
 				},
@@ -992,7 +1114,7 @@ if foo {
 			name: "If/Else",
 			args: args{
 				Input: &ExprIf{
-					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right:     testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
@@ -1056,7 +1178,7 @@ func TestExprSwitch_String(t *testing.T) {
 			name: "Empty",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases:    nil,
 				},
 			},
@@ -1067,7 +1189,7 @@ switch foo { }`[1:],
 			name: "One single case, no default",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -1089,7 +1211,7 @@ switch foo {
 			name: "One multiple case, no default",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -1112,7 +1234,7 @@ switch foo {
 			name: "Two single case, no default",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -1143,7 +1265,7 @@ switch foo {
 			name: "Only default",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: nil,
@@ -1164,7 +1286,7 @@ switch foo {
 			name: "One single case, default",
 			args: args{
 				Input: &ExprSwitch{
-					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Cases: []*ExprCase{
 						{
 							Conditions: []*ExprLogicalOr{
@@ -2217,7 +2339,7 @@ func TestMultiplicative_String(t *testing.T) {
 			description: "Right side can't be nil when an operator is present",
 			args: args{
 				Input: &ExprMultiplicative{
-					Left: testBuildExprTree[*ExprUnary](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left: testBuildExprTree[*ExprUnary](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Op:   TokenOpMultiplication,
 				},
 			},
@@ -2285,7 +2407,7 @@ func TestUnary_String(t *testing.T) {
 			name: "Postfix",
 			args: args{
 				Input: &ExprUnary{
-					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: testValPtr(t, "foo")}),
+					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 				},
 			},
 			want: "foo",
@@ -2295,7 +2417,7 @@ func TestUnary_String(t *testing.T) {
 			args: args{
 				Input: &ExprUnary{
 					Op:    TokenOpBitwiseNot,
-					Unary: testBuildExprTree[*ExprUnary](t, &Value{Ident: testValPtr(t, "foo")}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 				},
 			},
 			want: "~foo",
@@ -2345,7 +2467,7 @@ func TestPostfix_String(t *testing.T) {
 			name: "Left",
 			args: args{
 				Input: &ExprPostfix{
-					Left: testBuildExprTree[*ExprPrimary](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left: testBuildExprTree[*ExprPrimary](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 				},
 			},
 			want: "foo",
@@ -2354,7 +2476,7 @@ func TestPostfix_String(t *testing.T) {
 			name: "Both",
 			args: args{
 				Input: &ExprPostfix{
-					Left:  testBuildExprTree[*ExprPrimary](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:  testBuildExprTree[*ExprPrimary](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 					Right: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
@@ -2418,6 +2540,24 @@ func TestPrimary_String(t *testing.T) {
 			},
 			want: "1",
 		},
+		{
+			name: "Invocation",
+			args: args{
+				Input: &ExprPrimary{
+					Value: &Value{Number: &Number{big.NewFloat(1)}},
+					Invocation: &ExprInvocation{
+						Ident: &Ident{
+							Parts: []string{"foo"},
+						},
+						Parameters: []*Expr{
+							testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+							testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+						},
+					},
+				},
+			},
+			want: "foo(bar, baz)",
+		},
 	}
 
 	for _, tt := range tests {
@@ -2468,6 +2608,192 @@ func TestExpr_Clone(t *testing.T) {
 			},
 			want: &Expr{
 				Left: &ExprConditional{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
+		})
+	}
+}
+
+func TestIf_Clone(t *testing.T) {
+	type args struct {
+		Input *ExprIf
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ExprIf
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprIf{},
+			},
+			want: &ExprIf{},
+		},
+
+		{
+			name: "Condition",
+			args: args{
+				Input: &ExprIf{
+					Condition: &ExprLogicalOr{},
+				},
+			},
+			want: &ExprIf{
+				Condition: &ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Left",
+			args: args{
+				Input: &ExprIf{
+					Left: &Expr{},
+				},
+			},
+			want: &ExprIf{
+				Left: &Expr{},
+			},
+		},
+		{
+			name: "Right",
+			args: args{
+				Input: &ExprIf{
+					Right: &Expr{},
+				},
+			},
+			want: &ExprIf{
+				Right: &Expr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
+		})
+	}
+}
+
+func TestSwitch_Clone(t *testing.T) {
+	type args struct {
+		Input *ExprSwitch
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ExprSwitch
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprSwitch{},
+			},
+			want: &ExprSwitch{},
+		},
+
+		{
+			name: "Selector",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: &ExprLogicalOr{},
+				},
+			},
+			want: &ExprSwitch{
+				Selector: &ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Cases",
+			args: args{
+				Input: &ExprSwitch{
+					Cases: []*ExprCase{{}},
+				},
+			},
+			want: &ExprSwitch{
+				Cases: []*ExprCase{{}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
+		})
+	}
+}
+func TestCase_Clone(t *testing.T) {
+	type args struct {
+		Input *ExprCase
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ExprCase
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprCase{},
+			},
+			want: &ExprCase{},
+		},
+
+		{
+			name: "Conditions",
+			args: args{
+				Input: &ExprCase{
+					Conditions: []*ExprLogicalOr{{}},
+				},
+			},
+			want: &ExprCase{
+				Conditions: []*ExprLogicalOr{{}},
+			},
+		},
+		{
+			name: "Default",
+			args: args{
+				Input: &ExprCase{
+					Default: true,
+				},
+			},
+			want: &ExprCase{
+				Default: true,
+			},
+		},
+		{
+			name: "Expr",
+			args: args{
+				Input: &ExprCase{
+					Expr: &Expr{},
+				},
+			},
+			want: &ExprCase{
+				Expr: &Expr{},
 			},
 		},
 	}

@@ -357,14 +357,14 @@ func TestNumber_Parsing(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-			}
 
-			if tt.want != nil {
-				require.NotNil(t, res.Number)
-				require.NotNil(t, res.Number.Float)
-				assert.Zero(t, tt.want.Cmp(res.Number.Float))
-			} else {
-				assert.Nil(t, res.Number)
+				if tt.want != nil {
+					require.NotNil(t, res.Number)
+					require.NotNil(t, res.Number.Float)
+					assert.Zero(t, tt.want.Cmp(res.Number.Float))
+				} else {
+					assert.Nil(t, res.Number)
+				}
 			}
 		})
 	}

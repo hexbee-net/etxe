@@ -18,7 +18,7 @@ type Value struct {
 	Bool             *Bool       `parser:" | @('true' | 'false')" json:"bool,omitempty"`
 	Number           *Number     `parser:" | @Number" json:"number,omitempty"`
 	Str              String      `parser:" | String @@* StringEnd"`
-	Ident            *string     `parser:" | @Ident" json:"ident,omitempty"`
+	Ident            *Ident      `parser:" | @@" json:"ident,omitempty"`
 	HeredocDelimiter string      `parser:" | (@Heredoc" json:"heredoc_delimiter,omitempty"`
 	Heredoc          *string     `parser:"     @(Body | EOL)* End)" json:"heredoc,omitempty"`
 	HaveList         bool        `parser:" | ( @'['" json:"have_list,omitempty"` // Need this to detect empty lists.
@@ -90,7 +90,7 @@ func (v *Value) String() string {
 		return v.Str.String()
 
 	case v.Ident != nil:
-		return fmt.Sprintf("%v", *v.Ident)
+		return v.Ident.String()
 
 	case v.HeredocDelimiter != "":
 		heredoc := ""
