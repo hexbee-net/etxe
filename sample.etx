@@ -1,7 +1,92 @@
+#  Inline comment
+// Inline comment
+
+/*
+Multiline comment
+*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// const description
+const CONST_NAME = "const value"
+
+
+########################################
+
+locals {
+  string-local-block = expression
+}
+
+local string-local-inline = expression
+
+########################################
+
+variable "string-var-long" {
+  type = string
+  description = "var description"
+  default = "default value"
+}
+
+// var description
+var string-var-short: string = "default value"
+
+var {
+  // var description
+  string-var-block: string = "default value"  // alternate var description
+}
+
+########################################
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+
+  required_version = ">= 0.14.9"
+}
+
+provider "aws" {
+  profile = "default"
+  region  = "eu-west-3"
+}
+
+data {}
+
+resource "aws_instance" "app_server" {
+  ami           = "ami-062fdd189639d3e93"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "ExampleAppServerInstance"
+  }
+}
+
+check "error_name" {
+  condition = expression
+  error = expression
+  #TODO Check format
+}
+
+if {
+  // ...
+  // access to properties or object will throw an error
+}
+
+resource "foo" {
+  if: expression // access to properties will yield null
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 // A string field.
 str = string
-num = number
-bool = boolean
+num = 123
+bool = true
 list = [string]
 
 // A map.
@@ -18,3 +103,57 @@ block "name" {
 block_slice "label0" "label1" {
   attr = string
 }
+
+type foo struct {
+}
+
+type foo enum {
+    a: 1
+    b: 2
+    c: 3
+}
+
+func foo(a: string, b: enum.foo) bool {
+    val (
+        c = a == enum.foo.a ? resource.foo.id : resource.bar.id
+        d = switch b {
+                case enum.foo.a:
+                    false
+                case enum.foo.b:
+                    true
+                case enum.foo.c:
+                    c == 1234
+                default
+                    error "invalid value for resource \"foo\""
+            }
+    )
+
+    val e = if d {
+        "a"
+    } else {
+        "b"
+    }
+
+    val f = enum.foo[e]
+
+    val g: list(string) = {"a", "b", "c"}
+    val h = g.take(|v| v == f)
+    val g = g.take(filterMonad(f))
+
+    return len(g) == 1
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Currying
+
+def a1(v: int) (int)->int {
+    return (x) => x + v
+}
+
+val a2 = (x) => x + 2
+
+def b1(v: int) int {
+    return a(2)(v)
+}
+
+val b2 = a2(2)
