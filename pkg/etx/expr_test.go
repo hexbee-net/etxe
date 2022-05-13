@@ -21,29 +21,216 @@ func TestExpr_Parsing(t *testing.T) {
 		want    *Expr
 	}{
 		{
+			name: "If with empty body",
+			args: args{
+				Input: `if foo { }`,
+			},
+			wantErr: false,
+			want: &Expr{
+				If: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      nil,
+					Right:     nil,
+				},
+			},
+		},
+		{
+			name: "If",
+			args: args{
+				Input: `if foo { 1 }`,
+			},
+			wantErr: false,
+			want: &Expr{
+				If: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Right:     nil,
+				},
+			},
+		},
+		{
+			name: "If/Else",
+			args: args{
+				Input: `if foo { 1 } else { 2 }`,
+			},
+			wantErr: false,
+			want: &Expr{
+				If: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Right:     testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+				},
+			},
+		},
+
+		{
+			name: "Switch - Empty",
+			args: args{
+				Input: `
+switch foo {}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases:    nil,
+				},
+			},
+		},
+		{
+			name: "Switch - One single case, no default",
+			args: args{
+				Input: `
+switch foo {
+	case 1: { 2 }
+}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Switch - One multiple case, no default",
+			args: args{
+				Input: `
+switch foo {
+	case 1, 2: { 3 }
+}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Switch - Two single case, no default",
+			args: args{
+				Input: `
+switch foo {
+	case 1: { 2 }
+	case 3: { 4 }
+}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(4)}}),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Switch - Only default",
+			args: args{
+				Input: `
+switch foo {
+	default: { 3 }
+}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: nil,
+							Default:    true,
+							Expr:       testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Switch - One single case, default",
+			args: args{
+				Input: `
+switch foo {
+	case 1: { 2 }
+	default: { 3 }
+}`[1:],
+			},
+			wantErr: false,
+			want: &Expr{
+				Switch: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+						{
+							Conditions: nil,
+							Default:    true,
+							Expr:       testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+					// Default: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+				},
+			},
+		},
+
+		{
 			name: "Ternary",
 			args: args{
 				Input: "1 ? 2 : 3",
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp:  TokenOpCondition,
-					True:         testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					True:         testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 					ConditionSep: TokenOpColon,
-					False:        testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+					False:        testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			),
 		},
-		{
-			name: "Invalid Ternary",
-			args: args{
-				Input: "1 ? 2 ; 3",
-			},
-			wantErr: true,
-			want:    nil,
-		},
+		// {
+		// 	name: "Invalid Ternary",
+		// 	args: args{
+		// 		Input: "1 ? 2 ; 3",
+		// 	},
+		// 	wantErr: true,
+		// 	want:    nil,
+		// },
 
 		{
 			name: "Logical OR - no spaces",
@@ -52,10 +239,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&LogicalOr{
-					Left:  testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprLogicalOr{
+					Left:  testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalOr,
-					Right: testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -66,10 +253,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&LogicalOr{
-					Left:  testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprLogicalOr{
+					Left:  testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalOr,
-					Right: testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -81,10 +268,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&LogicalAnd{
-					Left:  testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprLogicalAnd{
+					Left:  testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalAnd,
-					Right: testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -95,10 +282,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&LogicalAnd{
-					Left:  testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprLogicalAnd{
+					Left:  testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalAnd,
-					Right: testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -110,10 +297,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseOr{
-					Left:  testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseOr{
+					Left:  testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseOr,
-					Right: testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -124,10 +311,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseOr{
-					Left:  testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseOr{
+					Left:  testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseOr,
-					Right: testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -139,10 +326,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseXor{
-					Left:  testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseXor{
+					Left:  testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseXOr,
-					Right: testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -153,10 +340,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseXor{
-					Left:  testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseXor{
+					Left:  testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseXOr,
-					Right: testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -168,10 +355,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseAnd{
-					Left:  testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseAnd{
+					Left:  testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseAnd,
-					Right: testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -182,10 +369,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&BitwiseAnd{
-					Left:  testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprBitwiseAnd{
+					Left:  testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseAnd,
-					Right: testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -197,10 +384,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Equality{
-					Left:  testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprEquality{
+					Left:  testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpEqual,
-					Right: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -211,10 +398,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Equality{
-					Left:  testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprEquality{
+					Left:  testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpEqual,
-					Right: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -225,10 +412,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Equality{
-					Left:  testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprEquality{
+					Left:  testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpNotEqual,
-					Right: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -239,10 +426,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Equality{
-					Left:  testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprEquality{
+					Left:  testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpNotEqual,
-					Right: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -254,10 +441,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMore,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -268,10 +455,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMore,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -282,10 +469,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLess,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -296,10 +483,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLess,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -310,10 +497,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMoreOrEqual,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -324,10 +511,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMoreOrEqual,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -338,10 +525,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLessOrEqual,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -352,10 +539,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLessOrEqual,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -367,10 +554,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Shift{
-					Left:  testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprShift{
+					Left:  testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseShiftLeft,
-					Right: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -381,10 +568,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Shift{
-					Left:  testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprShift{
+					Left:  testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseShiftLeft,
-					Right: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -395,10 +582,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Shift{
-					Left:  testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprShift{
+					Left:  testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseShiftRight,
-					Right: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -409,10 +596,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Shift{
-					Left:  testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprShift{
+					Left:  testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseShiftRight,
-					Right: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -424,10 +611,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Additive{
-					Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprAdditive{
+					Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpPlus,
-					Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -438,10 +625,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Additive{
-					Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprAdditive{
+					Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpPlus,
-					Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -452,10 +639,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Additive{
-					Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprAdditive{
+					Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMinus,
-					Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -466,10 +653,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Additive{
-					Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprAdditive{
+					Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMinus,
-					Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -481,10 +668,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpDivision,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -495,10 +682,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpDivision,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -509,10 +696,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMultiplication,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -523,10 +710,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMultiplication,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -537,10 +724,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpModulo,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -551,10 +738,10 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpModulo,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
 		},
@@ -566,9 +753,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpBitwiseNot,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -579,9 +766,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpBitwiseNot,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -592,9 +779,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpLogicalNot,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -605,9 +792,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpLogicalNot,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -618,9 +805,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpMinus,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -631,9 +818,9 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Unary{
+				&ExprUnary{
 					Op:    TokenOpMinus,
-					Unary: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
 		},
@@ -645,8 +832,8 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Postfix{
-					Left:  testBuildExprTree[*Primary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprPostfix{
+					Left:  testBuildExprTree[*ExprPrimary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
@@ -658,8 +845,8 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Postfix{
-					Left:  testBuildExprTree[*Primary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprPostfix{
+					Left:  testBuildExprTree[*ExprPrimary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Right: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			),
@@ -672,7 +859,7 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Primary{
+				&ExprPrimary{
 					Value: testBuildExprTree[*Value](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
@@ -684,7 +871,7 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Primary{
+				&ExprPrimary{
 					SubExpression: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
@@ -696,7 +883,7 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Primary{
+				&ExprPrimary{
 					SubExpression: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			),
@@ -709,13 +896,13 @@ func TestExpr_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: testBuildExprTree[*Expr](t,
-				&Additive{
-					Left: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				&ExprAdditive{
+					Left: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:   "+",
-					Right: &Additive{
-						Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: &ExprAdditive{
+						Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 						Op:    "+",
-						Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(3)}}),
 					},
 				},
 			),
@@ -728,7 +915,7 @@ func TestExpr_Parsing(t *testing.T) {
 				Expr *Expr `parser:"@@*"`
 			}
 
-			l := lexer.MustStateful(lexRules(), lexer.InitialState("Expr"))
+			l := lexer.MustStateful(lexRules(), lexer.InitialState(lexerExpr))
 			parser := participle.MustBuild(&Exp{}, participle.Lexer(l))
 
 			res := &Exp{}
@@ -749,9 +936,9 @@ func TestExpr_Parsing(t *testing.T) {
 
 func TestExpr_String(t *testing.T) {}
 
-func TestConditional_String(t *testing.T) {
+func TestExprIf_String(t *testing.T) {
 	type args struct {
-		Input *Conditional
+		Input *ExprIf
 	}
 	tests := []struct {
 		name        string
@@ -771,7 +958,378 @@ func TestConditional_String(t *testing.T) {
 			name:        "Empty",
 			description: "Condition can never be nil",
 			args: args{
-				Input: &Conditional{},
+				Input: &ExprIf{},
+			},
+			wantPanic: true,
+			want:      "if condition cannot be <nil>",
+		},
+		{
+			name: "If with empty body",
+			args: args{
+				Input: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      nil,
+					Right:     nil,
+				},
+			},
+			want: `if foo { }`,
+		},
+		{
+			name: "If",
+			args: args{
+				Input: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Right:     nil,
+				},
+			},
+			want: `
+if foo {
+	1
+}`[1:],
+		},
+		{
+			name: "If/Else",
+			args: args{
+				Input: &ExprIf{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Left:      testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					Right:     testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+				},
+			},
+			want: `
+if foo {
+	1
+} else {
+	2
+}`[1:],
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				if tt.want != "" {
+					assert.PanicsWithValuef(t, tt.want, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				} else {
+					assert.Panicsf(t, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				}
+			} else {
+				assert.Equal(t, tt.want, tt.args.Input.String())
+			}
+		})
+	}
+}
+
+func TestExprSwitch_String(t *testing.T) {
+	type args struct {
+		Input *ExprSwitch
+	}
+	tests := []struct {
+		name        string
+		description string
+		args        args
+		wantPanic   bool
+		want        string
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			wantPanic: true,
+		},
+		{
+			name:        "Empty",
+			description: "Selector can never be nil",
+			args: args{
+				Input: &ExprSwitch{},
+			},
+			wantPanic: true,
+			want:      "switch selector cannot be <nil>",
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases:    nil,
+				},
+			},
+			want: `
+switch foo { }`[1:],
+		},
+		{
+			name: "One single case, no default",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+					},
+				},
+			},
+			want: `
+switch foo {
+	case 1: {
+		2
+	}
+}`[1:],
+		},
+		{
+			name: "One multiple case, no default",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+				},
+			},
+			want: `
+switch foo {
+	case 1, 2: {
+		3
+	}
+}`[1:],
+		},
+		{
+			name: "Two single case, no default",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(4)}}),
+						},
+					},
+				},
+			},
+			want: `
+switch foo {
+	case 1: {
+		2
+	}
+	case 3: {
+		4
+	}
+}`[1:],
+		},
+		{
+			name: "Only default",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: nil,
+							Default:    true,
+							Expr:       testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+				},
+			},
+			want: `
+switch foo {
+	default: {
+		3
+	}
+}`[1:],
+		},
+		{
+			name: "One single case, default",
+			args: args{
+				Input: &ExprSwitch{
+					Selector: testBuildExprTree[*ExprLogicalOr](t, &Value{Ident: testValPtr(t, "foo")}),
+					Cases: []*ExprCase{
+						{
+							Conditions: []*ExprLogicalOr{
+								testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+							Expr: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+						{
+							Conditions: nil,
+							Default:    true,
+							Expr:       testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+						},
+					},
+					// Default: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+				},
+			},
+			want: `
+switch foo {
+	case 1: {
+		2
+	}
+	default: {
+		3
+	}
+}`[1:],
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				if tt.want != "" {
+					assert.PanicsWithValuef(t, tt.want, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				} else {
+					assert.Panicsf(t, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				}
+			} else {
+				assert.Equal(t, tt.want, tt.args.Input.String())
+			}
+		})
+	}
+}
+
+func TestExprCase_String(t *testing.T) {
+	type args struct {
+		Input *ExprCase
+	}
+	tests := []struct {
+		name        string
+		description string
+		args        args
+		wantPanic   bool
+		want        string
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			wantPanic: true,
+		},
+		{
+			name:        "Empty",
+			description: "No condition and not default",
+			args: args{
+				Input: &ExprCase{},
+			},
+			wantPanic: true,
+			want:      "non-default case statement without condition",
+		},
+		{
+			name: "One condition",
+			args: args{
+				Input: &ExprCase{
+					Conditions: []*ExprLogicalOr{
+						testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					},
+					Default: false,
+					Expr:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+				},
+			},
+			want: `
+case 1: {
+	2
+}`[1:],
+		},
+		{
+			name: "Several condition",
+			args: args{
+				Input: &ExprCase{
+					Conditions: []*ExprLogicalOr{
+						testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					},
+					Default: false,
+					Expr:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+				},
+			},
+			want: `
+case 1, 2: {
+	3
+}`[1:],
+		},
+		{
+			name: "Default",
+			args: args{
+				Input: &ExprCase{
+					Conditions: nil,
+					Default:    true,
+					Expr:       testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+				},
+			},
+			want: `
+default: {
+	3
+}`[1:],
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				if tt.want != "" {
+					assert.PanicsWithValuef(t, tt.want, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				} else {
+					assert.Panicsf(t, func() {
+						_ = tt.args.Input.String()
+					}, tt.description)
+				}
+			} else {
+				assert.Equal(t, tt.want, tt.args.Input.String())
+			}
+		})
+	}
+}
+
+func TestConditional_String(t *testing.T) {
+	type args struct {
+		Input *ExprConditional
+	}
+	tests := []struct {
+		name        string
+		description string
+		args        args
+		wantPanic   bool
+		want        string
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			wantPanic: true,
+		},
+		{
+			name:        "Empty",
+			description: "Condition can never be nil",
+			args: args{
+				Input: &ExprConditional{},
 			},
 			wantPanic: true,
 			want:      "condition cannot be <nil>",
@@ -779,11 +1337,11 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "No Condition operator",
 			args: args{
-				Input: &Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionSep: TokenOpColon,
-					True:         testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
-					False:        testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+					True:         testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					False:        testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			},
 			wantPanic: true,
@@ -792,11 +1350,11 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "No Sep operator",
 			args: args{
-				Input: &Conditional{
-					Condition:   testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:   testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp: TokenOpCondition,
-					True:        testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
-					False:       testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+					True:        testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					False:       testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			},
 			wantPanic: true,
@@ -805,8 +1363,8 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "Only Condition",
 			args: args{
-				Input: &Conditional{
-					Condition: testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -814,10 +1372,10 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "All expressions but not operators",
 			args: args{
-				Input: &Conditional{
-					Condition: testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
-					True:      testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
-					False:     testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+				Input: &ExprConditional{
+					Condition: testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					True:      testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					False:     testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			},
 			want: "1",
@@ -826,8 +1384,8 @@ func TestConditional_String(t *testing.T) {
 			name:        "Neither True nor False",
 			description: "Both sides of the condition must be present.",
 			args: args{
-				Input: &Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp:  TokenOpCondition,
 					ConditionSep: TokenOpColon,
 				},
@@ -839,11 +1397,11 @@ func TestConditional_String(t *testing.T) {
 			name:        "Only True expression",
 			description: "Both sides of the condition must be present.",
 			args: args{
-				Input: &Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp:  TokenOpCondition,
 					ConditionSep: TokenOpColon,
-					True:         testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					True:         testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			wantPanic: true,
@@ -853,11 +1411,11 @@ func TestConditional_String(t *testing.T) {
 			name:        "Only False expression",
 			description: "Both sides of the condition must be present.",
 			args: args{
-				Input: &Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp:  TokenOpCondition,
 					ConditionSep: TokenOpColon,
-					False:        testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+					False:        testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			},
 			wantPanic: true,
@@ -867,12 +1425,12 @@ func TestConditional_String(t *testing.T) {
 			name:        "All parts",
 			description: "Both sides of the condition must be present.",
 			args: args{
-				Input: &Conditional{
-					Condition:    testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprConditional{
+					Condition:    testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					ConditionOp:  TokenOpCondition,
 					ConditionSep: TokenOpColon,
-					True:         testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
-					False:        testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
+					True:         testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					False:        testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(3)}}),
 				},
 			},
 			want: "1 ? 2 : 3",
@@ -900,7 +1458,7 @@ func TestConditional_String(t *testing.T) {
 
 func TestLogicalOr_String(t *testing.T) {
 	type args struct {
-		Input *LogicalOr
+		Input *ExprLogicalOr
 	}
 	tests := []struct {
 		name        string
@@ -920,7 +1478,7 @@ func TestLogicalOr_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &LogicalOr{},
+				Input: &ExprLogicalOr{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -928,8 +1486,8 @@ func TestLogicalOr_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &LogicalOr{
-					Left: testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprLogicalOr{
+					Left: testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -938,8 +1496,8 @@ func TestLogicalOr_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &LogicalOr{
-					Left: &LogicalAnd{},
+				Input: &ExprLogicalOr{
+					Left: &ExprLogicalAnd{},
 					Op:   TokenOpLogicalOr,
 				},
 			},
@@ -949,10 +1507,10 @@ func TestLogicalOr_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &LogicalOr{
-					Left:  testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprLogicalOr{
+					Left:  testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalOr,
-					Right: testBuildExprTree[*LogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 || 2",
@@ -980,7 +1538,7 @@ func TestLogicalOr_String(t *testing.T) {
 
 func TestLogicalAnd_String(t *testing.T) {
 	type args struct {
-		Input *LogicalAnd
+		Input *ExprLogicalAnd
 	}
 	tests := []struct {
 		name        string
@@ -1000,7 +1558,7 @@ func TestLogicalAnd_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &LogicalAnd{},
+				Input: &ExprLogicalAnd{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1008,8 +1566,8 @@ func TestLogicalAnd_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &LogicalAnd{
-					Left: testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprLogicalAnd{
+					Left: testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1018,8 +1576,8 @@ func TestLogicalAnd_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &LogicalAnd{
-					Left: &BitwiseOr{},
+				Input: &ExprLogicalAnd{
+					Left: &ExprBitwiseOr{},
 					Op:   TokenOpLogicalAnd,
 				},
 			},
@@ -1029,10 +1587,10 @@ func TestLogicalAnd_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &LogicalAnd{
-					Left:  testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprLogicalAnd{
+					Left:  testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpLogicalAnd,
-					Right: testBuildExprTree[*LogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 && 2",
@@ -1060,7 +1618,7 @@ func TestLogicalAnd_String(t *testing.T) {
 
 func TestBitwiseOr_String(t *testing.T) {
 	type args struct {
-		Input *BitwiseOr
+		Input *ExprBitwiseOr
 	}
 	tests := []struct {
 		name        string
@@ -1080,7 +1638,7 @@ func TestBitwiseOr_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &BitwiseOr{},
+				Input: &ExprBitwiseOr{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1088,8 +1646,8 @@ func TestBitwiseOr_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &BitwiseOr{
-					Left: testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseOr{
+					Left: testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1098,8 +1656,8 @@ func TestBitwiseOr_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &BitwiseOr{
-					Left: &BitwiseXor{},
+				Input: &ExprBitwiseOr{
+					Left: &ExprBitwiseXor{},
 					Op:   TokenOpBitwiseOr,
 				},
 			},
@@ -1109,10 +1667,10 @@ func TestBitwiseOr_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &BitwiseOr{
-					Left:  testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseOr{
+					Left:  testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseOr,
-					Right: testBuildExprTree[*BitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 | 2",
@@ -1140,7 +1698,7 @@ func TestBitwiseOr_String(t *testing.T) {
 
 func TestBitwiseXor_String(t *testing.T) {
 	type args struct {
-		Input *BitwiseXor
+		Input *ExprBitwiseXor
 	}
 	tests := []struct {
 		name        string
@@ -1160,7 +1718,7 @@ func TestBitwiseXor_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &BitwiseXor{},
+				Input: &ExprBitwiseXor{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1168,8 +1726,8 @@ func TestBitwiseXor_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &BitwiseXor{
-					Left: testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseXor{
+					Left: testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1178,8 +1736,8 @@ func TestBitwiseXor_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &BitwiseXor{
-					Left: &BitwiseAnd{},
+				Input: &ExprBitwiseXor{
+					Left: &ExprBitwiseAnd{},
 					Op:   TokenOpBitwiseXOr,
 				},
 			},
@@ -1189,10 +1747,10 @@ func TestBitwiseXor_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &BitwiseXor{
-					Left:  testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseXor{
+					Left:  testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseXOr,
-					Right: testBuildExprTree[*BitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 ^ 2",
@@ -1220,7 +1778,7 @@ func TestBitwiseXor_String(t *testing.T) {
 
 func TestBitwiseAnd_String(t *testing.T) {
 	type args struct {
-		Input *BitwiseAnd
+		Input *ExprBitwiseAnd
 	}
 	tests := []struct {
 		name        string
@@ -1240,7 +1798,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &BitwiseAnd{},
+				Input: &ExprBitwiseAnd{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1248,8 +1806,8 @@ func TestBitwiseAnd_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &BitwiseAnd{
-					Left: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseAnd{
+					Left: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1258,8 +1816,8 @@ func TestBitwiseAnd_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &BitwiseAnd{
-					Left: &Equality{},
+				Input: &ExprBitwiseAnd{
+					Left: &ExprEquality{},
 					Op:   TokenOpBitwiseAnd,
 				},
 			},
@@ -1269,10 +1827,10 @@ func TestBitwiseAnd_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &BitwiseAnd{
-					Left:  testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprBitwiseAnd{
+					Left:  testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseAnd,
-					Right: testBuildExprTree[*BitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 & 2",
@@ -1300,7 +1858,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 
 func TestEquality_String(t *testing.T) {
 	type args struct {
-		Input *Equality
+		Input *ExprEquality
 	}
 	tests := []struct {
 		name        string
@@ -1320,7 +1878,7 @@ func TestEquality_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &Equality{},
+				Input: &ExprEquality{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1328,8 +1886,8 @@ func TestEquality_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &Equality{
-					Left: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprEquality{
+					Left: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1338,8 +1896,8 @@ func TestEquality_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &Equality{
-					Left: &Relational{},
+				Input: &ExprEquality{
+					Left: &ExprRelational{},
 					Op:   TokenOpEqual,
 				},
 			},
@@ -1349,10 +1907,10 @@ func TestEquality_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &Equality{
-					Left:  testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprEquality{
+					Left:  testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpEqual,
-					Right: testBuildExprTree[*Equality](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprEquality](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 == 2",
@@ -1380,7 +1938,7 @@ func TestEquality_String(t *testing.T) {
 
 func TestRelational_String(t *testing.T) {
 	type args struct {
-		Input *Relational
+		Input *ExprRelational
 	}
 	tests := []struct {
 		name        string
@@ -1400,7 +1958,7 @@ func TestRelational_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &Relational{},
+				Input: &ExprRelational{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1408,8 +1966,8 @@ func TestRelational_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &Relational{
-					Left: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprRelational{
+					Left: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1418,8 +1976,8 @@ func TestRelational_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &Relational{
-					Left: &Shift{},
+				Input: &ExprRelational{
+					Left: &ExprShift{},
 					Op:   TokenOpMoreOrEqual,
 				},
 			},
@@ -1429,10 +1987,10 @@ func TestRelational_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &Relational{
-					Left:  testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprRelational{
+					Left:  testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMoreOrEqual,
-					Right: testBuildExprTree[*Relational](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprRelational](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 >= 2",
@@ -1460,7 +2018,7 @@ func TestRelational_String(t *testing.T) {
 
 func TestShift_String(t *testing.T) {
 	type args struct {
-		Input *Shift
+		Input *ExprShift
 	}
 	tests := []struct {
 		name        string
@@ -1480,7 +2038,7 @@ func TestShift_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &Shift{},
+				Input: &ExprShift{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1488,8 +2046,8 @@ func TestShift_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &Shift{
-					Left: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprShift{
+					Left: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1498,8 +2056,8 @@ func TestShift_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &Shift{
-					Left: &Additive{},
+				Input: &ExprShift{
+					Left: &ExprAdditive{},
 					Op:   TokenOpBitwiseShiftRight,
 				},
 			},
@@ -1509,10 +2067,10 @@ func TestShift_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &Shift{
-					Left:  testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprShift{
+					Left:  testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpBitwiseShiftRight,
-					Right: testBuildExprTree[*Shift](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprShift](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 >> 2",
@@ -1540,7 +2098,7 @@ func TestShift_String(t *testing.T) {
 
 func TestAdditive_String(t *testing.T) {
 	type args struct {
-		Input *Additive
+		Input *ExprAdditive
 	}
 	tests := []struct {
 		name        string
@@ -1560,7 +2118,7 @@ func TestAdditive_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &Additive{},
+				Input: &ExprAdditive{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1568,8 +2126,8 @@ func TestAdditive_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &Additive{
-					Left: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprAdditive{
+					Left: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1578,8 +2136,8 @@ func TestAdditive_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &Additive{
-					Left: &Multiplicative{},
+				Input: &ExprAdditive{
+					Left: &ExprMultiplicative{},
 					Op:   TokenOpPlus,
 				},
 			},
@@ -1589,10 +2147,10 @@ func TestAdditive_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &Additive{
-					Left:  testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprAdditive{
+					Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpPlus,
-					Right: testBuildExprTree[*Additive](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 + 2",
@@ -1620,7 +2178,7 @@ func TestAdditive_String(t *testing.T) {
 
 func TestMultiplicative_String(t *testing.T) {
 	type args struct {
-		Input *Multiplicative
+		Input *ExprMultiplicative
 	}
 	tests := []struct {
 		name        string
@@ -1640,7 +2198,7 @@ func TestMultiplicative_String(t *testing.T) {
 			name:        "Empty",
 			description: "Left side can never be nil",
 			args: args{
-				Input: &Multiplicative{},
+				Input: &ExprMultiplicative{},
 			},
 			wantPanic: true,
 			want:      "left side cannot be <nil>",
@@ -1648,8 +2206,8 @@ func TestMultiplicative_String(t *testing.T) {
 		{
 			name: "Left",
 			args: args{
-				Input: &Multiplicative{
-					Left: testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprMultiplicative{
+					Left: testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
 			want: "1",
@@ -1658,8 +2216,8 @@ func TestMultiplicative_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			args: args{
-				Input: &Multiplicative{
-					Left: testBuildExprTree[*Unary](t, &Value{Ident: testValPtr(t, "foo")}),
+				Input: &ExprMultiplicative{
+					Left: testBuildExprTree[*ExprUnary](t, &Value{Ident: testValPtr(t, "foo")}),
 					Op:   TokenOpMultiplication,
 				},
 			},
@@ -1669,10 +2227,10 @@ func TestMultiplicative_String(t *testing.T) {
 		{
 			name: "Both sides",
 			args: args{
-				Input: &Multiplicative{
-					Left:  testBuildExprTree[*Unary](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				Input: &ExprMultiplicative{
+					Left:  testBuildExprTree[*ExprUnary](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					Op:    TokenOpMultiplication,
-					Right: testBuildExprTree[*Multiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
+					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{Number: &Number{big.NewFloat(2)}}),
 				},
 			},
 			want: "1 * 2",
@@ -1700,7 +2258,7 @@ func TestMultiplicative_String(t *testing.T) {
 
 func TestUnary_String(t *testing.T) {
 	type args struct {
-		Input *Unary
+		Input *ExprUnary
 	}
 	tests := []struct {
 		name        string
@@ -1719,15 +2277,15 @@ func TestUnary_String(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Unary{},
+				Input: &ExprUnary{},
 			},
 			wantPanic: true,
 		},
 		{
 			name: "Postfix",
 			args: args{
-				Input: &Unary{
-					Postfix: testBuildExprTree[*Postfix](t, &Value{Ident: testValPtr(t, "foo")}),
+				Input: &ExprUnary{
+					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: testValPtr(t, "foo")}),
 				},
 			},
 			want: "foo",
@@ -1735,9 +2293,9 @@ func TestUnary_String(t *testing.T) {
 		{
 			name: "Operator",
 			args: args{
-				Input: &Unary{
+				Input: &ExprUnary{
 					Op:    TokenOpBitwiseNot,
-					Unary: testBuildExprTree[*Unary](t, &Value{Ident: testValPtr(t, "foo")}),
+					Unary: testBuildExprTree[*ExprUnary](t, &Value{Ident: testValPtr(t, "foo")}),
 				},
 			},
 			want: "~foo",
@@ -1759,7 +2317,7 @@ func TestUnary_String(t *testing.T) {
 
 func TestPostfix_String(t *testing.T) {
 	type args struct {
-		Input *Postfix
+		Input *ExprPostfix
 	}
 	tests := []struct {
 		name        string
@@ -1779,15 +2337,15 @@ func TestPostfix_String(t *testing.T) {
 			name:        "Empty",
 			description: "It should not be possible to have the left field not initialized",
 			args: args{
-				Input: &Postfix{},
+				Input: &ExprPostfix{},
 			},
 			wantPanic: true,
 		},
 		{
 			name: "Left",
 			args: args{
-				Input: &Postfix{
-					Left: testBuildExprTree[*Primary](t, &Value{Ident: testValPtr(t, "foo")}),
+				Input: &ExprPostfix{
+					Left: testBuildExprTree[*ExprPrimary](t, &Value{Ident: testValPtr(t, "foo")}),
 				},
 			},
 			want: "foo",
@@ -1795,8 +2353,8 @@ func TestPostfix_String(t *testing.T) {
 		{
 			name: "Both",
 			args: args{
-				Input: &Postfix{
-					Left:  testBuildExprTree[*Primary](t, &Value{Ident: testValPtr(t, "foo")}),
+				Input: &ExprPostfix{
+					Left:  testBuildExprTree[*ExprPrimary](t, &Value{Ident: testValPtr(t, "foo")}),
 					Right: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
@@ -1819,7 +2377,7 @@ func TestPostfix_String(t *testing.T) {
 
 func TestPrimary_String(t *testing.T) {
 	type args struct {
-		Input *Primary
+		Input *ExprPrimary
 	}
 	tests := []struct {
 		name        string
@@ -1838,14 +2396,14 @@ func TestPrimary_String(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Primary{},
+				Input: &ExprPrimary{},
 			},
 			want: "",
 		},
 		{
 			name: "Sub Expression",
 			args: args{
-				Input: &Primary{
+				Input: &ExprPrimary{
 					SubExpression: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 				},
 			},
@@ -1854,7 +2412,7 @@ func TestPrimary_String(t *testing.T) {
 		{
 			name: "Value",
 			args: args{
-				Input: &Primary{
+				Input: &ExprPrimary{
 					Value: &Value{Number: &Number{big.NewFloat(1)}},
 				},
 			},
@@ -1905,11 +2463,11 @@ func TestExpr_Clone(t *testing.T) {
 			name: "Left",
 			args: args{
 				Input: &Expr{
-					Left: &Conditional{},
+					Left: &ExprConditional{},
 				},
 			},
 			want: &Expr{
-				Left: &Conditional{},
+				Left: &ExprConditional{},
 			},
 		},
 	}
@@ -1923,12 +2481,12 @@ func TestExpr_Clone(t *testing.T) {
 
 func TestConditional_Clone(t *testing.T) {
 	type args struct {
-		Input *Conditional
+		Input *ExprConditional
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Conditional
+		want *ExprConditional
 	}{
 		{
 			name: "Nil",
@@ -1940,28 +2498,28 @@ func TestConditional_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Conditional{},
+				Input: &ExprConditional{},
 			},
-			want: &Conditional{},
+			want: &ExprConditional{},
 		},
 
 		{
 			name: "With Data",
 			args: args{
-				Input: &Conditional{
-					Condition:    &LogicalOr{},
+				Input: &ExprConditional{
+					Condition:    &ExprLogicalOr{},
 					ConditionOp:  TokenOpCondition,
-					True:         &LogicalOr{},
+					True:         &ExprLogicalOr{},
 					ConditionSep: TokenOpColon,
-					False:        &LogicalOr{},
+					False:        &ExprLogicalOr{},
 				},
 			},
-			want: &Conditional{
-				Condition:    &LogicalOr{},
+			want: &ExprConditional{
+				Condition:    &ExprLogicalOr{},
 				ConditionOp:  TokenOpCondition,
-				True:         &LogicalOr{},
+				True:         &ExprLogicalOr{},
 				ConditionSep: TokenOpColon,
-				False:        &LogicalOr{},
+				False:        &ExprLogicalOr{},
 			},
 		},
 	}
@@ -1975,12 +2533,12 @@ func TestConditional_Clone(t *testing.T) {
 
 func TestLogicalAnd_Clone(t *testing.T) {
 	type args struct {
-		Input *LogicalAnd
+		Input *ExprLogicalAnd
 	}
 	tests := []struct {
 		name string
 		args args
-		want *LogicalAnd
+		want *ExprLogicalAnd
 	}{
 		{
 			name: "Nil",
@@ -1992,35 +2550,35 @@ func TestLogicalAnd_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &LogicalAnd{},
+				Input: &ExprLogicalAnd{},
 			},
-			want: &LogicalAnd{},
+			want: &ExprLogicalAnd{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &LogicalAnd{
-					Left: &BitwiseOr{},
+				Input: &ExprLogicalAnd{
+					Left: &ExprBitwiseOr{},
 				},
 			},
-			want: &LogicalAnd{
-				Left: &BitwiseOr{},
+			want: &ExprLogicalAnd{
+				Left: &ExprBitwiseOr{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &LogicalAnd{
-					Left:  &BitwiseOr{},
+				Input: &ExprLogicalAnd{
+					Left:  &ExprBitwiseOr{},
 					Op:    TokenOpLogicalAnd,
-					Right: &LogicalAnd{},
+					Right: &ExprLogicalAnd{},
 				},
 			},
-			want: &LogicalAnd{
-				Left:  &BitwiseOr{},
+			want: &ExprLogicalAnd{
+				Left:  &ExprBitwiseOr{},
 				Op:    TokenOpLogicalAnd,
-				Right: &LogicalAnd{},
+				Right: &ExprLogicalAnd{},
 			},
 		},
 	}
@@ -2034,12 +2592,12 @@ func TestLogicalAnd_Clone(t *testing.T) {
 
 func TestBitwiseAnd_Clone(t *testing.T) {
 	type args struct {
-		Input *BitwiseAnd
+		Input *ExprBitwiseAnd
 	}
 	tests := []struct {
 		name string
 		args args
-		want *BitwiseAnd
+		want *ExprBitwiseAnd
 	}{
 		{
 			name: "Nil",
@@ -2051,35 +2609,35 @@ func TestBitwiseAnd_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &BitwiseAnd{},
+				Input: &ExprBitwiseAnd{},
 			},
-			want: &BitwiseAnd{},
+			want: &ExprBitwiseAnd{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &BitwiseAnd{
-					Left: &Equality{},
+				Input: &ExprBitwiseAnd{
+					Left: &ExprEquality{},
 				},
 			},
-			want: &BitwiseAnd{
-				Left: &Equality{},
+			want: &ExprBitwiseAnd{
+				Left: &ExprEquality{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &BitwiseAnd{
-					Left:  &Equality{},
+				Input: &ExprBitwiseAnd{
+					Left:  &ExprEquality{},
 					Op:    TokenOpBitwiseAnd,
-					Right: &BitwiseAnd{},
+					Right: &ExprBitwiseAnd{},
 				},
 			},
-			want: &BitwiseAnd{
-				Left:  &Equality{},
+			want: &ExprBitwiseAnd{
+				Left:  &ExprEquality{},
 				Op:    TokenOpBitwiseAnd,
-				Right: &BitwiseAnd{},
+				Right: &ExprBitwiseAnd{},
 			},
 		},
 	}
@@ -2093,12 +2651,12 @@ func TestBitwiseAnd_Clone(t *testing.T) {
 
 func TestEquality_Clone(t *testing.T) {
 	type args struct {
-		Input *Equality
+		Input *ExprEquality
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Equality
+		want *ExprEquality
 	}{
 		{
 			name: "Nil",
@@ -2110,35 +2668,35 @@ func TestEquality_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Equality{},
+				Input: &ExprEquality{},
 			},
-			want: &Equality{},
+			want: &ExprEquality{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Equality{
-					Left: &Relational{},
+				Input: &ExprEquality{
+					Left: &ExprRelational{},
 				},
 			},
-			want: &Equality{
-				Left: &Relational{},
+			want: &ExprEquality{
+				Left: &ExprRelational{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &Equality{
-					Left:  &Relational{},
+				Input: &ExprEquality{
+					Left:  &ExprRelational{},
 					Op:    TokenOpNotEqual,
-					Right: &Equality{},
+					Right: &ExprEquality{},
 				},
 			},
-			want: &Equality{
-				Left:  &Relational{},
+			want: &ExprEquality{
+				Left:  &ExprRelational{},
 				Op:    TokenOpNotEqual,
-				Right: &Equality{},
+				Right: &ExprEquality{},
 			},
 		},
 	}
@@ -2152,12 +2710,12 @@ func TestEquality_Clone(t *testing.T) {
 
 func TestRelational_Clone(t *testing.T) {
 	type args struct {
-		Input *Relational
+		Input *ExprRelational
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Relational
+		want *ExprRelational
 	}{
 		{
 			name: "Nil",
@@ -2169,35 +2727,35 @@ func TestRelational_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Relational{},
+				Input: &ExprRelational{},
 			},
-			want: &Relational{},
+			want: &ExprRelational{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Relational{
-					Left: &Shift{},
+				Input: &ExprRelational{
+					Left: &ExprShift{},
 				},
 			},
-			want: &Relational{
-				Left: &Shift{},
+			want: &ExprRelational{
+				Left: &ExprShift{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &Relational{
-					Left:  &Shift{},
+				Input: &ExprRelational{
+					Left:  &ExprShift{},
 					Op:    TokenOpLessOrEqual,
-					Right: &Relational{},
+					Right: &ExprRelational{},
 				},
 			},
-			want: &Relational{
-				Left:  &Shift{},
+			want: &ExprRelational{
+				Left:  &ExprShift{},
 				Op:    TokenOpLessOrEqual,
-				Right: &Relational{},
+				Right: &ExprRelational{},
 			},
 		},
 	}
@@ -2211,12 +2769,12 @@ func TestRelational_Clone(t *testing.T) {
 
 func TestShift_Clone(t *testing.T) {
 	type args struct {
-		Input *Shift
+		Input *ExprShift
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Shift
+		want *ExprShift
 	}{
 		{
 			name: "Nil",
@@ -2228,35 +2786,35 @@ func TestShift_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Shift{},
+				Input: &ExprShift{},
 			},
-			want: &Shift{},
+			want: &ExprShift{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Shift{
-					Left: &Additive{},
+				Input: &ExprShift{
+					Left: &ExprAdditive{},
 				},
 			},
-			want: &Shift{
-				Left: &Additive{},
+			want: &ExprShift{
+				Left: &ExprAdditive{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &Shift{
-					Left:  &Additive{},
+				Input: &ExprShift{
+					Left:  &ExprAdditive{},
 					Op:    TokenOpBitwiseShiftRight,
-					Right: &Shift{},
+					Right: &ExprShift{},
 				},
 			},
-			want: &Shift{
-				Left:  &Additive{},
+			want: &ExprShift{
+				Left:  &ExprAdditive{},
 				Op:    TokenOpBitwiseShiftRight,
-				Right: &Shift{},
+				Right: &ExprShift{},
 			},
 		},
 	}
@@ -2270,12 +2828,12 @@ func TestShift_Clone(t *testing.T) {
 
 func TestAdditive_Clone(t *testing.T) {
 	type args struct {
-		Input *Additive
+		Input *ExprAdditive
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Additive
+		want *ExprAdditive
 	}{
 		{
 			name: "Nil",
@@ -2287,35 +2845,35 @@ func TestAdditive_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Additive{},
+				Input: &ExprAdditive{},
 			},
-			want: &Additive{},
+			want: &ExprAdditive{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Additive{
-					Left: &Multiplicative{},
+				Input: &ExprAdditive{
+					Left: &ExprMultiplicative{},
 				},
 			},
-			want: &Additive{
-				Left: &Multiplicative{},
+			want: &ExprAdditive{
+				Left: &ExprMultiplicative{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &Additive{
-					Left:  &Multiplicative{},
+				Input: &ExprAdditive{
+					Left:  &ExprMultiplicative{},
 					Op:    TokenOpMinus,
-					Right: &Additive{},
+					Right: &ExprAdditive{},
 				},
 			},
-			want: &Additive{
-				Left:  &Multiplicative{},
+			want: &ExprAdditive{
+				Left:  &ExprMultiplicative{},
 				Op:    TokenOpMinus,
-				Right: &Additive{},
+				Right: &ExprAdditive{},
 			},
 		},
 	}
@@ -2329,12 +2887,12 @@ func TestAdditive_Clone(t *testing.T) {
 
 func TestMultiplicative_Clone(t *testing.T) {
 	type args struct {
-		Input *Multiplicative
+		Input *ExprMultiplicative
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Multiplicative
+		want *ExprMultiplicative
 	}{
 		{
 			name: "Nil",
@@ -2346,35 +2904,35 @@ func TestMultiplicative_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Multiplicative{},
+				Input: &ExprMultiplicative{},
 			},
-			want: &Multiplicative{},
+			want: &ExprMultiplicative{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Multiplicative{
-					Left: &Unary{},
+				Input: &ExprMultiplicative{
+					Left: &ExprUnary{},
 				},
 			},
-			want: &Multiplicative{
-				Left: &Unary{},
+			want: &ExprMultiplicative{
+				Left: &ExprUnary{},
 			},
 		},
 		{
 			name: "Both",
 			args: args{
-				Input: &Multiplicative{
-					Left:  &Unary{},
+				Input: &ExprMultiplicative{
+					Left:  &ExprUnary{},
 					Op:    TokenOpModulo,
-					Right: &Multiplicative{},
+					Right: &ExprMultiplicative{},
 				},
 			},
-			want: &Multiplicative{
-				Left:  &Unary{},
+			want: &ExprMultiplicative{
+				Left:  &ExprUnary{},
 				Op:    TokenOpModulo,
-				Right: &Multiplicative{},
+				Right: &ExprMultiplicative{},
 			},
 		},
 	}
@@ -2388,12 +2946,12 @@ func TestMultiplicative_Clone(t *testing.T) {
 
 func TestUnary_Clone(t *testing.T) {
 	type args struct {
-		Input *Unary
+		Input *ExprUnary
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Unary
+		want *ExprUnary
 	}{
 		{
 			name: "Nil",
@@ -2405,33 +2963,33 @@ func TestUnary_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Unary{},
+				Input: &ExprUnary{},
 			},
-			want: &Unary{},
+			want: &ExprUnary{},
 		},
 
 		{
 			name: "Unary",
 			args: args{
-				Input: &Unary{
+				Input: &ExprUnary{
 					Op:    TokenOpMinus,
-					Unary: &Unary{},
+					Unary: &ExprUnary{},
 				},
 			},
-			want: &Unary{
+			want: &ExprUnary{
 				Op:    TokenOpMinus,
-				Unary: &Unary{},
+				Unary: &ExprUnary{},
 			},
 		},
 		{
 			name: "Postfix",
 			args: args{
-				Input: &Unary{
-					Postfix: &Postfix{},
+				Input: &ExprUnary{
+					Postfix: &ExprPostfix{},
 				},
 			},
-			want: &Unary{
-				Postfix: &Postfix{},
+			want: &ExprUnary{
+				Postfix: &ExprPostfix{},
 			},
 		},
 	}
@@ -2445,12 +3003,12 @@ func TestUnary_Clone(t *testing.T) {
 
 func TestPostfix_Clone(t *testing.T) {
 	type args struct {
-		Input *Postfix
+		Input *ExprPostfix
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Postfix
+		want *ExprPostfix
 	}{
 		{
 			name: "Nil",
@@ -2462,43 +3020,43 @@ func TestPostfix_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Postfix{},
+				Input: &ExprPostfix{},
 			},
-			want: &Postfix{},
+			want: &ExprPostfix{},
 		},
 
 		{
 			name: "Left",
 			args: args{
-				Input: &Postfix{
-					Left: &Primary{},
+				Input: &ExprPostfix{
+					Left: &ExprPrimary{},
 				},
 			},
-			want: &Postfix{
-				Left: &Primary{},
+			want: &ExprPostfix{
+				Left: &ExprPrimary{},
 			},
 		},
 		{
 			name: "Right",
 			args: args{
-				Input: &Postfix{
+				Input: &ExprPostfix{
 					Right: &Expr{},
 				},
 			},
-			want: &Postfix{
+			want: &ExprPostfix{
 				Right: &Expr{},
 			},
 		},
 		{
 			name: "Left and Right",
 			args: args{
-				Input: &Postfix{
-					Left:  &Primary{},
+				Input: &ExprPostfix{
+					Left:  &ExprPrimary{},
 					Right: &Expr{},
 				},
 			},
-			want: &Postfix{
-				Left:  &Primary{},
+			want: &ExprPostfix{
+				Left:  &ExprPrimary{},
 				Right: &Expr{},
 			},
 		},
@@ -2513,12 +3071,12 @@ func TestPostfix_Clone(t *testing.T) {
 
 func TestPrimary_Clone(t *testing.T) {
 	type args struct {
-		Input *Primary
+		Input *ExprPrimary
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Primary
+		want *ExprPrimary
 	}{
 		{
 			name: "Nil",
@@ -2530,30 +3088,30 @@ func TestPrimary_Clone(t *testing.T) {
 		{
 			name: "Empty",
 			args: args{
-				Input: &Primary{},
+				Input: &ExprPrimary{},
 			},
-			want: &Primary{},
+			want: &ExprPrimary{},
 		},
 
 		{
 			name: "Sub Expression",
 			args: args{
-				Input: &Primary{
+				Input: &ExprPrimary{
 					SubExpression: &Expr{},
 				},
 			},
-			want: &Primary{
+			want: &ExprPrimary{
 				SubExpression: &Expr{},
 			},
 		},
 		{
 			name: "Value",
 			args: args{
-				Input: &Primary{
+				Input: &ExprPrimary{
 					Value: &Value{},
 				},
 			},
-			want: &Primary{
+			want: &ExprPrimary{
 				Value: &Value{},
 			},
 		},

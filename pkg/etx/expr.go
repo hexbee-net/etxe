@@ -1,91 +1,121 @@
 package etx
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+// TODO: function calls
+// TODO: dot expressions a.b.c
 
 type Expr struct {
-	Left *Conditional `parser:"@@"`
+	Left   *ExprConditional `parser:"(   @@  " json:"left,omitempty"`
+	If     *ExprIf          `parser:"  | @@  " json:"if,omitempty"`
+	Switch *ExprSwitch      `parser:"  | @@ )" json:"switch,omitempty"`
 }
 
-type Conditional struct {
-	Condition    *LogicalOr `parser:"@@"`
-	ConditionOp  string     `parser:"[ Whitespace? @OpCondition Whitespace?"`
-	True         *LogicalOr `parser:"  @@"`
-	ConditionSep string     `parser:"  Whitespace? @OpColon Whitespace?"`
-	False        *LogicalOr `parser:"  @@ ]"`
+type ExprIf struct {
+	Condition *ExprLogicalOr `parser:"If Whitespace @@ (Whitespace|NewLine)"`
+	Left      *Expr          `parser:"BlockStart (Whitespace|NewLine)? @@? (Whitespace|NewLine)? BlockEnd (Whitespace|NewLine)?"`
+	Right     *Expr          `parser:"[ Else (Whitespace|NewLine) BlockStart (Whitespace|NewLine)? @@ (Whitespace|NewLine)? BlockEnd ]"`
 }
 
-type LogicalOr struct {
-	Left  *LogicalAnd `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @OpLogicalOr Whitespace?"`
-	Right *LogicalOr  `parser:"  @@ ]"`
+type ExprSwitch struct {
+	Selector *ExprLogicalOr `parser:"Switch Whitespace @@ (Whitespace|NewLine) BlockStart (Whitespace|NewLine)?"`
+	Cases    []*ExprCase    `parser:"@@* (Whitespace|NewLine)? BlockEnd"`
 }
 
-type LogicalAnd struct {
-	Left  *BitwiseOr  `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @OpLogicalAnd Whitespace?"`
-	Right *LogicalAnd `parser:"  @@ ]"`
+type ExprCase struct {
+	Conditions []*ExprLogicalOr `parser:"(  (Whitespace|NewLine)? Case Whitespace @@ ( (Whitespace|NewLine)? ',' (Whitespace|NewLine)? @@ )* Whitespace? OpColon (Whitespace|NewLine)?"`
+	Default    bool             `parser:" | @'default'  Whitespace? OpColon (Whitespace|NewLine)? )"`
+	Expr       *Expr            `parser:"BlockStart (Whitespace|NewLine)? @@ (Whitespace|NewLine)? BlockEnd (Whitespace|NewLine)?"`
 }
 
-type BitwiseOr struct {
-	Left  *BitwiseXor `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @OpBitwiseOr Whitespace?"`
-	Right *BitwiseOr  `parser:"  @@ ]"`
+// ExprConditional is a ternary expression.
+//
+// Ternaries are bad but necessary for Terraform compatibility, so they are
+// included at the expression top level but `if` and `switch` just skip them
+// and go straight to the next level.
+type ExprConditional struct {
+	Condition    *ExprLogicalOr `parser:"@@"`
+	ConditionOp  string         `parser:"[ Whitespace? @OpCondition Whitespace?"`
+	True         *ExprLogicalOr `parser:"  @@"`
+	ConditionSep string         `parser:"  Whitespace? @OpColon Whitespace?"`
+	False        *ExprLogicalOr `parser:"  @@ ]"`
 }
 
-type BitwiseXor struct {
-	Left  *BitwiseAnd `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @OpBitwiseXOr Whitespace?"`
-	Right *BitwiseXor `parser:"  @@ ]"`
+type ExprLogicalOr struct {
+	Left  *ExprLogicalAnd `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @OpLogicalOr Whitespace?"`
+	Right *ExprLogicalOr  `parser:"  @@ ]"`
 }
 
-type BitwiseAnd struct {
-	Left  *Equality   `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @OpBitwiseAnd Whitespace?"`
-	Right *BitwiseAnd `parser:"  @@ ]"`
+type ExprLogicalAnd struct {
+	Left  *ExprBitwiseOr  `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @OpLogicalAnd Whitespace?"`
+	Right *ExprLogicalAnd `parser:"  @@ ]"`
 }
 
-type Equality struct {
-	Left  *Relational `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @( OpNotEqual | OpEqual ) Whitespace?"`
-	Right *Equality   `parser:"  @@ ]"`
+type ExprBitwiseOr struct {
+	Left  *ExprBitwiseXor `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @OpBitwiseOr Whitespace?"`
+	Right *ExprBitwiseOr  `parser:"  @@ ]"`
 }
 
-type Relational struct {
-	Left  *Shift      `parser:"@@"`
-	Op    string      `parser:"[ Whitespace? @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual ) Whitespace?"`
-	Right *Relational `parser:"  @@ ]"`
+type ExprBitwiseXor struct {
+	Left  *ExprBitwiseAnd `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @OpBitwiseXOr Whitespace?"`
+	Right *ExprBitwiseXor `parser:"  @@ ]"`
 }
 
-type Shift struct {
-	Left  *Additive `parser:"@@"`
-	Op    string    `parser:"[ Whitespace? @( OpBitwiseShiftLeft | OpBitwiseShiftRight ) Whitespace?"`
-	Right *Shift    `parser:"  @@ ]"`
+type ExprBitwiseAnd struct {
+	Left  *ExprEquality   `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @OpBitwiseAnd Whitespace?"`
+	Right *ExprBitwiseAnd `parser:"  @@ ]"`
 }
 
-type Additive struct {
-	Left  *Multiplicative `parser:"@@"`
-	Op    string          `parser:"[ Whitespace? @( OpMinus | OpPlus ) Whitespace?"`
-	Right *Additive       `parser:"  @@ ]"`
+type ExprEquality struct {
+	Left  *ExprRelational `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @( OpNotEqual | OpEqual ) Whitespace?"`
+	Right *ExprEquality   `parser:"  @@ ]"`
 }
 
-type Multiplicative struct {
-	Left  *Unary          `parser:"@@"`
-	Op    string          `parser:"[ Whitespace? @( OpDivision | OpMultiplication | OpModulo ) Whitespace?"`
-	Right *Multiplicative `parser:"  @@ ]"`
+type ExprRelational struct {
+	Left  *ExprShift      `parser:"@@"`
+	Op    string          `parser:"[ Whitespace? @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual ) Whitespace?"`
+	Right *ExprRelational `parser:"  @@ ]"`
 }
 
-type Unary struct {
-	Op      string   `parser:"  ( @( OpBitwiseNot | OpLogicalNot | OpMinus ) Whitespace?"`
-	Unary   *Unary   `parser:"    @@ )"`
-	Postfix *Postfix `parser:"| @@"`
+type ExprShift struct {
+	Left  *ExprAdditive `parser:"@@"`
+	Op    string        `parser:"[ Whitespace? @( OpBitwiseShiftLeft | OpBitwiseShiftRight ) Whitespace?"`
+	Right *ExprShift    `parser:"  @@ ]"`
 }
 
-type Postfix struct {
-	Left  *Primary `parser:"@@"`
-	Right *Expr    `parser:"[ Whitespace? OpLBracket Whitespace? @@ Whitespace? OpRBracket Whitespace? ]"`
+type ExprAdditive struct {
+	Left  *ExprMultiplicative `parser:"@@"`
+	Op    string              `parser:"[ Whitespace? @( OpMinus | OpPlus ) Whitespace?"`
+	Right *ExprAdditive       `parser:"  @@ ]"`
 }
 
-type Primary struct {
+type ExprMultiplicative struct {
+	Left  *ExprUnary          `parser:"@@"`
+	Op    string              `parser:"[ Whitespace? @( OpDivision | OpMultiplication | OpModulo ) Whitespace?"`
+	Right *ExprMultiplicative `parser:"  @@ ]"`
+}
+
+type ExprUnary struct {
+	Op      string       `parser:"  ( @( OpBitwiseNot | OpLogicalNot | OpMinus ) Whitespace?"`
+	Unary   *ExprUnary   `parser:"    @@ )"`
+	Postfix *ExprPostfix `parser:"| @@"`
+}
+
+type ExprPostfix struct {
+	Left  *ExprPrimary `parser:"@@"`
+	Right *Expr        `parser:"[ Whitespace? OpLBracket Whitespace? @@ Whitespace? OpRBracket Whitespace? ]"`
+}
+
+type ExprPrimary struct {
 	SubExpression *Expr  `parser:"  OpLParen Whitespace? @@ Whitespace? OpRParen"`
 	Value         *Value `parser:"| @@"`
 }
@@ -93,10 +123,70 @@ type Primary struct {
 // /////////////////////////////////////
 
 func (e *Expr) String() string {
-	return e.Left.String()
+	switch {
+	case e.Left != nil:
+		return e.Left.String()
+	case e.If != nil:
+		return e.If.String()
+	case e.Switch != nil:
+		return e.Switch.String()
+	default:
+		panic("expression not set")
+	}
 }
 
-func (e *Conditional) String() string {
+func (e *ExprIf) String() string {
+	switch {
+	case e.Condition == nil:
+		panic("if condition cannot be <nil>")
+	case e.Left == nil:
+		return fmt.Sprintf("if %s { }", e.Condition)
+	case e.Right == nil:
+		return fmt.Sprintf("if %s {\n%s\n}", e.Condition, indent(e.Left.String(), indentationChar))
+	default:
+		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition, indent(e.Left.String(), indentationChar), indent(e.Right.String(), indentationChar))
+
+	}
+}
+
+func (e *ExprSwitch) String() string {
+	if e.Selector == nil {
+		panic("switch selector cannot be <nil>")
+	}
+
+	switch len(e.Cases) {
+	case 0:
+		return fmt.Sprintf("switch %s { }", e.Selector)
+
+	default:
+		cases := make([]string, 0, len(e.Cases))
+		for _, c := range e.Cases {
+			cases = append(cases, c.String())
+		}
+
+		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector, indent(strings.Join(cases, "\n"), indentationChar))
+	}
+}
+
+func (e *ExprCase) String() string {
+	switch {
+	case e.Conditions != nil:
+		conditions := make([]string, 0, len(e.Conditions))
+		for _, c := range e.Conditions {
+			conditions = append(conditions, c.String())
+		}
+
+		return fmt.Sprintf("case %s: {\n%s\n}", strings.Join(conditions, ", "), indent(e.Expr.String(), indentationChar))
+
+	case e.Default:
+		return fmt.Sprintf("default: {\n%s\n}", indent(e.Expr.String(), indentationChar))
+
+	default:
+		panic("non-default case statement without condition")
+	}
+}
+
+func (e *ExprConditional) String() string {
 	switch {
 	case e.ConditionOp != "" && e.ConditionSep == "",
 		e.ConditionOp == "" && e.ConditionSep != "":
@@ -122,7 +212,7 @@ func (e *Conditional) String() string {
 	}
 }
 
-func (e *LogicalOr) String() string {
+func (e *ExprLogicalOr) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -135,7 +225,7 @@ func (e *LogicalOr) String() string {
 	}
 }
 
-func (e *LogicalAnd) String() string {
+func (e *ExprLogicalAnd) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -148,7 +238,7 @@ func (e *LogicalAnd) String() string {
 	}
 }
 
-func (e *BitwiseOr) String() string {
+func (e *ExprBitwiseOr) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -161,7 +251,7 @@ func (e *BitwiseOr) String() string {
 	}
 }
 
-func (e *BitwiseXor) String() string {
+func (e *ExprBitwiseXor) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -174,7 +264,7 @@ func (e *BitwiseXor) String() string {
 	}
 }
 
-func (e *BitwiseAnd) String() string {
+func (e *ExprBitwiseAnd) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -187,7 +277,7 @@ func (e *BitwiseAnd) String() string {
 	}
 }
 
-func (e *Equality) String() string {
+func (e *ExprEquality) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -200,7 +290,7 @@ func (e *Equality) String() string {
 	}
 }
 
-func (e *Relational) String() string {
+func (e *ExprRelational) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -213,7 +303,7 @@ func (e *Relational) String() string {
 	}
 }
 
-func (e *Shift) String() string {
+func (e *ExprShift) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -226,7 +316,7 @@ func (e *Shift) String() string {
 	}
 }
 
-func (e *Additive) String() string {
+func (e *ExprAdditive) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -239,7 +329,7 @@ func (e *Additive) String() string {
 	}
 }
 
-func (e *Multiplicative) String() string {
+func (e *ExprMultiplicative) String() string {
 	switch {
 	case e.Op != "" && e.Right != nil:
 		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
@@ -252,7 +342,7 @@ func (e *Multiplicative) String() string {
 	}
 }
 
-func (e *Unary) String() string {
+func (e *ExprUnary) String() string {
 	if e.Postfix != nil {
 		return e.Postfix.String()
 	}
@@ -264,7 +354,7 @@ func (e *Unary) String() string {
 	return fmt.Sprintf("%s%s", e.Op, e.Unary)
 }
 
-func (e *Postfix) String() string {
+func (e *ExprPostfix) String() string {
 	if e.Right != nil {
 		return fmt.Sprintf("%s[%s]", e.Left, e.Right)
 	}
@@ -272,7 +362,7 @@ func (e *Postfix) String() string {
 	return e.Left.String()
 }
 
-func (e *Primary) String() string {
+func (e *ExprPrimary) String() string {
 	switch {
 	case e.SubExpression != nil:
 		return e.SubExpression.String()
@@ -291,16 +381,65 @@ func (e *Expr) Clone() *Expr {
 	}
 
 	return &Expr{
-		Left: e.Left.Clone(),
+		Left:   e.Left.Clone(),
+		If:     e.If.Clone(),
+		Switch: e.Switch.Clone(),
 	}
 }
 
-func (e *Conditional) Clone() *Conditional {
+func (e *ExprIf) Clone() *ExprIf {
 	if e == nil {
 		return nil
 	}
 
-	return &Conditional{
+	return &ExprIf{
+		Condition: e.Condition.Clone(),
+		Left:      e.Left.Clone(),
+		Right:     e.Right.Clone(),
+	}
+}
+
+func (e *ExprSwitch) Clone() *ExprSwitch {
+	if e == nil {
+		return nil
+	}
+
+	out := &ExprSwitch{
+		Selector: e.Selector.Clone(),
+		Cases:    make([]*ExprCase, 0, len(e.Cases)),
+	}
+
+	for _, c := range e.Cases {
+		out.Cases = append(out.Cases, c.Clone())
+	}
+
+	return out
+}
+
+func (e *ExprCase) Clone() *ExprCase {
+	if e == nil {
+		return nil
+	}
+
+	out := &ExprCase{
+		Conditions: make([]*ExprLogicalOr, 0, len(e.Conditions)),
+		Default:    e.Default,
+		Expr:       e.Expr.Clone(),
+	}
+
+	for _, c := range e.Conditions {
+		out.Conditions = append(out.Conditions, c.Clone())
+	}
+
+	return out
+}
+
+func (e *ExprConditional) Clone() *ExprConditional {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprConditional{
 		Condition:    e.Condition.Clone(),
 		ConditionOp:  e.ConditionOp,
 		True:         e.True.Clone(),
@@ -309,155 +448,155 @@ func (e *Conditional) Clone() *Conditional {
 	}
 }
 
-func (e *LogicalOr) Clone() *LogicalOr {
+func (e *ExprLogicalOr) Clone() *ExprLogicalOr {
 	if e == nil {
 		return nil
 	}
 
-	return &LogicalOr{
+	return &ExprLogicalOr{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *LogicalAnd) Clone() *LogicalAnd {
+func (e *ExprLogicalAnd) Clone() *ExprLogicalAnd {
 	if e == nil {
 		return nil
 	}
 
-	return &LogicalAnd{
+	return &ExprLogicalAnd{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *BitwiseOr) Clone() *BitwiseOr {
+func (e *ExprBitwiseOr) Clone() *ExprBitwiseOr {
 	if e == nil {
 		return nil
 	}
 
-	return &BitwiseOr{
+	return &ExprBitwiseOr{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *BitwiseXor) Clone() *BitwiseXor {
+func (e *ExprBitwiseXor) Clone() *ExprBitwiseXor {
 	if e == nil {
 		return nil
 	}
 
-	return &BitwiseXor{
+	return &ExprBitwiseXor{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *BitwiseAnd) Clone() *BitwiseAnd {
+func (e *ExprBitwiseAnd) Clone() *ExprBitwiseAnd {
 	if e == nil {
 		return nil
 	}
 
-	return &BitwiseAnd{
+	return &ExprBitwiseAnd{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Equality) Clone() *Equality {
+func (e *ExprEquality) Clone() *ExprEquality {
 	if e == nil {
 		return nil
 	}
 
-	return &Equality{
+	return &ExprEquality{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Relational) Clone() *Relational {
+func (e *ExprRelational) Clone() *ExprRelational {
 	if e == nil {
 		return nil
 	}
 
-	return &Relational{
+	return &ExprRelational{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Shift) Clone() *Shift {
+func (e *ExprShift) Clone() *ExprShift {
 	if e == nil {
 		return nil
 	}
 
-	return &Shift{
+	return &ExprShift{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Additive) Clone() *Additive {
+func (e *ExprAdditive) Clone() *ExprAdditive {
 	if e == nil {
 		return nil
 	}
 
-	return &Additive{
+	return &ExprAdditive{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Multiplicative) Clone() *Multiplicative {
+func (e *ExprMultiplicative) Clone() *ExprMultiplicative {
 	if e == nil {
 		return nil
 	}
 
-	return &Multiplicative{
+	return &ExprMultiplicative{
 		Left:  e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Unary) Clone() *Unary {
+func (e *ExprUnary) Clone() *ExprUnary {
 	if e == nil {
 		return nil
 	}
 
-	return &Unary{
+	return &ExprUnary{
 		Op:      e.Op,
 		Unary:   e.Unary.Clone(),
 		Postfix: e.Postfix.Clone(),
 	}
 }
 
-func (e *Postfix) Clone() *Postfix {
+func (e *ExprPostfix) Clone() *ExprPostfix {
 	if e == nil {
 		return nil
 	}
 
-	return &Postfix{
+	return &ExprPostfix{
 		Left:  e.Left.Clone(),
 		Right: e.Right.Clone(),
 	}
 }
 
-func (e *Primary) Clone() *Primary {
+func (e *ExprPrimary) Clone() *ExprPrimary {
 	if e == nil {
 		return nil
 	}
 
-	return &Primary{
+	return &ExprPrimary{
 		SubExpression: e.SubExpression.Clone(),
 		Value:         e.Value.Clone(),
 	}
