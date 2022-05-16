@@ -21,7 +21,7 @@ func TestDecl_Parsing(t *testing.T) {
 		want    *Decl
 	}{
 		{
-			name: "",
+			name: "Const declaration - no value, not type",
 			args: args{
 				Input: `const foo`,
 			},
@@ -33,7 +33,7 @@ func TestDecl_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "",
+			name: "Const declaration - no value, type - no space",
 			args: args{
 				Input: `const foo:number`,
 			},
@@ -46,7 +46,7 @@ func TestDecl_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "",
+			name: "Const declaration - no value, type - post space",
 			args: args{
 				Input: `const foo: number`,
 			},
@@ -59,7 +59,7 @@ func TestDecl_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "",
+			name: "Const declaration - no value, type - pre and post space",
 			args: args{
 				Input: `const foo : number`,
 			},
@@ -72,7 +72,7 @@ func TestDecl_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "",
+			name: "Const declaration - value, type",
 			args: args{
 				Input: `const foo: number = 1`,
 			},
@@ -82,7 +82,7 @@ func TestDecl_Parsing(t *testing.T) {
 				DeclType: "const",
 				Label:    "foo",
 				Type:     &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
-				Value:    &Value{Number: &Number{big.NewFloat(1)}},
+				Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 			},
 		},
 	}
