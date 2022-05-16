@@ -24,7 +24,7 @@ type ExprSwitch struct {
 
 type ExprCase struct {
 	Conditions []*ExprLogicalOr `parser:"(  (Whitespace|NewLine)? Case Whitespace @@ ( (Whitespace|NewLine)? ',' (Whitespace|NewLine)? @@ )* Whitespace? OpColon (Whitespace|NewLine)?"`
-	Default    bool             `parser:" | @'default'  Whitespace? OpColon (Whitespace|NewLine)? )"`
+	Default    bool             `parser:" | (Whitespace|NewLine)? @'default'  Whitespace? OpColon (Whitespace|NewLine)? )"`
 	Expr       *Expr            `parser:"BlockStart (Whitespace|NewLine)? @@ (Whitespace|NewLine)? BlockEnd (Whitespace|NewLine)?"`
 }
 

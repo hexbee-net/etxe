@@ -32,6 +32,7 @@ foo`[1:],
 				Items: []*Item{
 					{
 						Attribute: &Attribute{
+							Pos: Position{Offset: 0, Line: 1, Column: 1},
 							Key: "foo",
 						},
 					},
@@ -49,6 +50,7 @@ foo = 1`[1:],
 				Items: []*Item{
 					{
 						Attribute: &Attribute{
+							Pos:   Position{Offset: 0, Line: 1, Column: 1},
 							Key:   "foo",
 							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
@@ -68,11 +70,13 @@ bar`[1:],
 				Items: []*Item{
 					{
 						Attribute: &Attribute{
+							Pos: Position{Offset: 0, Line: 1, Column: 1},
 							Key: "foo",
 						},
 					},
 					{
 						Attribute: &Attribute{
+							Pos: Position{Offset: 4, Line: 2, Column: 1},
 							Key: "bar",
 						},
 					},
@@ -91,12 +95,14 @@ bar = 2`[1:],
 				Items: []*Item{
 					{
 						Attribute: &Attribute{
+							Pos:   Position{Offset: 0, Line: 1, Column: 1},
 							Key:   "foo",
 							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
 					},
 					{
 						Attribute: &Attribute{
+							Pos:   Position{Offset: 8, Line: 2, Column: 1},
 							Key:   "bar",
 							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
 						},
@@ -137,6 +143,7 @@ val bar = 2`[1:],
 				Items: []*Item{
 					{
 						Attribute: &Attribute{
+							Pos:   Position{Offset: 0, Line: 1, Column: 1},
 							Key:   "foo",
 							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
@@ -183,7 +190,7 @@ val foo = 1`[1:],
 			want: &AST{
 				Items: []*Item{
 					{
-						Function: &Func{
+						Func: &Func{
 							Label: "foo",
 						},
 					},
