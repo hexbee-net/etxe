@@ -1,10 +1,12 @@
 package etx
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/alecthomas/repr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -170,54 +172,73 @@ func TestFunc_Parsing(t *testing.T) {
 		},
 
 		{
-			name: "Ident body, no params, no return",
+			name: "One Expr statement, no params, no return",
 			args: args{
-				Input: `def foo() {a}`,
+				Input: `
+def foo() {
+	a
+}`[1:],
 			},
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Body: []*FuncExpr{
+				Body: []*FuncStatement{
 					{
-						Todo: "a",
+						Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"a"}}}),
 					},
 				},
 			},
 		},
-
-		// 		{
-		// 			name: "wip",
-		// 			args: args{
-		// 				Input: `def foo(bar: bool, baz: number) bool {
-		// 	body
-		// }`,
-		// 			},
-		// 			wantErr: false,
-		// 			want: &Func{
-		// 				// Pos:   lexer.Position{Offset: 0, Line: 1, Column: 1},
-		// 				Label: "foo",
-		// 				Parameters: []*FuncParameter{
-		// 					{
-		// 						Label: "bar",
-		// 						Type: &ParameterType{
-		// 							Ident: &Ident{Parts: []string{"bool"}},
-		// 						},
-		// 					},
-		// 					{
-		// 						Label: "baz",
-		// 						Type: &ParameterType{
-		// 							Ident: &Ident{Parts: []string{"bar"}},
-		// 						},
-		// 					},
-		// 				},
-		// 				Return: &ParameterType{
-		// 					Ident: &Ident{Parts: []string{"bool"}},
-		// 				},
-		// 				Body: &FuncBody{
-		// 					Todo: "body",
-		// 				},
-		// 			},
-		// 		},
+		{
+			name: "One val Decl statement, no params, no return",
+			args: args{
+				Input: `
+def foo() {
+	val a: number = 1
+}`[1:],
+			},
+			wantErr: false,
+			want: &Func{
+				Label: "foo",
+				Body: []*FuncStatement{
+					{
+						Decl: &FuncDecl{
+							DeclType: "val",
+							Label:    "a",
+							Type:     "number",
+							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Val decl and return expr statements, no params, no return",
+			args: args{
+				Input: `
+def foo() {
+	val a: number = 1
+	a
+}`[1:],
+			},
+			wantErr: false,
+			want: &Func{
+				Label: "foo",
+				Body: []*FuncStatement{
+					{
+						Decl: &FuncDecl{
+							DeclType: "val",
+							Label:    "a",
+							Type:     "number",
+							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						},
+					},
+					{
+						Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"a"}}}),
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -233,7 +254,9 @@ func TestFunc_Parsing(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			assert.Equal(t, tt.want, res)
+			if !assert.Equal(t, tt.want, res) {
+				repr.Println(res)
+			}
 		})
 	}
 }

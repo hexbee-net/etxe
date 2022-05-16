@@ -87,8 +87,8 @@ func lexRules() lexer.Rules {
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
 			{Name: "Dot", Pattern: regexp.QuoteMeta(TokenOpDot)},
 			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?$)|\/\*.*?\*\/`},
-			{Name: `Whitespace`, Pattern: `\s+`},
-			{Name: `NewLine`, Pattern: `(\n|\n\r)+`},
+			{Name: "NewLine", Pattern: `[\r\n]+`},
+			{Name: `Whitespace`, Pattern: `\s+`}, // TODO: \s includes new lines, replace with ' \t'?
 		},
 
 		lexerString: {

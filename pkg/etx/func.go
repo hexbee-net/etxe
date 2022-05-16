@@ -6,7 +6,7 @@ type Func struct {
 	Label      string           `parser:"Func Whitespace @Ident Whitespace?" json:"label"`
 	Parameters []*FuncParameter `parser:"'(' (@@ ( Whitespace? ',' Whitespace? @@ )*)? ')'" json:"parameters,omitempty"`
 	Return     *ParameterType   `parser:"Whitespace? @@?" json:"return,omitempty"`
-	Body       []*FuncExpr      `parser:"(Whitespace|NewLine)? BodyStart @@*  BodyEnd" json:"body,omitempty"`
+	Body       []*FuncStatement `parser:"(Whitespace|NewLine)? BodyStart @@*  BodyEnd" json:"body,omitempty"`
 }
 
 type FuncParameter struct {
@@ -14,20 +14,15 @@ type FuncParameter struct {
 	Type  *ParameterType `parser:"Whitespace? ':' Whitespace? @@" json:"type"`
 }
 
-type FuncExpr struct {
-	Todo string `parser:"(Whitespace|NewLine)? @Ident (Whitespace|NewLine)?" json:"todo"`
+type FuncStatement struct {
+	Comments []string  `parser:"@Comment*" json:"comments,omitempty"`
+	Decl     *FuncDecl `parser:"(   Whitespace? @@ Whitespace?  "`
+	Expr     *Expr     `parser:"  | Whitespace? @@ Whitespace? )"`
 }
 
 type FuncDecl struct {
-	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
-
 	DeclType string `parser:"@(Const | Val) Whitespace" json:"decl_type"`
 	Label    string `parser:"@Ident" json:"label"`
 	Type     string `parser:"(Whitespace? ':' Whitespace? @Ident)?" json:"type"`
-	Value    *Value `parser:"(Whitespace? '=' Whitespace? @@)?" json:"value"`
-}
-
-type FuncReturn struct {
-	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
-	Expr     *Expr    `parser:"Return @@" json:"expr,omitempty"`
+	Value    *Expr  `parser:"(Whitespace? '=' Whitespace? @@)?" json:"value"`
 }
