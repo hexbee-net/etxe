@@ -1,7 +1,7 @@
 package etx
 
 type Var struct {
-	Name    string `parser:"'var' @Ident"`
-	Type    string `parser:"':' @Ident"`
-	Default string `parser:"'=' @String"`
+	Name    string `parser:"'var' @Ident" json:"name,omitempty"`
+	Type    string `parser:"':' @Ident"   json:"type,omitempty"`
+	Default string `parser:"'=' @String"  json:"default,omitempty"`
 }

@@ -30,11 +30,11 @@ func (s String) Clone() String {
 }
 
 type Fragment struct {
-	Escaped   string `parser:"(  @Escaped"`
-	Unicode   string `parser:" | Unicode@(UnicodeLong|UnicodeShort)"`
-	Expr      *Expr  `parser:" | Expr @@ ExprEnd"`
-	Directive *Expr  `parser:" | Directive @@ ExprEnd"`
-	Text      string `parser:" | @(Char|Quote|NonExpr))"`
+	Escaped   string `parser:"(  @Escaped"                           json:"escaped,omitempty"`
+	Unicode   string `parser:" | Unicode@(UnicodeLong|UnicodeShort)" json:"unicode,omitempty"`
+	Expr      *Expr  `parser:" | Expr @@ ExprEnd"                    json:"expr,omitempty"`
+	Directive *Expr  `parser:" | Directive @@ ExprEnd"               json:"directive,omitempty"`
+	Text      string `parser:" | @(Char|Quote|NonExpr))"             json:"text,omitempty"`
 }
 
 func (f *Fragment) String() string {

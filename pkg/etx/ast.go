@@ -12,11 +12,8 @@ type Node interface {
 
 // AST for HCL.
 type AST struct {
-	// Pos lexer.Position `parser:"" json:"-"`
-
 	Items            []*Item  `parser:"(@@ (NewLine @@)* )*" json:"items,omitempty"`
-	TrailingComments []string `parser:"@Comment*" json:"trailing_comments,omitempty"`
-	Schema           bool     `parser:"" json:"schema,omitempty"`
+	TrailingComments []string `parser:"@Comment*"            json:"trailing_comments,omitempty"`
 }
 
 func (a *AST) children() (children []Node) {
@@ -26,13 +23,11 @@ func (a *AST) children() (children []Node) {
 
 // Item at the top-level of a file.
 type Item struct {
-	// Pos             lexer.Position `parser:"" json:"-"`
-	// Parent          Node           `parser:"" json:"-"`
-	// RecursiveSchema bool           `parser:"" json:"-"`
+	Parent Node `parser:"" json:"-"`
 
 	Attribute *Attribute `parser:"(   @@  " json:"attribute,omitempty"`
 	Decl      *Decl      `parser:"  | @@  " json:"decl,omitempty"`
-	Function  *Func      `parser:"  | @@  " json:"func,omitempty"`
+	Func      *Func      `parser:"  | @@  " json:"func,omitempty"`
 	Type      *Type      `parser:"  | @@  " json:"type,omitempty"`
 	Block     *Block     `parser:"  | @@ )" json:"block,omitempty"`
 }
@@ -44,5 +39,5 @@ type ParameterType struct {
 
 type FuncSignature struct {
 	Parameters []*ParameterType `parser:"'(' (@@ ( Whitespace? ',' Whitespace? @@ )*)? ')' Whitespace? LambdaDef" json:"parameters,omitempty"`
-	Return     *ParameterType   `parser:"Whitespace? @@" json:"return,omitempty"`
+	Return     *ParameterType   `parser:"Whitespace? @@"                                                          json:"return,omitempty"`
 }

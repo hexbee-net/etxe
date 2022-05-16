@@ -7,11 +7,11 @@ type Block struct {
 	Pos    lexer.Position `parser:"" json:"-"`
 	Parent Node           `parser:"" json:"-"`
 
-	Comments         []string     `parser:"@Comment*            " json:"comments,omitempty"`
-	Name             string       `parser:"@Ident               " json:"name"`
-	Labels           []string     `parser:"@( Ident | String )* " json:"labels,omitempty"`
-	Body             []*BlockItem `parser:"'{' @@*              " json:"body"`
-	TrailingComments []string     `parser:"@Comment* '}'        " json:"trailing_comments,omitempty"`
+	Comments         []string     `parser:"@Comment*"            json:"comments,omitempty"`
+	Name             string       `parser:"@Ident"               json:"name"`
+	Labels           []string     `parser:"@( Ident | String )*" json:"labels,omitempty"`
+	Body             []*BlockItem `parser:"'{' @@*       "       json:"body"`
+	TrailingComments []string     `parser:"@Comment* '}' "       json:"trailing_comments,omitempty"`
 }
 
 // BlockItem in a block.
