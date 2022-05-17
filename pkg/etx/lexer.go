@@ -42,6 +42,8 @@ const (
 
 	TokenNewLine    = "NewLine"
 	TokenWhitespace = "Whitespace"
+
+	TokenNull = `null`
 )
 
 const (

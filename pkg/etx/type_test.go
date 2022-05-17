@@ -1,11 +1,12 @@
 package etx
 
 import (
+	"testing"
+
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestType_Parsing(t *testing.T) {

@@ -12,20 +12,20 @@ type Expr struct {
 }
 
 type ExprIf struct {
-	Condition *ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition,omitempty"`
-	Left      *Expr          `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
-	Right     *Expr          `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
+	Condition ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition"`
+	Left      *Expr         `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
+	Right     *Expr         `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
 }
 
 type ExprSwitch struct {
-	Selector *ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector,omitempty"`
-	Cases    []*ExprCase    `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
+	Selector ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector"`
+	Cases    []*ExprCase   `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
 }
 
 type ExprCase struct {
-	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  " json:"conditions,omitempty"`
-	Default    bool             `parser:"  | @'default'          ':' )"                                                              json:"default"`
-	Expr       *Expr            `parser:"NewLine? '{' NewLine? @@ NewLine? '}'"                                                      json:"expr,omitempty"`
+	Conditions []ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "         json:"conditions"`
+	Default    bool            `parser:"  | @'default'          ':' )"         json:"default"`
+	Expr       *Expr           `parser:"NewLine? '{' NewLine? @@ NewLine? '}'" json:"expr,omitempty"`
 }
 
 // ExprConditional is a ternary expression.
@@ -34,98 +34,96 @@ type ExprCase struct {
 // included at the expression top level but `if` and `switch` just skip them
 // and go straight to the next level.
 type ExprConditional struct {
-	Condition    *ExprLogicalOr `parser:"@@"      json:"condition,omitempty"`
-	ConditionOp  string         `parser:"[ @'?' " json:"condition_op,omitempty"`
-	TrueExpr     *ExprLogicalOr `parser:"  @@   " json:"true_expr,omitempty"`
-	ConditionSep string         `parser:"  @':' " json:"condition_sep,omitempty"`
-	FalseExpr    *ExprLogicalOr `parser:"  @@  ]" json:"false_expr,omitempty"`
+	Condition   ExprLogicalOr  `parser:"@@"          json:"condition"`
+	ConditionOp bool           `parser:"[ @'?'     " json:"condition_op,omitempty"`
+	TrueExpr    *ExprLogicalOr `parser:"  @@       " json:"true_expr,omitempty"`
+	FalseExpr   *ExprLogicalOr `parser:"  ':' @@  ]" json:"false_expr,omitempty"`
 }
 
 type ExprLogicalOr struct {
-	Left  *ExprLogicalAnd `parser:"@@"               json:"left,omitempty"`
-	Op    string          `parser:"[ @OpLogicalOr  " json:"op,omitempty"`
-	Right *ExprLogicalOr  `parser:"  @@           ]" json:"right,omitempty"`
+	Left  ExprLogicalAnd `parser:"@@"               json:"left"`
+	Op    string         `parser:"[ @OpLogicalOr  " json:"op,omitempty"`
+	Right *ExprLogicalOr `parser:"  @@           ]" json:"right,omitempty"`
 }
 
 type ExprLogicalAnd struct {
-	Left  *ExprBitwiseOr  `parser:"@@"                json:"left,omitempty"`
+	Left  ExprBitwiseOr   `parser:"@@"                json:"left"`
 	Op    string          `parser:"[ @OpLogicalAnd  " json:"op,omitempty"`
 	Right *ExprLogicalAnd `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseOr struct {
-	Left  *ExprBitwiseXor `parser:"@@"               json:"left,omitempty"`
-	Op    string          `parser:"[ @OpBitwiseOr  " json:"op,omitempty"`
-	Right *ExprBitwiseOr  `parser:"  @@           ]" json:"right,omitempty"`
+	Left  ExprBitwiseXor `parser:"@@"               json:"left"`
+	Op    string         `parser:"[ @OpBitwiseOr  " json:"op,omitempty"`
+	Right *ExprBitwiseOr `parser:"  @@           ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseXor struct {
-	Left  *ExprBitwiseAnd `parser:"@@"                json:"left,omitempty"`
+	Left  ExprBitwiseAnd  `parser:"@@"                json:"left"`
 	Op    string          `parser:"[ @OpBitwiseXOr  " json:"op,omitempty"`
 	Right *ExprBitwiseXor `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseAnd struct {
-	Left  *ExprEquality   `parser:"@@"                json:"left,omitempty"`
+	Left  ExprEquality    `parser:"@@"                json:"left"`
 	Op    string          `parser:"[ @OpBitwiseAnd  " json:"op,omitempty"`
 	Right *ExprBitwiseAnd `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprEquality struct {
-	Left  *ExprRelational `parser:"@@"                            json:"left,omitempty"`
-	Op    string          `parser:"[ @( OpNotEqual | OpEqual )  " json:"op,omitempty"`
-	Right *ExprEquality   `parser:"  @@                        ]" json:"right,omitempty"`
+	Left  ExprRelational `parser:"@@"                            json:"left"`
+	Op    string         `parser:"[ @( OpNotEqual | OpEqual )  " json:"op,omitempty"`
+	Right *ExprEquality  `parser:"  @@                        ]" json:"right,omitempty"`
 }
 
 type ExprRelational struct {
-	Left  *ExprShift      `parser:"@@"                                                       json:"left,omitempty"`
+	Left  ExprShift       `parser:"@@"                                                       json:"left"`
 	Op    string          `parser:"[ @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual )  " json:"op,omitempty"`
 	Right *ExprRelational `parser:"  @@                                                   ]" json:"right,omitempty"`
 }
 
 type ExprShift struct {
-	Left  *ExprAdditive `parser:"@@"                                                json:"left,omitempty"`
-	Op    string        `parser:"[ @( OpBitwiseShiftLeft | OpBitwiseShiftRight )  " json:"op,omitempty"`
-	Right *ExprShift    `parser:"  @@                                            ]" json:"right,omitempty"`
+	Left  ExprAdditive `parser:"@@"                                                json:"left"`
+	Op    string       `parser:"[ @( OpBitwiseShiftLeft | OpBitwiseShiftRight )  " json:"op,omitempty"`
+	Right *ExprShift   `parser:"  @@                                            ]" json:"right,omitempty"`
 }
 
 type ExprAdditive struct {
-	Left  *ExprMultiplicative `parser:"@@"                        json:"left,omitempty"`
-	Op    string              `parser:"[ @( OpMinus | OpPlus )  " json:"op,omitempty"`
-	Right *ExprAdditive       `parser:"  @@                    ]" json:"right,omitempty"`
+	Left  ExprMultiplicative `parser:"@@"                        json:"left"`
+	Op    string             `parser:"[ @( OpMinus | OpPlus )  " json:"op,omitempty"`
+	Right *ExprAdditive      `parser:"  @@                    ]" json:"right,omitempty"`
 }
 
 type ExprMultiplicative struct {
-	Left  *ExprUnary          `parser:"@@"                                                json:"left,omitempty"`
+	Left  ExprUnary           `parser:"@@"                                                json:"left,omitempty"`
 	Op    string              `parser:"[ @( OpDivision | OpMultiplication | OpModulo )  " json:"op,omitempty"`
 	Right *ExprMultiplicative `parser:"  @@                                            ]" json:"right,omitempty"`
 }
 
 type ExprUnary struct {
-	Op      string       `parser:"  ( @( OpBitwiseNot | OpLogicalNot | OpMinus )" json:"op,omitempty"`
-	Unary   *ExprUnary   `parser:"    @@ )"                                       json:"unary,omitempty"`
-	Postfix *ExprPostfix `parser:"| @@"                                           json:"postfix,omitempty"`
+	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus ) ]" json:"op,omitempty"`
+	Right ExprPostfix `parser:"@@"                                             json:"right"`
 }
 
 type ExprPostfix struct {
-	Left  *ExprPrimary `parser:"@@"             json:"left,omitempty"`
-	Right *Expr        `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
+	Left  ExprPrimary `parser:"@@"             json:"left,omitempty"`
+	Right *Expr       `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
 }
 
 type ExprPrimary struct {
-	SubExpression *Expr           `parser:"  '(' @@ ')'" json:"sub_expression,omitempty"`
-	Invocation    *ExprInvocation `parser:"| @@"         json:"invocation,omitempty"`
-	Value         *Value          `parser:"| @@"         json:"value,omitempty"`
+	SubExpression *Expr           `parser:"(  '(' @@ ')'  " json:"sub_expression,omitempty"`
+	Invocation    *ExprInvocation `parser:"  | @@         " json:"invocation,omitempty"`
+	Value         *Value          `parser:"  | @@        )" json:"value,omitempty"`
 }
 
 type ExprInvocation struct {
-	Ident      *Ident  `parser:"@@"                          json:"ident,omitempty"`
-	Parameters []*Expr `parser:"'(' ( @@ (',' @@)* )? ')'" json:"parameters,omitempty"`
+	Ident      Ident  `parser:"@@"                        json:"ident,omitempty"`
+	Parameters []Expr `parser:"'(' ( @@ (',' @@)* )? ')'" json:"parameters,omitempty"`
 }
 
 // /////////////////////////////////////
 
-func (e *Expr) String() string {
+func (e Expr) String() string {
 	switch {
 	case e.Left != nil:
 		return e.Left.String()
@@ -138,10 +136,8 @@ func (e *Expr) String() string {
 	}
 }
 
-func (e *ExprIf) String() string {
+func (e ExprIf) String() string {
 	switch {
-	case e.Condition == nil:
-		panic("if condition cannot be <nil>")
 	case e.Left == nil:
 		return fmt.Sprintf("if %s { }", e.Condition)
 	case e.Right == nil:
@@ -152,11 +148,7 @@ func (e *ExprIf) String() string {
 	}
 }
 
-func (e *ExprSwitch) String() string {
-	if e.Selector == nil {
-		panic("switch selector cannot be <nil>")
-	}
-
+func (e ExprSwitch) String() string {
 	switch len(e.Cases) {
 	case 0:
 		return fmt.Sprintf("switch %s { }", e.Selector)
@@ -171,7 +163,7 @@ func (e *ExprSwitch) String() string {
 	}
 }
 
-func (e *ExprCase) String() string {
+func (e ExprCase) String() string {
 	switch {
 	case e.Conditions != nil:
 		conditions := make([]string, 0, len(e.Conditions))
@@ -189,183 +181,156 @@ func (e *ExprCase) String() string {
 	}
 }
 
-func (e *ExprConditional) String() string {
-	switch {
-	case e.ConditionOp != "" && e.ConditionSep == "",
-		e.ConditionOp == "" && e.ConditionSep != "":
-		panic("both operators need to be set")
-
-	case e.ConditionOp != "" && e.ConditionSep != "":
+func (e ExprConditional) String() string {
+	if e.ConditionOp {
 		switch {
-		case e.TrueExpr == nil && e.FalseExpr == nil:
-			panic("true and false expressions must be set when operators are set")
-		case e.TrueExpr == nil:
-			panic("true expression must be set when operators are set")
-		case e.FalseExpr == nil:
-			panic("false expression must be set when operators are set")
+		case e.TrueExpr != nil && e.FalseExpr != nil:
+			return fmt.Sprintf("%s ? %s : %s", e.Condition, e.TrueExpr, e.FalseExpr)
+		case e.TrueExpr != nil && e.FalseExpr == nil:
+			return fmt.Sprintf("%s ? %s : null", e.Condition, e.TrueExpr)
+		case e.TrueExpr == nil && e.FalseExpr != nil:
+			return fmt.Sprintf("%s ? null : %s", e.Condition, e.FalseExpr)
 		default:
-			return fmt.Sprintf("%s %s %s %s %s", e.Condition, e.ConditionOp, e.TrueExpr, e.ConditionSep, e.FalseExpr)
+			return fmt.Sprintf("%s ? null : null", e.Condition)
 		}
-
-	case e.Condition != nil:
-		return e.Condition.String()
-
-	default:
-		panic("condition cannot be <nil>")
 	}
+
+	return e.Condition.String()
 }
 
-func (e *ExprLogicalOr) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
-		panic("operator with <nil> right side")
-	case e.Left != nil:
+func (e ExprLogicalOr) String() string {
+	if e.Op == "" {
 		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
-}
 
-func (e *ExprLogicalAnd) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprBitwiseOr) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprLogicalAnd) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprBitwiseXor) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprBitwiseOr) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprBitwiseAnd) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprBitwiseXor) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprEquality) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprBitwiseAnd) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprRelational) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprEquality) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprShift) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprRelational) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprAdditive) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprShift) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
-		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprMultiplicative) String() string {
-	switch {
-	case e.Op != "" && e.Right != nil:
-		return fmt.Sprintf("%s %s %s", e.Left, e.Op, e.Right)
-	case e.Op != "" && e.Right == nil:
+func (e ExprAdditive) String() string {
+	if e.Op == "" {
+		return e.Left.String()
+	}
+
+	if e.Right == nil {
 		panic("operator with <nil> right side")
-	case e.Left != nil:
+	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+func (e ExprMultiplicative) String() string {
+	if e.Op == "" {
 		return e.Left.String()
-	default:
-		panic("left side cannot be <nil>")
 	}
+
+	if e.Right == nil {
+		panic("operator with <nil> right side")
+	}
+
+	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
-func (e *ExprUnary) String() string {
-	if e.Postfix != nil {
-		return e.Postfix.String()
-	}
-
-	if e.Unary == nil {
-		panic("postfix and unary cannot both be <nil>")
-	}
-
-	return fmt.Sprintf("%s%s", e.Op, e.Unary)
+func (e ExprUnary) String() string {
+	return fmt.Sprintf("%v%v", e.Op, e.Right)
 }
 
-func (e *ExprPostfix) String() string {
+func (e ExprPostfix) String() string {
 	if e.Right != nil {
-		return fmt.Sprintf("%s[%s]", e.Left, e.Right)
+		return fmt.Sprintf("%v[%v]", e.Left, e.Right)
 	}
 
 	return e.Left.String()
 }
 
-func (e *ExprPrimary) String() string {
+func (e ExprPrimary) String() string {
 	switch {
 	case e.SubExpression != nil:
 		return e.SubExpression.String()
@@ -374,17 +339,17 @@ func (e *ExprPrimary) String() string {
 	case e.Value != nil:
 		return e.Value.String()
 	default:
-		return ""
+		return TokenNull
 	}
 }
 
-func (e *ExprInvocation) String() string {
+func (e ExprInvocation) String() string {
 	params := make([]string, 0, len(e.Parameters))
 	for _, p := range e.Parameters {
 		params = append(params, p.String())
 	}
 
-	return fmt.Sprintf("%s(%s)", e.Ident, strings.Join(params, ", "))
+	return fmt.Sprintf("%v(%v)", e.Ident, strings.Join(params, ", "))
 }
 
 // /////////////////////////////////////
@@ -407,7 +372,7 @@ func (e *ExprIf) Clone() *ExprIf {
 	}
 
 	return &ExprIf{
-		Condition: e.Condition.Clone(),
+		Condition: *e.Condition.Clone(),
 		Left:      e.Left.Clone(),
 		Right:     e.Right.Clone(),
 	}
@@ -419,7 +384,7 @@ func (e *ExprSwitch) Clone() *ExprSwitch {
 	}
 
 	out := &ExprSwitch{
-		Selector: e.Selector.Clone(),
+		Selector: *e.Selector.Clone(),
 		Cases:    nil,
 	}
 
@@ -445,9 +410,9 @@ func (e *ExprCase) Clone() *ExprCase {
 	}
 
 	if e.Conditions != nil {
-		out.Conditions = make([]*ExprLogicalOr, 0, len(e.Conditions))
+		out.Conditions = make([]ExprLogicalOr, 0, len(e.Conditions))
 		for _, c := range e.Conditions {
-			out.Conditions = append(out.Conditions, c.Clone())
+			out.Conditions = append(out.Conditions, *c.Clone())
 		}
 	}
 
@@ -460,11 +425,10 @@ func (e *ExprConditional) Clone() *ExprConditional {
 	}
 
 	return &ExprConditional{
-		Condition:    e.Condition.Clone(),
-		ConditionOp:  e.ConditionOp,
-		TrueExpr:     e.TrueExpr.Clone(),
-		ConditionSep: e.ConditionSep,
-		FalseExpr:    e.FalseExpr.Clone(),
+		Condition:   *e.Condition.Clone(),
+		ConditionOp: e.ConditionOp,
+		TrueExpr:    e.TrueExpr.Clone(),
+		FalseExpr:   e.FalseExpr.Clone(),
 	}
 }
 
@@ -474,7 +438,7 @@ func (e *ExprLogicalOr) Clone() *ExprLogicalOr {
 	}
 
 	return &ExprLogicalOr{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -486,7 +450,7 @@ func (e *ExprLogicalAnd) Clone() *ExprLogicalAnd {
 	}
 
 	return &ExprLogicalAnd{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -498,7 +462,7 @@ func (e *ExprBitwiseOr) Clone() *ExprBitwiseOr {
 	}
 
 	return &ExprBitwiseOr{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -510,7 +474,7 @@ func (e *ExprBitwiseXor) Clone() *ExprBitwiseXor {
 	}
 
 	return &ExprBitwiseXor{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -522,7 +486,7 @@ func (e *ExprBitwiseAnd) Clone() *ExprBitwiseAnd {
 	}
 
 	return &ExprBitwiseAnd{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -534,7 +498,7 @@ func (e *ExprEquality) Clone() *ExprEquality {
 	}
 
 	return &ExprEquality{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -546,7 +510,7 @@ func (e *ExprRelational) Clone() *ExprRelational {
 	}
 
 	return &ExprRelational{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -558,7 +522,7 @@ func (e *ExprShift) Clone() *ExprShift {
 	}
 
 	return &ExprShift{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -570,7 +534,7 @@ func (e *ExprAdditive) Clone() *ExprAdditive {
 	}
 
 	return &ExprAdditive{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -582,7 +546,7 @@ func (e *ExprMultiplicative) Clone() *ExprMultiplicative {
 	}
 
 	return &ExprMultiplicative{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Op:    e.Op,
 		Right: e.Right.Clone(),
 	}
@@ -594,9 +558,8 @@ func (e *ExprUnary) Clone() *ExprUnary {
 	}
 
 	return &ExprUnary{
-		Op:      e.Op,
-		Unary:   e.Unary.Clone(),
-		Postfix: e.Postfix.Clone(),
+		Op:    e.Op,
+		Right: *e.Right.Clone(),
 	}
 }
 
@@ -606,7 +569,7 @@ func (e *ExprPostfix) Clone() *ExprPostfix {
 	}
 
 	return &ExprPostfix{
-		Left:  e.Left.Clone(),
+		Left:  *e.Left.Clone(),
 		Right: e.Right.Clone(),
 	}
 }
@@ -618,6 +581,29 @@ func (e *ExprPrimary) Clone() *ExprPrimary {
 
 	return &ExprPrimary{
 		SubExpression: e.SubExpression.Clone(),
+		Invocation:    e.Invocation.Clone(),
 		Value:         e.Value.Clone(),
 	}
+}
+
+func (e *ExprInvocation) Clone() *ExprInvocation {
+	if e == nil {
+		return nil
+	}
+
+	out := &ExprInvocation{
+		Ident:      *e.Ident.Clone(),
+		Parameters: nil,
+	}
+
+	if e.Parameters == nil {
+		return out
+	}
+
+	out.Parameters = make([]Expr, 0, len(e.Parameters))
+	for _, p := range e.Parameters {
+		out.Parameters = append(out.Parameters, *p.Clone())
+	}
+
+	return out
 }

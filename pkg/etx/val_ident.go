@@ -8,7 +8,7 @@ type Ident struct {
 	Parts []string `parser:"@Ident [('.' @Ident)*]"`
 }
 
-func (i *Ident) String() string {
+func (i Ident) String() string {
 	return strings.Join(i.Parts, ".")
 }
 

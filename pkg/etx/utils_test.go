@@ -29,31 +29,31 @@ func testBuildExprTree[E any](t *testing.T, value interface{}) E {
 		case *ExprConditional:
 			return &Expr{Left: v}
 		case *ExprLogicalOr:
-			return build(&ExprConditional{Condition: v}, stop)
+			return build(&ExprConditional{Condition: *v}, stop)
 		case *ExprLogicalAnd:
-			return build(&ExprLogicalOr{Left: v}, stop)
+			return build(&ExprLogicalOr{Left: *v}, stop)
 		case *ExprBitwiseOr:
-			return build(&ExprLogicalAnd{Left: v}, stop)
+			return build(&ExprLogicalAnd{Left: *v}, stop)
 		case *ExprBitwiseXor:
-			return build(&ExprBitwiseOr{Left: v}, stop)
+			return build(&ExprBitwiseOr{Left: *v}, stop)
 		case *ExprBitwiseAnd:
-			return build(&ExprBitwiseXor{Left: v}, stop)
+			return build(&ExprBitwiseXor{Left: *v}, stop)
 		case *ExprEquality:
-			return build(&ExprBitwiseAnd{Left: v}, stop)
+			return build(&ExprBitwiseAnd{Left: *v}, stop)
 		case *ExprRelational:
-			return build(&ExprEquality{Left: v}, stop)
+			return build(&ExprEquality{Left: *v}, stop)
 		case *ExprShift:
-			return build(&ExprRelational{Left: v}, stop)
+			return build(&ExprRelational{Left: *v}, stop)
 		case *ExprAdditive:
-			return build(&ExprShift{Left: v}, stop)
+			return build(&ExprShift{Left: *v}, stop)
 		case *ExprMultiplicative:
-			return build(&ExprAdditive{Left: v}, stop)
+			return build(&ExprAdditive{Left: *v}, stop)
 		case *ExprUnary:
-			return build(&ExprMultiplicative{Left: v}, stop)
+			return build(&ExprMultiplicative{Left: *v}, stop)
 		case *ExprPostfix:
-			return build(&ExprUnary{Postfix: v}, stop)
+			return build(&ExprUnary{Right: *v}, stop)
 		case *ExprPrimary:
-			return build(&ExprPostfix{Left: v}, stop)
+			return build(&ExprPostfix{Left: *v}, stop)
 		case *ExprInvocation:
 			return build(&ExprPrimary{Invocation: v}, stop)
 		case *Value:

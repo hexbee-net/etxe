@@ -37,7 +37,7 @@ type Fragment struct {
 	Text      string `parser:" | @(Char|Quote|NonExpr))"             json:"text,omitempty"`
 }
 
-func (f *Fragment) String() string {
+func (f Fragment) String() string {
 	switch {
 	case f.Escaped != "":
 		return f.Escaped

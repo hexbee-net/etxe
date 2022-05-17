@@ -75,7 +75,7 @@ func (v *Value) children() (children []Node) {
 	return
 }
 
-func (v *Value) String() string {
+func (v Value) String() string {
 	switch {
 	case v.Null == true:
 		return "null"

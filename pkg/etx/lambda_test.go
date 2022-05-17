@@ -27,7 +27,7 @@ func TestLambda_Parsing(t *testing.T) {
 			},
 			wantErr: false,
 			want: &Lambda{
-				Parameters: []*LambdaParameter{
+				Parameters: []LambdaParameter{
 					{
 						Label: "x",
 						Type: &ParameterType{
@@ -35,9 +35,9 @@ func TestLambda_Parsing(t *testing.T) {
 						},
 					},
 				},
-				Expr: testBuildExprTree[*Expr](t,
+				Expr: *testBuildExprTree[*Expr](t,
 					&ExprAdditive{
-						Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Ident: &Ident{Parts: []string{"x"}}}),
+						Left:  *testBuildExprTree[*ExprMultiplicative](t, &Value{Ident: &Ident{Parts: []string{"x"}}}),
 						Op:    OpPlus,
 						Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					},

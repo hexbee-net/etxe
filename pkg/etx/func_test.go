@@ -39,7 +39,7 @@ func TestFunc_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Parameters: []*FuncParameter{
+				Parameters: []FuncParameter{
 					{
 						Label: "bar",
 						Type: &ParameterType{
@@ -57,7 +57,7 @@ func TestFunc_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Parameters: []*FuncParameter{
+				Parameters: []FuncParameter{
 					{
 						Label: "bar",
 						Type: &ParameterType{
@@ -95,7 +95,7 @@ func TestFunc_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Parameters: []*FuncParameter{
+				Parameters: []FuncParameter{
 					{
 						Label: "bar",
 						Type: &ParameterType{
@@ -120,7 +120,7 @@ func TestFunc_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Parameters: []*FuncParameter{
+				Parameters: []FuncParameter{
 					{
 						Label: "bar",
 						Type: &ParameterType{
@@ -182,7 +182,7 @@ def foo() {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Body: []*FuncStatement{
+				Body: []FuncStatement{
 					{
 						Expr: testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"a"}}}),
 					},
@@ -200,12 +200,12 @@ def foo() {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Body: []*FuncStatement{
+				Body: []FuncStatement{
 					{
 						Decl: &FuncDecl{
 							DeclType: "val",
 							Label:    "a",
-							Type:     "number",
+							Type:     testValPtr(t, "number"),
 							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
 					},
@@ -224,12 +224,12 @@ def foo() {
 			wantErr: false,
 			want: &Func{
 				Label: "foo",
-				Body: []*FuncStatement{
+				Body: []FuncStatement{
 					{
 						Decl: &FuncDecl{
 							DeclType: "val",
 							Label:    "a",
-							Type:     "number",
+							Type:     testValPtr(t, "number"),
 							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
 					},
