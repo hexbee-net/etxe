@@ -32,10 +32,12 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					Parameters: []Expr{
-						*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
-						*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
-					},
+					InvocationParams: []InvocationParams{{
+						Values: []Expr{
+							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+						},
+					}},
 				}),
 			},
 		},
@@ -53,9 +55,37 @@ func TestExpr_Parsing(t *testing.T) {
 							"bar",
 						},
 					},
-					Parameters: []Expr{
-						*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
-						*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"qux"}}}),
+					InvocationParams: []InvocationParams{{
+						[]Expr{
+							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"qux"}}}),
+						},
+					}},
+				}),
+			},
+		},
+		{
+			name: "Monadic invocation",
+			args: args{
+				Input: `foo(bar)(baz)`,
+			},
+			wantErr: false,
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{"foo"},
+					},
+					InvocationParams: []InvocationParams{
+						{
+							[]Expr{
+								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+							},
+						},
+						{
+							[]Expr{
+								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+							},
+						},
 					},
 				}),
 			},
@@ -263,14 +293,6 @@ switch foo {
 				},
 			),
 		},
-		// {
-		// 	name: "Invalid Ternary",
-		// 	args: args{
-		// 		Input: "1 ? 2 ; 3",
-		// 	},
-		// 	wantErr: true,
-		// 	want:    nil,
-		// },
 
 		{
 			name: "Logical OR - no spaces",
@@ -2487,10 +2509,12 @@ func TestPrimary_String(t *testing.T) {
 						Ident: Ident{
 							Parts: []string{"foo"},
 						},
-						Parameters: []Expr{
-							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
-							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
-						},
+						InvocationParams: []InvocationParams{{
+							[]Expr{
+								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
+							},
+						}},
 					},
 				},
 			},
@@ -2558,9 +2582,11 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					Parameters: []Expr{
-						*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
-					},
+					InvocationParams: []InvocationParams{{
+						[]Expr{
+							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						},
+					}},
 				},
 			},
 			want: "foo(1)",
@@ -2574,13 +2600,40 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					Parameters: []Expr{
-						*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
-						*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
-					},
+					InvocationParams: []InvocationParams{{
+						[]Expr{
+							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+					}},
 				},
 			},
 			want: "foo(1, 2)",
+		},
+		{
+			name: "Monadic invocation",
+			args: args{
+				Input: &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{
+							"foo",
+						},
+					},
+					InvocationParams: []InvocationParams{
+						{
+							[]Expr{
+								*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							},
+						},
+						{
+							[]Expr{
+								*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							},
+						},
+					},
+				},
+			},
+			want: "foo(1)(2)",
 		},
 	}
 

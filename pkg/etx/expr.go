@@ -117,8 +117,12 @@ type ExprPrimary struct {
 }
 
 type ExprInvocation struct {
-	Ident      Ident  `parser:"@@"                        json:"ident,omitempty"`
-	Parameters []Expr `parser:"'(' ( @@ (',' @@)* )? ')'" json:"parameters,omitempty"`
+	Ident            Ident              `parser:"@@"              json:"ident,omitempty"`
+	InvocationParams []InvocationParams `parser:"( '(' @@ ')' )+" json:"invocation_params,omitempty"`
+}
+
+type InvocationParams struct {
+	Values []Expr `parser:"[ @@ (',' @@)* ]" json:"values,omitempty"`
 }
 
 // /////////////////////////////////////
@@ -344,12 +348,25 @@ func (e ExprPrimary) String() string {
 }
 
 func (e ExprInvocation) String() string {
-	params := make([]string, 0, len(e.Parameters))
-	for _, p := range e.Parameters {
+	invocationParams := "()"
+	if len(e.InvocationParams) != 0 {
+		params := make([]string, 0, len(e.InvocationParams))
+		for _, p := range e.InvocationParams {
+			params = append(params, fmt.Sprintf("(%v)", p))
+		}
+		invocationParams = strings.Join(params, "")
+	}
+
+	return fmt.Sprintf("%v%v", e.Ident, invocationParams)
+}
+
+func (e InvocationParams) String() string {
+	params := make([]string, 0, len(e.Values))
+	for _, p := range e.Values {
 		params = append(params, p.String())
 	}
 
-	return fmt.Sprintf("%v(%v)", e.Ident, strings.Join(params, ", "))
+	return strings.Join(params, ", ")
 }
 
 // /////////////////////////////////////
@@ -592,17 +609,38 @@ func (e *ExprInvocation) Clone() *ExprInvocation {
 	}
 
 	out := &ExprInvocation{
-		Ident:      *e.Ident.Clone(),
-		Parameters: nil,
+		Ident:            *e.Ident.Clone(),
+		InvocationParams: nil,
 	}
 
-	if e.Parameters == nil {
+	if e.InvocationParams == nil {
 		return out
 	}
 
-	out.Parameters = make([]Expr, 0, len(e.Parameters))
-	for _, p := range e.Parameters {
-		out.Parameters = append(out.Parameters, *p.Clone())
+	out.InvocationParams = make([]InvocationParams, 0, len(e.InvocationParams))
+	for _, p := range e.InvocationParams {
+		out.InvocationParams = append(out.InvocationParams, *p.Clone())
+	}
+
+	return out
+}
+
+func (e *InvocationParams) Clone() *InvocationParams {
+	if e == nil {
+		return nil
+	}
+
+	out := &InvocationParams{
+		Values: nil,
+	}
+
+	if e.Values == nil {
+		return out
+	}
+
+	out.Values = make([]Expr, 0, len(e.Values))
+	for _, p := range e.Values {
+		out.Values = append(out.Values, *p.Clone())
 	}
 
 	return out
