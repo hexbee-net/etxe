@@ -45,13 +45,14 @@ const (
 	TokenKeywordConst   = `const`
 	TokenKeywordVal     = `val`
 	TokenKeywordType    = `type`
-	TokenKeywordEnum    = `enum`
 	TokenKeywordIf      = `if`
 	TokenKeywordElse    = `else`
 	TokenKeywordSwitch  = `switch`
 	TokenKeywordCase    = `case`
 	TokenKeywordDefault = `default`
 	TokenKeywordReturn  = `return`
+	TokenKeywordEnum    = `enum`
+	TokenKeywordObject  = `object`
 )
 
 const (
@@ -73,6 +74,8 @@ func lexRules() lexer.Rules {
 			{Name: "Const", Pattern: `\b(` + TokenKeywordConst + `)\b`},
 			{Name: "Val", Pattern: `\b(` + TokenKeywordVal + `)\b`},
 			{Name: "Type", Pattern: `\b(` + TokenKeywordType + `)\b`},
+			{Name: "Enum", Pattern: `\b(` + TokenKeywordEnum + `)\b`},
+			{Name: "Object", Pattern: `\b(` + TokenKeywordObject + `)\b`},
 			{Name: "Func", Pattern: `\b(def)\b`, Action: lexer.Push(lexerFunc)},
 
 			lexer.Include(lexerCore),

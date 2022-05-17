@@ -1,5 +1,27 @@
 package etx
 
 type Type struct {
-	Label string `parser:"'type' Whitespace @Ident"`
+	Comments []string `parser:"@Comment*"               json:"comments,omitempty"`
+	Label    string   `parser:"'type' @Ident"           json:"label,omitempty"`
+	Enum     *Enum    `parser:"(   Enum   '{' @@ '}' "  json:"enum,omitempty"`
+	Object   *Object  `parser:"  | Object '{' @@ '}' )" json:"object,omitempty"`
+}
+type Enum struct {
+	Items []*EnumItem `parser:"(NewLine @@)*"  json:"items,omitempty"`
+}
+
+type EnumItem struct {
+	Comments []string `parser:"@Comment*"  json:"comments,omitempty"`
+	Label    string   `parser:"@Ident ':'" json:"label"`
+	Value    Expr     `parser:"@@"         json:"value"`
+}
+
+type Object struct {
+	Items []*ObjectItem `parser:"(NewLine @@)*" json:"items,omitempty"`
+}
+
+type ObjectItem struct {
+	Comments []string       `parser:"@Comment*"  json:"comments,omitempty"`
+	Label    string         `parser:"@Ident ':'" json:"label"`
+	Type     *ParameterType `parser:"@@"         json:"type"`
 }
