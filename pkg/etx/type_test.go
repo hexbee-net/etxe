@@ -49,7 +49,7 @@ func TestType_Parsing(t *testing.T) {
 			parser := participle.MustBuild(
 				&Type{},
 				participle.Lexer(lexer.MustStateful(lexRules())),
-				participle.Elide("Whitespace"),
+				participle.Elide(TokenWhitespace),
 			)
 
 			res := &Type{}

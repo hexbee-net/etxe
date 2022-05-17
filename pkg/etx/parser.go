@@ -22,6 +22,7 @@ var (
 func parser() *participle.Parser {
 	return participle.MustBuild(&AST{},
 		participle.Lexer(lexer.MustStateful(lexRules())),
+		participle.Elide(TokenWhitespace),
 		participle.Map(unquoteString, "String"),
 		participle.Map(cleanHeredocStart, "Heredoc"),
 		participle.Map(stripComment, "Comment"),

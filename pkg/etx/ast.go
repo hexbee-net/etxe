@@ -38,6 +38,6 @@ type ParameterType struct {
 }
 
 type FuncSignature struct {
-	Parameters []*ParameterType `parser:"'(' (@@ ( Whitespace? ',' Whitespace? @@ )*)? ')' Whitespace? LambdaDef" json:"parameters,omitempty"`
-	Return     *ParameterType   `parser:"Whitespace? @@"                                                          json:"return,omitempty"`
+	Parameters []*ParameterType `parser:"'(' ( @@ (','  @@)* )? ')' OpLambdaDef" json:"parameters,omitempty"`
+	Return     *ParameterType   `parser:"@@"                                     json:"return,omitempty"`
 }

@@ -201,10 +201,11 @@ val foo = 1`[1:],
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			l := lexer.MustStateful(lexRules())
-
-			// parser := participle.MustBuild(&AST{}, participle.Lexer(lexer.MustStateful(lexRules())))
-			parser := participle.MustBuild(&AST{}, participle.Lexer(l))
+			parser := participle.MustBuild(
+				&AST{},
+				participle.Lexer(lexer.MustStateful(lexRules())),
+				participle.Elide(TokenWhitespace),
+			)
 
 			res := &AST{}
 			err := parser.ParseString("", tt.args.Input, res)

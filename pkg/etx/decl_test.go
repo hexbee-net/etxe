@@ -89,7 +89,11 @@ func TestDecl_Parsing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			parser := participle.MustBuild(&Decl{}, participle.Lexer(lexer.MustStateful(lexRules())))
+			parser := participle.MustBuild(
+				&Decl{},
+				participle.Lexer(lexer.MustStateful(lexRules())),
+				participle.Elide(TokenWhitespace),
+			)
 
 			res := &Decl{}
 			err := parser.ParseString("", tt.args.Input, res)

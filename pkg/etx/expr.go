@@ -12,20 +12,20 @@ type Expr struct {
 }
 
 type ExprIf struct {
-	Condition *ExprLogicalOr `parser:"If Whitespace @@ (Whitespace|NewLine)"                                                            json:"condition,omitempty"`
-	Left      *Expr          `parser:"BlockStart (Whitespace|NewLine)? @@? (Whitespace|NewLine)? BlockEnd (Whitespace|NewLine)?"        json:"left,omitempty"`
-	Right     *Expr          `parser:"[ Else (Whitespace|NewLine) BlockStart (Whitespace|NewLine)? @@ (Whitespace|NewLine)? BlockEnd ]" json:"right,omitempty"`
+	Condition *ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition,omitempty"`
+	Left      *Expr          `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
+	Right     *Expr          `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
 }
 
 type ExprSwitch struct {
-	Selector *ExprLogicalOr `parser:"Switch Whitespace @@ (Whitespace|NewLine) BlockStart (Whitespace|NewLine)?" json:"selector,omitempty"`
-	Cases    []*ExprCase    `parser:"@@* (Whitespace|NewLine)? BlockEnd"                                         json:"cases,omitempty"`
+	Selector *ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector,omitempty"`
+	Cases    []*ExprCase    `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
 }
 
 type ExprCase struct {
-	Conditions []*ExprLogicalOr `parser:"(  (Whitespace|NewLine)? Case Whitespace @@ ( (Whitespace|NewLine)? ',' (Whitespace|NewLine)? @@ )* Whitespace? OpColon (Whitespace|NewLine)?" json:"conditions,omitempty"`
-	Default    bool             `parser:" | (Whitespace|NewLine)? @'default'  Whitespace? OpColon (Whitespace|NewLine)? )"                                                              json:"default"`
-	Expr       *Expr            `parser:"BlockStart (Whitespace|NewLine)? @@ (Whitespace|NewLine)? BlockEnd (Whitespace|NewLine)?"                                                      json:"expr,omitempty"`
+	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  " json:"conditions,omitempty"`
+	Default    bool             `parser:"  | @'default'          ':' )"                                                              json:"default"`
+	Expr       *Expr            `parser:"NewLine? '{' NewLine? @@ NewLine? '}'"                                                      json:"expr,omitempty"`
 }
 
 // ExprConditional is a ternary expression.
@@ -34,93 +34,93 @@ type ExprCase struct {
 // included at the expression top level but `if` and `switch` just skip them
 // and go straight to the next level.
 type ExprConditional struct {
-	Condition    *ExprLogicalOr `parser:"@@"                                     json:"condition,omitempty"`
-	ConditionOp  string         `parser:"[ Whitespace? @OpCondition Whitespace?" json:"condition_op,omitempty"`
-	TrueExpr     *ExprLogicalOr `parser:"  @@  "                                 json:"true_expr,omitempty"`
-	ConditionSep string         `parser:"  Whitespace? @OpColon Whitespace? "    json:"condition_sep,omitempty"`
-	FalseExpr    *ExprLogicalOr `parser:"  @@ ]"                                 json:"false_expr,omitempty"`
+	Condition    *ExprLogicalOr `parser:"@@"      json:"condition,omitempty"`
+	ConditionOp  string         `parser:"[ @'?' " json:"condition_op,omitempty"`
+	TrueExpr     *ExprLogicalOr `parser:"  @@   " json:"true_expr,omitempty"`
+	ConditionSep string         `parser:"  @':' " json:"condition_sep,omitempty"`
+	FalseExpr    *ExprLogicalOr `parser:"  @@  ]" json:"false_expr,omitempty"`
 }
 
 type ExprLogicalOr struct {
-	Left  *ExprLogicalAnd `parser:"@@"                                     json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @OpLogicalOr Whitespace?" json:"op,omitempty"`
-	Right *ExprLogicalOr  `parser:"  @@ ]"                                 json:"right,omitempty"`
+	Left  *ExprLogicalAnd `parser:"@@"               json:"left,omitempty"`
+	Op    string          `parser:"[ @OpLogicalOr  " json:"op,omitempty"`
+	Right *ExprLogicalOr  `parser:"  @@           ]" json:"right,omitempty"`
 }
 
 type ExprLogicalAnd struct {
-	Left  *ExprBitwiseOr  `parser:"@@"                                      json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @OpLogicalAnd Whitespace?" json:"op,omitempty"`
-	Right *ExprLogicalAnd `parser:"  @@ ]"                                  json:"right,omitempty"`
+	Left  *ExprBitwiseOr  `parser:"@@"                json:"left,omitempty"`
+	Op    string          `parser:"[ @OpLogicalAnd  " json:"op,omitempty"`
+	Right *ExprLogicalAnd `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseOr struct {
-	Left  *ExprBitwiseXor `parser:"@@"                                      json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @OpBitwiseOr Whitespace? " json:"op,omitempty"`
-	Right *ExprBitwiseOr  `parser:"  @@ ]"                                  json:"right,omitempty"`
+	Left  *ExprBitwiseXor `parser:"@@"               json:"left,omitempty"`
+	Op    string          `parser:"[ @OpBitwiseOr  " json:"op,omitempty"`
+	Right *ExprBitwiseOr  `parser:"  @@           ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseXor struct {
-	Left  *ExprBitwiseAnd `parser:"@@"                                      json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @OpBitwiseXOr Whitespace?" json:"op,omitempty"`
-	Right *ExprBitwiseXor `parser:"  @@ ]"                                  json:"right,omitempty"`
+	Left  *ExprBitwiseAnd `parser:"@@"                json:"left,omitempty"`
+	Op    string          `parser:"[ @OpBitwiseXOr  " json:"op,omitempty"`
+	Right *ExprBitwiseXor `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprBitwiseAnd struct {
-	Left  *ExprEquality   `parser:"@@"                                      json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @OpBitwiseAnd Whitespace?" json:"op,omitempty"`
-	Right *ExprBitwiseAnd `parser:"  @@ ]"                                  json:"right,omitempty"`
+	Left  *ExprEquality   `parser:"@@"                json:"left,omitempty"`
+	Op    string          `parser:"[ @OpBitwiseAnd  " json:"op,omitempty"`
+	Right *ExprBitwiseAnd `parser:"  @@            ]" json:"right,omitempty"`
 }
 
 type ExprEquality struct {
-	Left  *ExprRelational `parser:"@@"                                                  json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @( OpNotEqual | OpEqual ) Whitespace?" json:"op,omitempty"`
-	Right *ExprEquality   `parser:"  @@ ]"                                              json:"right,omitempty"`
+	Left  *ExprRelational `parser:"@@"                            json:"left,omitempty"`
+	Op    string          `parser:"[ @( OpNotEqual | OpEqual )  " json:"op,omitempty"`
+	Right *ExprEquality   `parser:"  @@                        ]" json:"right,omitempty"`
 }
 
 type ExprRelational struct {
-	Left  *ExprShift      `parser:"@@"                                                                             json:"left,omitempty"`
-	Op    string          `parser:"[ Whitespace? @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual ) Whitespace?" json:"op,omitempty"`
-	Right *ExprRelational `parser:"  @@ ] "                                                                        json:"right,omitempty"`
+	Left  *ExprShift      `parser:"@@"                                                       json:"left,omitempty"`
+	Op    string          `parser:"[ @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual )  " json:"op,omitempty"`
+	Right *ExprRelational `parser:"  @@                                                   ]" json:"right,omitempty"`
 }
 
 type ExprShift struct {
-	Left  *ExprAdditive `parser:"@@"                                                                      json:"left,omitempty"`
-	Op    string        `parser:"[ Whitespace? @( OpBitwiseShiftLeft | OpBitwiseShiftRight ) Whitespace?" json:"op,omitempty"`
-	Right *ExprShift    `parser:"  @@ ]"                                                                  json:"right,omitempty"`
+	Left  *ExprAdditive `parser:"@@"                                                json:"left,omitempty"`
+	Op    string        `parser:"[ @( OpBitwiseShiftLeft | OpBitwiseShiftRight )  " json:"op,omitempty"`
+	Right *ExprShift    `parser:"  @@                                            ]" json:"right,omitempty"`
 }
 
 type ExprAdditive struct {
-	Left  *ExprMultiplicative `parser:"@@"                                              json:"left,omitempty"`
-	Op    string              `parser:"[ Whitespace? @( OpMinus | OpPlus ) Whitespace?" json:"op,omitempty"`
-	Right *ExprAdditive       `parser:"  @@ ]"                                          json:"right,omitempty"`
+	Left  *ExprMultiplicative `parser:"@@"                        json:"left,omitempty"`
+	Op    string              `parser:"[ @( OpMinus | OpPlus )  " json:"op,omitempty"`
+	Right *ExprAdditive       `parser:"  @@                    ]" json:"right,omitempty"`
 }
 
 type ExprMultiplicative struct {
-	Left  *ExprUnary          `parser:"@@"                                                                      json:"left,omitempty"`
-	Op    string              `parser:"[ Whitespace? @( OpDivision | OpMultiplication | OpModulo ) Whitespace?" json:"op,omitempty"`
-	Right *ExprMultiplicative `parser:"  @@ ]"                                                                  json:"right,omitempty"`
+	Left  *ExprUnary          `parser:"@@"                                                json:"left,omitempty"`
+	Op    string              `parser:"[ @( OpDivision | OpMultiplication | OpModulo )  " json:"op,omitempty"`
+	Right *ExprMultiplicative `parser:"  @@                                            ]" json:"right,omitempty"`
 }
 
 type ExprUnary struct {
-	Op      string       `parser:"  ( @( OpBitwiseNot | OpLogicalNot | OpMinus ) Whitespace?" json:"op,omitempty"`
-	Unary   *ExprUnary   `parser:"    @@ )"                                                   json:"unary,omitempty"`
-	Postfix *ExprPostfix `parser:"| @@"                                                       json:"postfix,omitempty"`
+	Op      string       `parser:"  ( @( OpBitwiseNot | OpLogicalNot | OpMinus )" json:"op,omitempty"`
+	Unary   *ExprUnary   `parser:"    @@ )"                                       json:"unary,omitempty"`
+	Postfix *ExprPostfix `parser:"| @@"                                           json:"postfix,omitempty"`
 }
 
 type ExprPostfix struct {
-	Left  *ExprPrimary `parser:"@@"                                                                           json:"left,omitempty"`
-	Right *Expr        `parser:"[ Whitespace? OpLBracket Whitespace? @@ Whitespace? OpRBracket Whitespace? ]" json:"right,omitempty"`
+	Left  *ExprPrimary `parser:"@@"             json:"left,omitempty"`
+	Right *Expr        `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
 }
 
 type ExprPrimary struct {
-	SubExpression *Expr           `parser:"  OpLParen Whitespace? @@ Whitespace? OpRParen" json:"sub_expression,omitempty"`
-	Invocation    *ExprInvocation `parser:"| @@"                                           json:"invocation,omitempty"`
-	Value         *Value          `parser:"| @@"                                           json:"value,omitempty"`
+	SubExpression *Expr           `parser:"  '(' @@ ')'" json:"sub_expression,omitempty"`
+	Invocation    *ExprInvocation `parser:"| @@"         json:"invocation,omitempty"`
+	Value         *Value          `parser:"| @@"         json:"value,omitempty"`
 }
 
 type ExprInvocation struct {
-	Ident      *Ident  `parser:"@@"                                                          json:"ident,omitempty"`
-	Parameters []*Expr `parser:"OpLParen (@@ ( Whitespace? ',' Whitespace? @@ )*)? OpRParen" json:"parameters,omitempty"`
+	Ident      *Ident  `parser:"@@"                          json:"ident,omitempty"`
+	Parameters []*Expr `parser:"'(' ( @@ (',' @@)* )? ')'" json:"parameters,omitempty"`
 }
 
 // /////////////////////////////////////

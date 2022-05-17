@@ -7,9 +7,9 @@ type MapEntry struct {
 	Pos    lexer.Position `parser:"" json:"-"`
 	Parent Node           `parser:"" json:"-"`
 
-	Comments []string `parser:"@Comment*"                 json:"comments,omitempty"`
-	Key      *Value   `parser:"@@ Whitespace? ':' Whitespace?" json:"key"`
-	Value    *Value   `parser:"@@"                             json:"value"`
+	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
+	Key      *Value   `parser:"@@ ':'"    json:"key"`
+	Value    *Value   `parser:"@@"        json:"value"`
 }
 
 func (e *MapEntry) children() (children []Node) {

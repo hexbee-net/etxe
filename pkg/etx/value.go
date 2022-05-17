@@ -14,17 +14,17 @@ type Value struct {
 	Pos    lexer.Position `parser:"" json:"-"`
 	Parent Node           `parser:"" json:"-"`
 
-	Null             bool        `parser:"(  @'null'"                                                                                        json:"null,omitempty"`
-	Bool             *Bool       `parser:" | @('true' | 'false')"                                                                            json:"bool,omitempty"`
-	Number           *Number     `parser:" | @Number"                                                                                        json:"number,omitempty"`
-	Str              String      `parser:" | String @@* StringEnd"                                                                           json:"str,omitempty"`
-	Ident            *Ident      `parser:" | @@"                                                                                             json:"ident,omitempty"`
-	HeredocDelimiter string      `parser:" | (@Heredoc"                                                                                      json:"heredoc_delimiter,omitempty"`
-	Heredoc          *string     `parser:"     @(Body | EOL)* End)"                                                                          json:"heredoc,omitempty"`
-	HaveList         bool        `parser:" | ( @'['"                                                                                         json:"have_list,omitempty"` // Need this to detect empty lists.
-	List             []*Value    `parser:"     ( Whitespace? @@ ( Whitespace?',' Whitespace? @@ )* )? Whitespace? ','? Whitespace? ']' )"    json:"list,omitempty"`
-	HaveMap          bool        `parser:" | ( @'{'"                                                                                         json:"have_map,omitempty"` // Need this to detect empty maps.
-	Map              []*MapEntry `parser:"     ( Whitespace? @@ ( Whitespace? ',' Whitespace? @@ )* Whitespace? ','? )? Whitespace? '}' ) )" json:"map,omitempty"`
+	Null             bool        `parser:"(  @'null'"                           json:"null,omitempty"`
+	Bool             *Bool       `parser:" | @('true' | 'false')"               json:"bool,omitempty"`
+	Number           *Number     `parser:" | @Number"                           json:"number,omitempty"`
+	Str              String      `parser:" | String @@* StringEnd"              json:"str,omitempty"`
+	Ident            *Ident      `parser:" | @@"                                json:"ident,omitempty"`
+	HeredocDelimiter string      `parser:" | (@Heredoc"                         json:"heredoc_delimiter,omitempty"`
+	Heredoc          *string     `parser:"     @(Body | EOL)* End)"             json:"heredoc,omitempty"`
+	HaveList         bool        `parser:" | ( @'['"                            json:"have_list,omitempty"`
+	List             []*Value    `parser:"     [ @@ ( ',' @@ )* ','? ] ']' )"   json:"list,omitempty"`
+	HaveMap          bool        `parser:" | ( @'{'"                            json:"have_map,omitempty"`
+	Map              []*MapEntry `parser:"     [ @@ ( ',' @@ )* ','? ] '}' ) )" json:"map,omitempty"`
 }
 
 // Clone the AST.

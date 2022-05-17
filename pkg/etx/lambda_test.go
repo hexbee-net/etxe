@@ -38,7 +38,7 @@ func TestLambda_Parsing(t *testing.T) {
 				Expr: testBuildExprTree[*Expr](t,
 					&ExprAdditive{
 						Left:  testBuildExprTree[*ExprMultiplicative](t, &Value{Ident: &Ident{Parts: []string{"x"}}}),
-						Op:    TokenOpPlus,
+						Op:    OpPlus,
 						Right: testBuildExprTree[*ExprAdditive](t, &Value{Number: &Number{big.NewFloat(1)}}),
 					},
 				),
@@ -48,7 +48,11 @@ func TestLambda_Parsing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			parser := participle.MustBuild(&Lambda{}, participle.Lexer(lexer.MustStateful(lexRules(), lexer.InitialState(lexerFunc))))
+			parser := participle.MustBuild(
+				&Lambda{},
+				participle.Lexer(lexer.MustStateful(lexRules(), lexer.InitialState(lexerFunc))),
+				participle.Elide(TokenWhitespace),
+			)
 
 			res := &Lambda{}
 			err := parser.ParseString("", tt.args.Input, res)
