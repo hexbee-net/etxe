@@ -1,6 +1,7 @@
 package etx
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/alecthomas/participle/v2"
@@ -20,7 +21,7 @@ func TestType_Parsing(t *testing.T) {
 		want    *Type
 	}{
 		{
-			name: "Empty Enum",
+			name: "Enum - Empty",
 			args: args{
 				Input: `type foo enum {}`,
 			},
@@ -32,7 +33,78 @@ func TestType_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "Empty Object",
+			name: "Enum - One valid value",
+			args: args{
+				Input: `
+type foo enum {
+  bar: 1
+}`[1:],
+			},
+			wantErr: false,
+			want: &Type{
+				Label: "foo",
+				Enum: &Enum{
+					Items: []EnumItem{
+						{
+							Label: "bar",
+							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						},
+					},
+				},
+				Object: nil,
+			},
+		},
+		{
+			name: "Enum - One invalid value",
+			args: args{
+				Input: `
+type foo enum {
+  bar:
+}`[1:],
+			},
+			wantErr: true,
+			want: &Type{
+				Label: "foo",
+				Enum: &Enum{
+					Items: []EnumItem{
+						{
+							Label: "bar",
+						},
+					},
+				},
+				Object: nil,
+			},
+		},
+		{
+			name: "Enum - Two valid values",
+			args: args{
+				Input: `
+type foo enum {
+  bar: 1
+  baz: 2
+}`[1:],
+			},
+			wantErr: false,
+			want: &Type{
+				Label: "foo",
+				Enum: &Enum{
+					Items: []EnumItem{
+						{
+							Label: "bar",
+							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+						},
+						{
+							Label: "baz",
+							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+						},
+					},
+				},
+				Object: nil,
+			},
+		},
+
+		{
+			name: "Object - Empty",
 			args: args{
 				Input: `type foo object {}`,
 			},
@@ -41,6 +113,95 @@ func TestType_Parsing(t *testing.T) {
 				Label:  "foo",
 				Enum:   nil,
 				Object: &Object{},
+			},
+		},
+		{
+			name: "Object - One valid declaration",
+			args: args{
+				Input: `
+type foo object {
+	foo: number
+}`[1:],
+			},
+			wantErr: false,
+			want: &Type{
+				Label: "foo",
+				Enum:  nil,
+				Object: &Object{
+					Items: []ObjectItem{
+						{
+							Label: "foo",
+							Type: ParameterType{
+								Ident: &Ident{
+									Parts: []string{
+										"number",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Object - One invalid declaration",
+			args: args{
+				Input: `
+type foo object {
+	foo:
+}`[1:],
+			},
+			wantErr: true,
+			want: &Type{
+				Label: "foo",
+				Enum:  nil,
+				Object: &Object{
+					Items: []ObjectItem{
+						{
+							Label: "foo",
+							Type:  ParameterType{},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Object - Two valid declarations",
+			args: args{
+				Input: `
+type foo object {
+	foo: number
+    bar: bool
+}`[1:],
+			},
+			wantErr: false,
+			want: &Type{
+				Label: "foo",
+				Enum:  nil,
+				Object: &Object{
+					Items: []ObjectItem{
+						{
+							Label: "foo",
+							Type: ParameterType{
+								Ident: &Ident{
+									Parts: []string{
+										"number",
+									},
+								},
+							},
+						},
+						{
+							Label: "bar",
+							Type: ParameterType{
+								Ident: &Ident{
+									Parts: []string{
+										"bool",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
