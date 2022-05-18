@@ -117,12 +117,12 @@ type ExprPrimary struct {
 }
 
 type ExprInvocation struct {
-	Ident   Ident              `parser:"@@"              json:"ident"`
-	Monads  []InvocationParams `parser:"( '(' @@ ')' )+" json:"monads,omitempty"`
-	Postfix *ExprPostfix       `parser:"[ '.' @@ ]"      json:"postfix,omitempty"`
+	Ident   Ident                  `parser:"@@"              json:"ident"`
+	Monads  []ExprInvocationParams `parser:"( '(' @@ ')' )+" json:"monads,omitempty"`
+	Postfix *ExprPostfix           `parser:"[ '.' @@ ]"      json:"postfix,omitempty"`
 }
 
-type InvocationParams struct {
+type ExprInvocationParams struct {
 	Values []Expr `parser:"[ @@ (',' @@)* ]" json:"values,omitempty"`
 }
 
@@ -365,7 +365,7 @@ func (e ExprInvocation) String() string {
 	return fmt.Sprintf("%v%v", e.Ident, invocationParams)
 }
 
-func (e InvocationParams) String() string {
+func (e ExprInvocationParams) String() string {
 	params := make([]string, 0, len(e.Values))
 	for _, p := range e.Values {
 		params = append(params, p.String())
@@ -614,15 +614,16 @@ func (e *ExprInvocation) Clone() *ExprInvocation {
 	}
 
 	out := &ExprInvocation{
-		Ident:  *e.Ident.Clone(),
-		Monads: nil,
+		Ident:   *e.Ident.Clone(),
+		Monads:  nil,
+		Postfix: e.Postfix.Clone(),
 	}
 
 	if e.Monads == nil {
 		return out
 	}
 
-	out.Monads = make([]InvocationParams, 0, len(e.Monads))
+	out.Monads = make([]ExprInvocationParams, 0, len(e.Monads))
 	for _, p := range e.Monads {
 		out.Monads = append(out.Monads, *p.Clone())
 	}
@@ -630,12 +631,12 @@ func (e *ExprInvocation) Clone() *ExprInvocation {
 	return out
 }
 
-func (e *InvocationParams) Clone() *InvocationParams {
+func (e *ExprInvocationParams) Clone() *ExprInvocationParams {
 	if e == nil {
 		return nil
 	}
 
-	out := &InvocationParams{
+	out := &ExprInvocationParams{
 		Values: nil,
 	}
 

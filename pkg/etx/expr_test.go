@@ -32,7 +32,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					Monads: []InvocationParams{{}},
+					Monads: []ExprInvocationParams{{}},
 				}),
 			},
 		},
@@ -47,7 +47,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					Monads: []InvocationParams{{
+					Monads: []ExprInvocationParams{{
 						Values: []Expr{
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
@@ -70,7 +70,7 @@ func TestExpr_Parsing(t *testing.T) {
 							"bar",
 						},
 					},
-					Monads: []InvocationParams{{
+					Monads: []ExprInvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"qux"}}}),
@@ -90,7 +90,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					Monads: []InvocationParams{
+					Monads: []ExprInvocationParams{
 						{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
@@ -117,7 +117,7 @@ func TestExpr_Parsing(t *testing.T) {
 							"foo",
 						},
 					},
-					Monads: []InvocationParams{
+					Monads: []ExprInvocationParams{
 						{},
 					},
 					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
@@ -136,7 +136,7 @@ func TestExpr_Parsing(t *testing.T) {
 							"foo",
 						},
 					},
-					Monads: []InvocationParams{
+					Monads: []ExprInvocationParams{
 						{},
 					},
 					Postfix: testBuildExprTree[*ExprPostfix](t, &ExprInvocation{
@@ -145,7 +145,7 @@ func TestExpr_Parsing(t *testing.T) {
 								"bar",
 							},
 						},
-						Monads: []InvocationParams{
+						Monads: []ExprInvocationParams{
 							{},
 						},
 					}),
@@ -2571,7 +2571,7 @@ func TestPrimary_String(t *testing.T) {
 						Ident: Ident{
 							Parts: []string{"foo"},
 						},
-						Monads: []InvocationParams{{
+						Monads: []ExprInvocationParams{{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
@@ -2644,7 +2644,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					Monads: []InvocationParams{{
+					Monads: []ExprInvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
@@ -2662,7 +2662,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					Monads: []InvocationParams{{
+					Monads: []ExprInvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
@@ -2681,7 +2681,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					Monads: []InvocationParams{
+					Monads: []ExprInvocationParams{
 						{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
@@ -3602,6 +3602,130 @@ func TestPrimary_Clone(t *testing.T) {
 			},
 			want: &ExprPrimary{
 				Value: &Value{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
+		})
+	}
+}
+
+func TestInvocation_Clone(t *testing.T) {
+	type args struct {
+		Input *ExprInvocation
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ExprInvocation
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprInvocation{},
+			},
+			want: &ExprInvocation{},
+		},
+
+		{
+			name: "Ident",
+			args: args{
+				Input: &ExprInvocation{
+					Ident: Ident{},
+				},
+			},
+			want: &ExprInvocation{
+				Ident: Ident{},
+			},
+		},
+		{
+			name: "Monads",
+			args: args{
+				Input: &ExprInvocation{
+					Monads: []ExprInvocationParams{{}},
+				},
+			},
+			want: &ExprInvocation{
+				Monads: []ExprInvocationParams{{}},
+			},
+		},
+		{
+			name: "Postfix",
+			args: args{
+				Input: &ExprInvocation{
+					Postfix: &ExprPostfix{},
+				},
+			},
+			want: &ExprInvocation{
+				Postfix: &ExprPostfix{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.args.Input.Clone())
+		})
+	}
+}
+
+func TestInvocationParams_Clone(t *testing.T) {
+	type args struct {
+		Input *ExprInvocationParams
+	}
+	tests := []struct {
+		name string
+		args args
+		want *ExprInvocationParams
+	}{
+		{
+			name: "Nil",
+			args: args{
+				Input: nil,
+			},
+			want: nil,
+		},
+		{
+			name: "Empty",
+			args: args{
+				Input: &ExprInvocationParams{},
+			},
+			want: &ExprInvocationParams{},
+		},
+		{
+			name: "No Values",
+			args: args{
+				Input: &ExprInvocationParams{
+					Values: []Expr{},
+				},
+			},
+			want: &ExprInvocationParams{
+				Values: []Expr{},
+			},
+		},
+		{
+			name: "Values",
+			args: args{
+				Input: &ExprInvocationParams{
+					Values: []Expr{
+						*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+					},
+				},
+			},
+			want: &ExprInvocationParams{
+				Values: []Expr{
+					*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+				},
 			},
 		},
 	}
