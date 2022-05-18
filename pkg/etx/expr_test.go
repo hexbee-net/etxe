@@ -22,7 +22,22 @@ func TestExpr_Parsing(t *testing.T) {
 		want    *Expr
 	}{
 		{
-			name: "Invocation",
+			name: "Invocation - no parameters",
+			args: args{
+				Input: `foo()`,
+			},
+			wantErr: false,
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{"foo"},
+					},
+					Monads: []InvocationParams{{}},
+				}),
+			},
+		},
+		{
+			name: "Invocation - parameters",
 			args: args{
 				Input: `foo(bar, baz)`,
 			},
@@ -32,7 +47,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					InvocationParams: []InvocationParams{{
+					Monads: []InvocationParams{{
 						Values: []Expr{
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
@@ -55,7 +70,7 @@ func TestExpr_Parsing(t *testing.T) {
 							"bar",
 						},
 					},
-					InvocationParams: []InvocationParams{{
+					Monads: []InvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
 							*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"qux"}}}),
@@ -75,7 +90,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Ident: Ident{
 						Parts: []string{"foo"},
 					},
-					InvocationParams: []InvocationParams{
+					Monads: []InvocationParams{
 						{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
@@ -87,6 +102,53 @@ func TestExpr_Parsing(t *testing.T) {
 							},
 						},
 					},
+				}),
+			},
+		},
+		{
+			name: "Dot reference on invocation",
+			args: args{
+				Input: `foo().bar`,
+			},
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{
+							"foo",
+						},
+					},
+					Monads: []InvocationParams{
+						{},
+					},
+					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+				}),
+			},
+		},
+		{
+			name: "Dot reference invocation on invocation",
+			args: args{
+				Input: `foo().bar()`,
+			},
+			want: &Expr{
+				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{
+							"foo",
+						},
+					},
+					Monads: []InvocationParams{
+						{},
+					},
+					Postfix: testBuildExprTree[*ExprPostfix](t, &ExprInvocation{
+						Ident: Ident{
+							Parts: []string{
+								"bar",
+							},
+						},
+						Monads: []InvocationParams{
+							{},
+						},
+					}),
 				}),
 			},
 		},
@@ -2509,7 +2571,7 @@ func TestPrimary_String(t *testing.T) {
 						Ident: Ident{
 							Parts: []string{"foo"},
 						},
-						InvocationParams: []InvocationParams{{
+						Monads: []InvocationParams{{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 								*testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"baz"}}}),
@@ -2582,7 +2644,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					InvocationParams: []InvocationParams{{
+					Monads: []InvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 						},
@@ -2600,7 +2662,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					InvocationParams: []InvocationParams{{
+					Monads: []InvocationParams{{
 						[]Expr{
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
 							*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
@@ -2619,7 +2681,7 @@ func TestInvocation_String(t *testing.T) {
 							"foo",
 						},
 					},
-					InvocationParams: []InvocationParams{
+					Monads: []InvocationParams{
 						{
 							[]Expr{
 								*testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
@@ -2634,6 +2696,20 @@ func TestInvocation_String(t *testing.T) {
 				},
 			},
 			want: "foo(1)(2)",
+		},
+		{
+			name: "Dot reference on invocation",
+			args: args{
+				Input: &ExprInvocation{
+					Ident: Ident{
+						Parts: []string{
+							"foo",
+						},
+					},
+					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+				},
+			},
+			want: "foo().bar",
 		},
 	}
 
