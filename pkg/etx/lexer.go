@@ -41,7 +41,7 @@ const (
 	OpDot               = `.`
 
 	TokenNewLine    = "NewLine"
-	TokenWhitespace = "Whitespace"
+	TokenWhitespace = "whitespace"
 
 	TokenNull = `null`
 )
@@ -62,7 +62,7 @@ const (
 func lexRules() lexer.Rules {
 	return lexer.Rules{
 		lexerRoot: {
-			{Name: `Input`, Pattern: `\b(input)\b`},
+			{Name: `input`, Pattern: `\b(input)\b`},
 			{Name: `Output`, Pattern: `\b(output)\b`},
 			{Name: `Const`, Pattern: `\b(const)\b`},
 			{Name: `Val`, Pattern: `\b(val)\b`},
@@ -76,6 +76,9 @@ func lexRules() lexer.Rules {
 		lexerCore: {
 			{Name: "OpLambda", Pattern: regexp.QuoteMeta(OpLambda), Action: lexer.Push(lexerStringExpr)},
 			{Name: "OpLambdaDef", Pattern: regexp.QuoteMeta(OpLambdaDef)},
+
+			{Name: `OpLParen`, Pattern: regexp.QuoteMeta(OpLParen)},
+			{Name: `OpRParen`, Pattern: regexp.QuoteMeta(OpRParen)},
 
 			{Name: "Punctuation", Pattern: `[][{}=:,]`},
 			{Name: "Ident", Pattern: `\b[[:alpha:]]\w*(-\w+)*\b`},
@@ -103,7 +106,7 @@ func lexRules() lexer.Rules {
 			{Name: "UnicodeShort", Pattern: `[0-9a-fA-F]{4}`, Action: lexer.Pop()},
 		},
 		lexerHeredoc: {
-			{Name: "End", Pattern: `\n\s*\b\1\b`, Action: lexer.Pop()},
+			{Name: "End", Pattern: `\n\b\1\b`, Action: lexer.Pop()},
 			{Name: "EOL", Pattern: `\n`},
 			{Name: "Body", Pattern: `[^\n]+`},
 		},
@@ -114,6 +117,7 @@ func lexRules() lexer.Rules {
 		},
 
 		lexerExpr: {
+			// TODO: move to core to support expressions everywhere
 			{Name: `If`, Pattern: `\b(if)\b`},
 			{Name: `Else`, Pattern: `\b(else)\b`},
 			{Name: `Switch`, Pattern: `\b(switch)\b`},

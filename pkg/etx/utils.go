@@ -1,10 +1,42 @@
 package etx
 
+import (
+	"fmt"
+	"io"
+)
+
 const (
 	indentationChar = "\t"
 )
 
-// AddParentRefs recursively updates an AST's parent references.
+type Cloner[C any] interface {
+	Clone() C
+}
+
+func cloneCollection[T Cloner[T]](src []T) []T {
+	if src == nil {
+		return nil
+	}
+
+	out := make([]T, 0, len(src))
+	for _, item := range src {
+		out = append(out, item.Clone())
+	}
+
+	return out
+}
+
+func cloneStrings(strings []string) []string {
+	if strings == nil {
+		return nil
+	}
+	out := make([]string, len(strings))
+	copy(out, strings)
+
+	return out
+}
+
+// AddParentRefs recursively updates an AST parent references.
 //
 // This is called automatically during Parse*(), but can be called on a manually constructed AST.
 func AddParentRefs(node Node) error {
@@ -29,4 +61,10 @@ func indentBytes(b, prefix []byte) []byte {
 	}
 
 	return res
+}
+
+func mustFprintf(w io.Writer, format string, a ...any) {
+	if _, err := fmt.Fprintf(w, format, a...); err != nil {
+		panic(err)
+	}
 }

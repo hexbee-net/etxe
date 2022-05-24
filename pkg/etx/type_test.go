@@ -3,72 +3,50 @@ package etx
 import (
 	"math/big"
 	"testing"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestType_Parsing(t *testing.T) {
-	type args struct {
-		Input string
-	}
+	t.Parallel()
+
 	tests := []struct {
 		name    string
-		args    args
+		input   string
 		wantErr bool
 		want    *Type
 	}{
 		{
-			name: "Enum - Empty",
-			args: args{
-				Input: `type foo enum {}`,
-			},
+			name:    "Enum - Empty",
+			input:   `type foo enum {}`,
 			wantErr: false,
 			want: &Type{
-				Label:  "foo",
-				Enum:   &Enum{},
-				Object: nil,
-			},
-		},
-		{
-			name: "Enum - One valid value",
-			args: args{
-				Input: `
-type foo enum {
-  bar: 1
-}`[1:],
-			},
-			wantErr: false,
-			want: &Type{
-				Label: "foo",
-				Enum: &Enum{
-					Items: []EnumItem{
-						{
-							Label: "bar",
-							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
-						},
-					},
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum: &TypeEnum{
+					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 				},
 				Object: nil,
 			},
 		},
 		{
-			name: "Enum - One invalid value",
-			args: args{
-				Input: `
+			name: "Enum - One valid value",
+			input: `
 type foo enum {
-  bar:
+  bar: 1
 }`[1:],
-			},
-			wantErr: true,
+			wantErr: false,
 			want: &Type{
-				Label: "foo",
-				Enum: &Enum{
-					Items: []EnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum: &TypeEnum{
+					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+					Items: []*TypeEnumItem{
 						{
-							Label: "bar",
+							ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 2, Column: 3}},
+							Label:   "bar",
+							Value: *testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 23, Line: 2, Column: 8}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 				},
@@ -77,25 +55,33 @@ type foo enum {
 		},
 		{
 			name: "Enum - Two valid values",
-			args: args{
-				Input: `
+			input: `
 type foo enum {
   bar: 1
   baz: 2
 }`[1:],
-			},
 			wantErr: false,
 			want: &Type{
-				Label: "foo",
-				Enum: &Enum{
-					Items: []EnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum: &TypeEnum{
+					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+					Items: []*TypeEnumItem{
 						{
-							Label: "bar",
-							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 2, Column: 3}},
+							Label:   "bar",
+							Value: *testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 23, Line: 2, Column: 8}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 						{
-							Label: "baz",
-							Value: *testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 27, Line: 3, Column: 3}},
+							Label:   "baz",
+							Value: *testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 8}},
+								Number:  &ValueNumber{big.NewFloat(2), "2"},
+							}),
 						},
 					},
 				},
@@ -104,62 +90,43 @@ type foo enum {
 		},
 
 		{
-			name: "Object - Empty",
-			args: args{
-				Input: `type foo object {}`,
-			},
+			name:    "Object - Empty",
+			input:   `type foo object {}`,
 			wantErr: false,
 			want: &Type{
-				Label:  "foo",
-				Enum:   nil,
-				Object: &Object{},
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum:    nil,
+				Object: &TypeObject{
+					ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+				},
 			},
 		},
 		{
 			name: "Object - One valid declaration",
-			args: args{
-				Input: `
+			input: `
 type foo object {
 	foo: number
 }`[1:],
-			},
 			wantErr: false,
 			want: &Type{
-				Label: "foo",
-				Enum:  nil,
-				Object: &Object{
-					Items: []ObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum:    nil,
+				Object: &TypeObject{
+					ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+					Items: []*TypeObjectItem{
 						{
-							Label: "foo",
+							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 2}},
+							Label:   "foo",
 							Type: ParameterType{
+								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 7}},
 								Ident: &Ident{
 									Parts: []string{
 										"number",
 									},
 								},
 							},
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "Object - One invalid declaration",
-			args: args{
-				Input: `
-type foo object {
-	foo:
-}`[1:],
-			},
-			wantErr: true,
-			want: &Type{
-				Label: "foo",
-				Enum:  nil,
-				Object: &Object{
-					Items: []ObjectItem{
-						{
-							Label: "foo",
-							Type:  ParameterType{},
 						},
 					},
 				},
@@ -167,22 +134,24 @@ type foo object {
 		},
 		{
 			name: "Object - Two valid declarations",
-			args: args{
-				Input: `
+			input: `
 type foo object {
 	foo: number
     bar: bool
 }`[1:],
-			},
 			wantErr: false,
 			want: &Type{
-				Label: "foo",
-				Enum:  nil,
-				Object: &Object{
-					Items: []ObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Enum:    nil,
+				Object: &TypeObject{
+					ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+					Items: []*TypeObjectItem{
 						{
-							Label: "foo",
+							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 2}},
+							Label:   "foo",
 							Type: ParameterType{
+								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 7}},
 								Ident: &Ident{
 									Parts: []string{
 										"number",
@@ -191,8 +160,10 @@ type foo object {
 							},
 						},
 						{
-							Label: "bar",
+							ASTNode: ASTNode{Pos: Position{Offset: 35, Line: 3, Column: 5}},
+							Label:   "bar",
 							Type: ParameterType{
+								ASTNode: ASTNode{Pos: Position{Offset: 40, Line: 3, Column: 10}},
 								Ident: &Ident{
 									Parts: []string{
 										"bool",
@@ -208,22 +179,7 @@ type foo object {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			parser := participle.MustBuild(
-				&Type{},
-				participle.Lexer(lexer.MustStateful(lexRules())),
-				participle.Elide(TokenWhitespace),
-			)
-
-			res := &Type{}
-			err := parser.ParseString("", tt.args.Input, res)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-
-			assert.Equal(t, tt.want, res)
+			testParser(t, tt.input, tt.want, tt.wantErr, true)
 		})
 	}
 }

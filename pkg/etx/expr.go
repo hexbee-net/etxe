@@ -6,127 +6,39 @@ import (
 )
 
 type Expr struct {
+	ASTNode
+
 	Left   *ExprConditional `parser:"(   @@  " json:"left,omitempty"`
 	If     *ExprIf          `parser:"  | @@  " json:"if,omitempty"`
 	Switch *ExprSwitch      `parser:"  | @@ )" json:"switch,omitempty"`
 }
 
-type ExprIf struct {
-	Condition ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition"`
-	Left      *Expr         `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
-	Right     *Expr         `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
+func (e *Expr) Clone() *Expr {
+	if e == nil {
+		return nil
+	}
+
+	return &Expr{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    e.Left.Clone(),
+		If:      e.If.Clone(),
+		Switch:  e.Switch.Clone(),
+	}
 }
 
-type ExprSwitch struct {
-	Selector ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector"`
-	Cases    []*ExprCase   `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
-}
+func (e *Expr) Children() (children []Node) {
+	switch {
+	case e.Left != nil:
+		children = append(children, e.Left)
+	case e.If != nil:
+		children = append(children, e.If)
+	case e.Switch != nil:
+		children = append(children, e.Switch)
 
-type ExprCase struct {
-	Conditions []ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "         json:"conditions"`
-	Default    bool            `parser:"  | @'default'          ':' )"         json:"default"`
-	Expr       *Expr           `parser:"NewLine? '{' NewLine? @@ NewLine? '}'" json:"expr,omitempty"`
-}
+	}
 
-// ExprConditional is a ternary expression.
-//
-// Ternaries are bad but necessary for Terraform compatibility, so they are
-// included at the expression top level but `if` and `switch` just skip them
-// and go straight to the next level.
-type ExprConditional struct {
-	Condition   ExprLogicalOr  `parser:"@@"          json:"condition"`
-	ConditionOp bool           `parser:"[ @'?'     " json:"condition_op,omitempty"`
-	TrueExpr    *ExprLogicalOr `parser:"  @@       " json:"true_expr,omitempty"`
-	FalseExpr   *ExprLogicalOr `parser:"  ':' @@  ]" json:"false_expr,omitempty"`
+	return
 }
-
-type ExprLogicalOr struct {
-	Left  ExprLogicalAnd `parser:"@@"               json:"left"`
-	Op    string         `parser:"[ @OpLogicalOr  " json:"op,omitempty"`
-	Right *ExprLogicalOr `parser:"  @@           ]" json:"right,omitempty"`
-}
-
-type ExprLogicalAnd struct {
-	Left  ExprBitwiseOr   `parser:"@@"                json:"left"`
-	Op    string          `parser:"[ @OpLogicalAnd  " json:"op,omitempty"`
-	Right *ExprLogicalAnd `parser:"  @@            ]" json:"right,omitempty"`
-}
-
-type ExprBitwiseOr struct {
-	Left  ExprBitwiseXor `parser:"@@"               json:"left"`
-	Op    string         `parser:"[ @OpBitwiseOr  " json:"op,omitempty"`
-	Right *ExprBitwiseOr `parser:"  @@           ]" json:"right,omitempty"`
-}
-
-type ExprBitwiseXor struct {
-	Left  ExprBitwiseAnd  `parser:"@@"                json:"left"`
-	Op    string          `parser:"[ @OpBitwiseXOr  " json:"op,omitempty"`
-	Right *ExprBitwiseXor `parser:"  @@            ]" json:"right,omitempty"`
-}
-
-type ExprBitwiseAnd struct {
-	Left  ExprEquality    `parser:"@@"                json:"left"`
-	Op    string          `parser:"[ @OpBitwiseAnd  " json:"op,omitempty"`
-	Right *ExprBitwiseAnd `parser:"  @@            ]" json:"right,omitempty"`
-}
-
-type ExprEquality struct {
-	Left  ExprRelational `parser:"@@"                            json:"left"`
-	Op    string         `parser:"[ @( OpNotEqual | OpEqual )  " json:"op,omitempty"`
-	Right *ExprEquality  `parser:"  @@                        ]" json:"right,omitempty"`
-}
-
-type ExprRelational struct {
-	Left  ExprShift       `parser:"@@"                                                       json:"left"`
-	Op    string          `parser:"[ @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual )  " json:"op,omitempty"`
-	Right *ExprRelational `parser:"  @@                                                   ]" json:"right,omitempty"`
-}
-
-type ExprShift struct {
-	Left  ExprAdditive `parser:"@@"                                                json:"left"`
-	Op    string       `parser:"[ @( OpBitwiseShiftLeft | OpBitwiseShiftRight )  " json:"op,omitempty"`
-	Right *ExprShift   `parser:"  @@                                            ]" json:"right,omitempty"`
-}
-
-type ExprAdditive struct {
-	Left  ExprMultiplicative `parser:"@@"                        json:"left"`
-	Op    string             `parser:"[ @( OpMinus | OpPlus )  " json:"op,omitempty"`
-	Right *ExprAdditive      `parser:"  @@                    ]" json:"right,omitempty"`
-}
-
-type ExprMultiplicative struct {
-	Left  ExprUnary           `parser:"@@"                                                json:"left,omitempty"`
-	Op    string              `parser:"[ @( OpDivision | OpMultiplication | OpModulo )  " json:"op,omitempty"`
-	Right *ExprMultiplicative `parser:"  @@                                            ]" json:"right,omitempty"`
-}
-
-type ExprUnary struct {
-	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus ) ]" json:"op,omitempty"`
-	Right ExprPostfix `parser:"@@"                                             json:"right"`
-}
-
-type ExprPostfix struct {
-	Left  ExprPrimary `parser:"@@"             json:"left,omitempty"`
-	Right *Expr       `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
-}
-
-type ExprPrimary struct {
-	SubExpression *Expr           `parser:"(  '(' @@ ')'  " json:"sub_expression,omitempty"`
-	Invocation    *ExprInvocation `parser:"  | @@         " json:"invocation,omitempty"`
-	Value         *Value          `parser:"  | @@        )" json:"value,omitempty"`
-}
-
-type ExprInvocation struct {
-	Ident   Ident                  `parser:"@@"              json:"ident"`
-	Monads  []ExprInvocationParams `parser:"( '(' @@ ')' )+" json:"monads,omitempty"`
-	Postfix *ExprPostfix           `parser:"[ '.' @@ ]"      json:"postfix,omitempty"`
-}
-
-type ExprInvocationParams struct {
-	Values []Expr `parser:"[ @@ (',' @@)* ]" json:"values,omitempty"`
-}
-
-// /////////////////////////////////////
 
 func (e Expr) String() string {
 	switch {
@@ -141,6 +53,43 @@ func (e Expr) String() string {
 	}
 }
 
+// /////////////////////////////////////
+
+type ExprIf struct {
+	ASTNode
+
+	Condition ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition"`
+	Left      *Expr         `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
+	Right     *Expr         `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
+}
+
+func (e *ExprIf) Clone() *ExprIf {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprIf{
+		ASTNode:   e.ASTNode.Clone(),
+		Condition: *e.Condition.Clone(),
+		Left:      e.Left.Clone(),
+		Right:     e.Right.Clone(),
+	}
+}
+
+func (e *ExprIf) Children() (children []Node) {
+	children = append(children, &e.Condition)
+
+	if e.Left != nil {
+		children = append(children, e.Left)
+	}
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprIf) String() string {
 	switch {
 	case e.Left == nil:
@@ -151,6 +100,38 @@ func (e ExprIf) String() string {
 		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition, indent(e.Left.String(), indentationChar), indent(e.Right.String(), indentationChar))
 
 	}
+}
+
+// /////////////////////////////////////
+
+type ExprSwitch struct {
+	ASTNode
+
+	Selector ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector"`
+	Cases    []*ExprCase   `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
+}
+
+func (e *ExprSwitch) Clone() *ExprSwitch {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprSwitch{
+		ASTNode:  e.ASTNode.Clone(),
+		Selector: *e.Selector.Clone(),
+		Cases:    cloneCollection(e.Cases),
+	}
+}
+
+func (e *ExprSwitch) Children() (children []Node) {
+	children = append(children, &e.Selector)
+
+	for _, item := range e.Cases {
+		children = append(children, item)
+	}
+
+	return
+
 }
 
 func (e ExprSwitch) String() string {
@@ -166,6 +147,41 @@ func (e ExprSwitch) String() string {
 
 		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector, indent(strings.Join(cases, "\n"), indentationChar))
 	}
+}
+
+// /////////////////////////////////////
+
+type ExprCase struct {
+	ASTNode
+
+	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "         json:"conditions"`
+	Default    bool             `parser:"  | @'default'          ':' )"         json:"default"`
+	Expr       *Expr            `parser:"NewLine? '{' NewLine? @@ NewLine? '}'" json:"expr,omitempty"`
+}
+
+func (e *ExprCase) Clone() *ExprCase {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprCase{
+		ASTNode:    e.ASTNode.Clone(),
+		Conditions: cloneCollection(e.Conditions),
+		Default:    e.Default,
+		Expr:       e.Expr.Clone(),
+	}
+}
+
+func (e *ExprCase) Children() (children []Node) {
+	for _, item := range e.Conditions {
+		children = append(children, item)
+	}
+
+	if e.Expr != nil {
+		children = append(children, e.Expr)
+	}
+
+	return
 }
 
 func (e ExprCase) String() string {
@@ -186,6 +202,50 @@ func (e ExprCase) String() string {
 	}
 }
 
+// /////////////////////////////////////
+
+// ExprConditional is a ternary expression.
+//
+// Ternaries are bad but necessary for Terraform compatibility, so they are
+// included at the expression top level but `if` and `switch` just skip them
+// and go straight to the next level.
+type ExprConditional struct {
+	ASTNode
+
+	Condition   ExprLogicalOr  `parser:"@@"          json:"condition"`
+	ConditionOp bool           `parser:"[ @'?'     " json:"condition_op,omitempty"`
+	TrueExpr    *ExprLogicalOr `parser:"  @@       " json:"true_expr,omitempty"`
+	FalseExpr   *ExprLogicalOr `parser:"  ':' @@  ]" json:"false_expr,omitempty"`
+}
+
+func (e *ExprConditional) Clone() *ExprConditional {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprConditional{
+		ASTNode:     e.ASTNode.Clone(),
+		Condition:   *e.Condition.Clone(),
+		ConditionOp: e.ConditionOp,
+		TrueExpr:    e.TrueExpr.Clone(),
+		FalseExpr:   e.FalseExpr.Clone(),
+	}
+}
+
+func (e *ExprConditional) Children() (children []Node) {
+	children = append(children, &e.Condition)
+
+	if e.TrueExpr != nil {
+		children = append(children, e.TrueExpr)
+	}
+
+	if e.FalseExpr != nil {
+		children = append(children, e.FalseExpr)
+	}
+
+	return
+}
+
 func (e ExprConditional) String() string {
 	if e.ConditionOp {
 		switch {
@@ -203,6 +263,39 @@ func (e ExprConditional) String() string {
 	return e.Condition.String()
 }
 
+// /////////////////////////////////////
+
+type ExprLogicalOr struct {
+	ASTNode
+
+	Left  ExprLogicalAnd `parser:"@@"               json:"left"`
+	Op    string         `parser:"[ @OpLogicalOr  " json:"op,omitempty"`
+	Right *ExprLogicalOr `parser:"  @@           ]" json:"right,omitempty"`
+}
+
+func (e *ExprLogicalOr) Clone() *ExprLogicalOr {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprLogicalOr{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprLogicalOr) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprLogicalOr) String() string {
 	if e.Op == "" {
 		return e.Left.String()
@@ -213,6 +306,39 @@ func (e ExprLogicalOr) String() string {
 	}
 
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprLogicalAnd struct {
+	ASTNode
+
+	Left  ExprBitwiseOr   `parser:"@@"                json:"left"`
+	Op    string          `parser:"[ @OpLogicalAnd  " json:"op,omitempty"`
+	Right *ExprLogicalAnd `parser:"  @@            ]" json:"right,omitempty"`
+}
+
+func (e *ExprLogicalAnd) Clone() *ExprLogicalAnd {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprLogicalAnd{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprLogicalAnd) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprLogicalAnd) String() string {
@@ -227,6 +353,39 @@ func (e ExprLogicalAnd) String() string {
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
+// /////////////////////////////////////
+
+type ExprBitwiseOr struct {
+	ASTNode
+
+	Left  ExprBitwiseXor `parser:"@@"               json:"left"`
+	Op    string         `parser:"[ @OpBitwiseOr  " json:"op,omitempty"`
+	Right *ExprBitwiseOr `parser:"  @@           ]" json:"right,omitempty"`
+}
+
+func (e *ExprBitwiseOr) Clone() *ExprBitwiseOr {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprBitwiseOr{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprBitwiseOr) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprBitwiseOr) String() string {
 	if e.Op == "" {
 		return e.Left.String()
@@ -237,6 +396,39 @@ func (e ExprBitwiseOr) String() string {
 	}
 
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprBitwiseXor struct {
+	ASTNode
+
+	Left  ExprBitwiseAnd  `parser:"@@"                json:"left"`
+	Op    string          `parser:"[ @OpBitwiseXOr  " json:"op,omitempty"`
+	Right *ExprBitwiseXor `parser:"  @@            ]" json:"right,omitempty"`
+}
+
+func (e *ExprBitwiseXor) Clone() *ExprBitwiseXor {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprBitwiseXor{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprBitwiseXor) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprBitwiseXor) String() string {
@@ -251,6 +443,39 @@ func (e ExprBitwiseXor) String() string {
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
+// /////////////////////////////////////
+
+type ExprBitwiseAnd struct {
+	ASTNode
+
+	Left  ExprEquality    `parser:"@@"                json:"left"`
+	Op    string          `parser:"[ @OpBitwiseAnd  " json:"op,omitempty"`
+	Right *ExprBitwiseAnd `parser:"  @@            ]" json:"right,omitempty"`
+}
+
+func (e *ExprBitwiseAnd) Clone() *ExprBitwiseAnd {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprBitwiseAnd{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprBitwiseAnd) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprBitwiseAnd) String() string {
 	if e.Op == "" {
 		return e.Left.String()
@@ -261,6 +486,39 @@ func (e ExprBitwiseAnd) String() string {
 	}
 
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprEquality struct {
+	ASTNode
+
+	Left  ExprRelational `parser:"@@"                            json:"left"`
+	Op    string         `parser:"[ @( OpNotEqual | OpEqual )  " json:"op,omitempty"`
+	Right *ExprEquality  `parser:"  @@                        ]" json:"right,omitempty"`
+}
+
+func (e *ExprEquality) Clone() *ExprEquality {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprEquality{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprEquality) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprEquality) String() string {
@@ -275,6 +533,39 @@ func (e ExprEquality) String() string {
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
+// /////////////////////////////////////
+
+type ExprRelational struct {
+	ASTNode
+
+	Left  ExprShift       `parser:"@@"                                                       json:"left"`
+	Op    string          `parser:"[ @( OpMore | OpMoreOrEqual | OpLess | OpLessOrEqual )  " json:"op,omitempty"`
+	Right *ExprRelational `parser:"  @@                                                   ]" json:"right,omitempty"`
+}
+
+func (e *ExprRelational) Clone() *ExprRelational {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprRelational{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprRelational) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprRelational) String() string {
 	if e.Op == "" {
 		return e.Left.String()
@@ -285,6 +576,39 @@ func (e ExprRelational) String() string {
 	}
 
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprShift struct {
+	ASTNode
+
+	Left  ExprAdditive `parser:"@@"                                                json:"left"`
+	Op    string       `parser:"[ @( OpBitwiseShiftLeft | OpBitwiseShiftRight )  " json:"op,omitempty"`
+	Right *ExprShift   `parser:"  @@                                            ]" json:"right,omitempty"`
+}
+
+func (e *ExprShift) Clone() *ExprShift {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprShift{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprShift) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprShift) String() string {
@@ -299,6 +623,39 @@ func (e ExprShift) String() string {
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
+// /////////////////////////////////////
+
+type ExprAdditive struct {
+	ASTNode
+
+	Left  ExprMultiplicative `parser:"@@"                        json:"left"`
+	Op    string             `parser:"[ @( OpMinus | OpPlus )  " json:"op,omitempty"`
+	Right *ExprAdditive      `parser:"  @@                    ]" json:"right,omitempty"`
+}
+
+func (e *ExprAdditive) Clone() *ExprAdditive {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprAdditive{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprAdditive) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
+}
+
 func (e ExprAdditive) String() string {
 	if e.Op == "" {
 		return e.Left.String()
@@ -309,6 +666,39 @@ func (e ExprAdditive) String() string {
 	}
 
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprMultiplicative struct {
+	ASTNode
+
+	Left  ExprUnary           `parser:"@@"                                                json:"left,omitempty"`
+	Op    string              `parser:"[ @( OpDivision | OpMultiplication | OpModulo )  " json:"op,omitempty"`
+	Right *ExprMultiplicative `parser:"  @@                                            ]" json:"right,omitempty"`
+}
+
+func (e *ExprMultiplicative) Clone() *ExprMultiplicative {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprMultiplicative{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Op:      e.Op,
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprMultiplicative) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprMultiplicative) String() string {
@@ -323,8 +713,66 @@ func (e ExprMultiplicative) String() string {
 	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
 }
 
+// /////////////////////////////////////
+
+type ExprUnary struct {
+	ASTNode
+
+	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus ) ]" json:"op,omitempty"`
+	Right ExprPostfix `parser:"@@"                                             json:"right"`
+}
+
+func (e *ExprUnary) Clone() *ExprUnary {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprUnary{
+		ASTNode: e.ASTNode.Clone(),
+		Op:      e.Op,
+		Right:   *e.Right.Clone(),
+	}
+}
+
+func (e *ExprUnary) Children() (children []Node) {
+	children = append(children, &e.Right)
+
+	return
+}
+
 func (e ExprUnary) String() string {
 	return fmt.Sprintf("%v%v", e.Op, e.Right)
+}
+
+// /////////////////////////////////////
+
+type ExprPostfix struct {
+	ASTNode
+
+	Left  ExprPrimary `parser:"@@"             json:"left,omitempty"`
+	Right *Expr       `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
+}
+
+func (e *ExprPostfix) Clone() *ExprPostfix {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprPostfix{
+		ASTNode: e.ASTNode.Clone(),
+		Left:    *e.Left.Clone(),
+		Right:   e.Right.Clone(),
+	}
+}
+
+func (e *ExprPostfix) Children() (children []Node) {
+	children = append(children, &e.Left)
+
+	if e.Right != nil {
+		children = append(children, e.Right)
+	}
+
+	return
 }
 
 func (e ExprPostfix) String() string {
@@ -333,6 +781,43 @@ func (e ExprPostfix) String() string {
 	}
 
 	return e.Left.String()
+}
+
+// /////////////////////////////////////
+
+type ExprPrimary struct {
+	ASTNode
+
+	SubExpression *Expr           `parser:"(  '(' @@ ')'  " json:"sub_expression,omitempty"`
+	Invocation    *ExprInvocation `parser:"  | @@         " json:"invocation,omitempty"`
+	Value         *Value          `parser:"  | @@        )" json:"value,omitempty"`
+}
+
+func (e *ExprPrimary) Clone() *ExprPrimary {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprPrimary{
+		ASTNode:       e.ASTNode.Clone(),
+		SubExpression: e.SubExpression.Clone(),
+		Invocation:    e.Invocation.Clone(),
+		Value:         e.Value.Clone(),
+	}
+}
+
+func (e *ExprPrimary) Children() (children []Node) {
+	switch {
+	case e.SubExpression != nil:
+		children = append(children, e.SubExpression)
+	case e.Invocation != nil:
+		children = append(children, e.Invocation)
+	case e.Value != nil:
+		children = append(children, e.Value)
+
+	}
+
+	return
 }
 
 func (e ExprPrimary) String() string {
@@ -346,6 +831,43 @@ func (e ExprPrimary) String() string {
 	default:
 		return TokenNull
 	}
+}
+
+// /////////////////////////////////////
+
+type ExprInvocation struct {
+	ASTNode
+
+	Ident   Ident                   `parser:"@@"              json:"ident"`
+	Monads  []*ExprInvocationParams `parser:"( '(' @@ ')' )+" json:"monads,omitempty"`
+	Postfix *ExprPostfix            `parser:"[ '.' @@ ]"      json:"postfix,omitempty"`
+}
+
+func (e *ExprInvocation) Clone() *ExprInvocation {
+	if e == nil {
+		return nil
+	}
+
+	return &ExprInvocation{
+		ASTNode: e.ASTNode.Clone(),
+		Ident:   *e.Ident.Clone(),
+		Monads:  cloneCollection(e.Monads),
+		Postfix: e.Postfix.Clone(),
+	}
+}
+
+func (e ExprInvocation) Children() (children []Node) {
+	children = append(children, &e.Ident)
+
+	for _, item := range e.Monads {
+		children = append(children, item)
+	}
+
+	if e.Postfix != nil {
+		children = append(children, e.Postfix)
+	}
+
+	return
 }
 
 func (e ExprInvocation) String() string {
@@ -365,270 +887,12 @@ func (e ExprInvocation) String() string {
 	return fmt.Sprintf("%v%v", e.Ident, invocationParams)
 }
 
-func (e ExprInvocationParams) String() string {
-	params := make([]string, 0, len(e.Values))
-	for _, p := range e.Values {
-		params = append(params, p.String())
-	}
-
-	return strings.Join(params, ", ")
-}
-
 // /////////////////////////////////////
 
-func (e *Expr) Clone() *Expr {
-	if e == nil {
-		return nil
-	}
+type ExprInvocationParams struct {
+	ASTNode
 
-	return &Expr{
-		Left:   e.Left.Clone(),
-		If:     e.If.Clone(),
-		Switch: e.Switch.Clone(),
-	}
-}
-
-func (e *ExprIf) Clone() *ExprIf {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprIf{
-		Condition: *e.Condition.Clone(),
-		Left:      e.Left.Clone(),
-		Right:     e.Right.Clone(),
-	}
-}
-
-func (e *ExprSwitch) Clone() *ExprSwitch {
-	if e == nil {
-		return nil
-	}
-
-	out := &ExprSwitch{
-		Selector: *e.Selector.Clone(),
-		Cases:    nil,
-	}
-
-	if e.Cases != nil {
-		out.Cases = make([]*ExprCase, 0, len(e.Cases))
-		for _, c := range e.Cases {
-			out.Cases = append(out.Cases, c.Clone())
-		}
-	}
-
-	return out
-}
-
-func (e *ExprCase) Clone() *ExprCase {
-	if e == nil {
-		return nil
-	}
-
-	out := &ExprCase{
-		Conditions: nil,
-		Default:    e.Default,
-		Expr:       e.Expr.Clone(),
-	}
-
-	if e.Conditions != nil {
-		out.Conditions = make([]ExprLogicalOr, 0, len(e.Conditions))
-		for _, c := range e.Conditions {
-			out.Conditions = append(out.Conditions, *c.Clone())
-		}
-	}
-
-	return out
-}
-
-func (e *ExprConditional) Clone() *ExprConditional {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprConditional{
-		Condition:   *e.Condition.Clone(),
-		ConditionOp: e.ConditionOp,
-		TrueExpr:    e.TrueExpr.Clone(),
-		FalseExpr:   e.FalseExpr.Clone(),
-	}
-}
-
-func (e *ExprLogicalOr) Clone() *ExprLogicalOr {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprLogicalOr{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprLogicalAnd) Clone() *ExprLogicalAnd {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprLogicalAnd{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprBitwiseOr) Clone() *ExprBitwiseOr {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprBitwiseOr{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprBitwiseXor) Clone() *ExprBitwiseXor {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprBitwiseXor{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprBitwiseAnd) Clone() *ExprBitwiseAnd {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprBitwiseAnd{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprEquality) Clone() *ExprEquality {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprEquality{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprRelational) Clone() *ExprRelational {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprRelational{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprShift) Clone() *ExprShift {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprShift{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprAdditive) Clone() *ExprAdditive {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprAdditive{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprMultiplicative) Clone() *ExprMultiplicative {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprMultiplicative{
-		Left:  *e.Left.Clone(),
-		Op:    e.Op,
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprUnary) Clone() *ExprUnary {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprUnary{
-		Op:    e.Op,
-		Right: *e.Right.Clone(),
-	}
-}
-
-func (e *ExprPostfix) Clone() *ExprPostfix {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprPostfix{
-		Left:  *e.Left.Clone(),
-		Right: e.Right.Clone(),
-	}
-}
-
-func (e *ExprPrimary) Clone() *ExprPrimary {
-	if e == nil {
-		return nil
-	}
-
-	return &ExprPrimary{
-		SubExpression: e.SubExpression.Clone(),
-		Invocation:    e.Invocation.Clone(),
-		Value:         e.Value.Clone(),
-	}
-}
-
-func (e *ExprInvocation) Clone() *ExprInvocation {
-	if e == nil {
-		return nil
-	}
-
-	out := &ExprInvocation{
-		Ident:   *e.Ident.Clone(),
-		Monads:  nil,
-		Postfix: e.Postfix.Clone(),
-	}
-
-	if e.Monads == nil {
-		return out
-	}
-
-	out.Monads = make([]ExprInvocationParams, 0, len(e.Monads))
-	for _, p := range e.Monads {
-		out.Monads = append(out.Monads, *p.Clone())
-	}
-
-	return out
+	Values []*Expr `parser:"[ @@ (',' @@)* ]" json:"values,omitempty"`
 }
 
 func (e *ExprInvocationParams) Clone() *ExprInvocationParams {
@@ -636,18 +900,25 @@ func (e *ExprInvocationParams) Clone() *ExprInvocationParams {
 		return nil
 	}
 
-	out := &ExprInvocationParams{
-		Values: nil,
+	return &ExprInvocationParams{
+		ASTNode: e.ASTNode.Clone(),
+		Values:  cloneCollection(e.Values),
+	}
+}
+
+func (e *ExprInvocationParams) Children() (children []Node) {
+	for _, item := range e.Values {
+		children = append(children, item)
 	}
 
-	if e.Values == nil {
-		return out
-	}
+	return
+}
 
-	out.Values = make([]Expr, 0, len(e.Values))
+func (e ExprInvocationParams) String() string {
+	params := make([]string, 0, len(e.Values))
 	for _, p := range e.Values {
-		out.Values = append(out.Values, *p.Clone())
+		params = append(params, p.String())
 	}
 
-	return out
+	return strings.Join(params, ", ")
 }

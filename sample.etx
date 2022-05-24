@@ -157,3 +157,76 @@ def b1(v: int) int {
 }
 
 val b2 = a2(2)
+
+////////////////////////////////////////////////////////////////////////////////
+// Attributes
+
+attribute "revision" "2"{
+    from = 1
+    changes = {
+        resource.old_name = resource.new_name
+    }
+}
+
+attribute "layout" "network" {
+    //TODO position on chart
+    group {
+        container: resource.name
+        items = [
+            resource.item_1
+            resource.item_2
+        ]
+    }
+}
+attribute "layout" "data" {}
+attribute "layout" "security" {}
+// ...
+
+////////////////////////////////////////////////////////////////////////////////
+// Resources
+
+resource "aws" "instance" "app_server" {
+    // special meta attributes available on all resources
+    description = "resource description for doc generation"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Providers
+
+etxe {
+  required_providers {
+    aws = {
+      source  = "etxe/aws"
+      version = "~> 3.27"
+    }
+  }
+
+  required_version    = ">= 0.1.0"
+}
+
+provider "aws" {
+  profile = "default"
+  region  = "eu-west-3"
+
+  // This injects all the provider's resources in the global namespace,
+  // allowing compatibility with Terraform syntax.
+  // Otherwise, resource declaration must follow the following format:
+  // ```
+  // resource "provider_name" "resource_name" "resource_id"
+  // ```
+  alias   = *
+
+  // This add a prefix to all the resource names in the provider.
+  // Since Etxe prefers explicit provider names instead of prefix.
+  // This allows compatibility with Terraform provider.
+  // In this example, and combine with `alias = *`, the following declaration:
+  // ```
+  // resource "aws" "instance" "app_server" {...}
+  // ```
+  // becomes:
+  // ```
+  // resource "aws_instance" "app_server" {...}
+  // ```
+  // which is how it would be declared in a Terraform file.
+  prefix  = "aws_"
+}

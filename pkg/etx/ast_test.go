@@ -3,37 +3,27 @@ package etx
 import (
 	"math/big"
 	"testing"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/alecthomas/repr"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAST_Parsing(t *testing.T) {
-	type args struct {
-		Input string
-	}
 	tests := []struct {
 		name    string
-		args    args
+		input   string
 		wantErr bool
 		want    *AST
 	}{
 		{
 			name: "One Attribute - no value",
-			args: args{
-				Input: `
+			input: `
 foo`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Attribute: &Attribute{
-							Pos: Position{Offset: 0, Line: 1, Column: 1},
-							Key: "foo",
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Key:     "foo",
 						},
 					},
 				},
@@ -41,18 +31,20 @@ foo`[1:],
 		},
 		{
 			name: "One Attribute - set value",
-			args: args{
-				Input: `
+			input: `
 foo = 1`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Attribute: &Attribute{
-							Pos:   Position{Offset: 0, Line: 1, Column: 1},
-							Key:   "foo",
-							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Key:     "foo",
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 				},
@@ -60,24 +52,24 @@ foo = 1`[1:],
 		},
 		{
 			name: "Two Attributes - no value",
-			args: args{
-				Input: `
+			input: `
 foo
 bar`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Attribute: &Attribute{
-							Pos: Position{Offset: 0, Line: 1, Column: 1},
-							Key: "foo",
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Key:     "foo",
 						},
 					},
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 2, Column: 1}},
 						Attribute: &Attribute{
-							Pos: Position{Offset: 4, Line: 2, Column: 1},
-							Key: "bar",
+							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 2, Column: 1}},
+							Key:     "bar",
 						},
 					},
 				},
@@ -85,26 +77,32 @@ bar`[1:],
 		},
 		{
 			name: "Two Attributes - set values",
-			args: args{
-				Input: `
+			input: `
 foo = 1
 bar = 2`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Attribute: &Attribute{
-							Pos:   Position{Offset: 0, Line: 1, Column: 1},
-							Key:   "foo",
-							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Key:     "foo",
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 2, Column: 1}},
 						Attribute: &Attribute{
-							Pos:   Position{Offset: 8, Line: 2, Column: 1},
-							Key:   "bar",
-							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 2, Column: 1}},
+							Key:     "bar",
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 7}},
+								Number:  &ValueNumber{big.NewFloat(2), "2"},
+							}),
 						},
 					},
 				},
@@ -112,20 +110,22 @@ bar = 2`[1:],
 		},
 		{
 			name: "One Decl - set value",
-			args: args{
-				Input: `
+			input: `
 val foo = 1`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Decl: &Decl{
-							Pos:      Position{Line: 1, Column: 1},
+							ASTNode:  ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							DeclType: "val",
 							Label:    "foo",
 							Type:     nil,
-							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 				},
@@ -133,28 +133,34 @@ val foo = 1`[1:],
 		},
 		{
 			name: "One Attribute and One Decl",
-			args: args{
-				Input: `
+			input: `
 foo = 1
 val bar = 2`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Attribute: &Attribute{
-							Pos:   Position{Offset: 0, Line: 1, Column: 1},
-							Key:   "foo",
-							Value: testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Key:     "foo",
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 2, Column: 1}},
 						Decl: &Decl{
-							Pos:      Position{Offset: 8, Line: 2, Column: 1},
+							ASTNode:  ASTNode{Pos: Position{Offset: 8, Line: 2, Column: 1}},
 							DeclType: "val",
 							Label:    "bar",
 							Type:     nil,
-							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(2)}}),
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 2, Column: 11}},
+								Number:  &ValueNumber{big.NewFloat(2), "2"},
+							}),
 						},
 					},
 				},
@@ -162,36 +168,38 @@ val bar = 2`[1:],
 		},
 		{
 			name: "One Decl - set value",
-			args: args{
-				Input: `
+			input: `
 val foo = 1`[1:],
-			},
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Decl: &Decl{
-							Pos:      Position{Line: 1, Column: 1},
+							ASTNode:  ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							DeclType: "val",
 							Label:    "foo",
 							Type:     nil,
-							Value:    testBuildExprTree[*Expr](t, &Value{Number: &Number{big.NewFloat(1)}}),
+							Value: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+								Number:  &ValueNumber{big.NewFloat(1), "1"},
+							}),
 						},
 					},
 				},
 			},
 		},
 		{
-			name: "One empty Func",
-			args: args{
-				Input: `def foo() {}`,
-			},
+			name:    "One empty Func",
+			input:   `def foo() {}`,
 			wantErr: false,
 			want: &AST{
-				Items: []*Item{
+				Items: []*RootItem{
 					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Func: &Func{
-							Label: "foo",
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Label:   "foo",
 						},
 					},
 				},
@@ -201,24 +209,7 @@ val foo = 1`[1:],
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			parser := participle.MustBuild(
-				&AST{},
-				participle.Lexer(lexer.MustStateful(lexRules())),
-				participle.Elide(TokenWhitespace),
-			)
-
-			res := &AST{}
-			err := parser.ParseString("", tt.args.Input, res)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-
-			if !assert.Equal(t, tt.want, res) {
-				repr.Println(res)
-			}
+			testParser(t, tt.input, tt.want, tt.wantErr, true)
 		})
 	}
 }

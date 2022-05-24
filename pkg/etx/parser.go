@@ -85,13 +85,3 @@ func stripComment(token lexer.Token) (lexer.Token, error) {
 
 	return token, nil
 }
-
-func cloneStrings(strings []string) []string {
-	if strings == nil {
-		return nil
-	}
-	out := make([]string, len(strings))
-	copy(out, strings)
-
-	return out
-}
