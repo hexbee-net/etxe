@@ -2,18 +2,16 @@ package etx
 
 import (
 	"strings"
-
-	"github.com/alecthomas/repr"
 )
 
 // Block represents an optionally labeled block.
 type Block struct {
 	ASTNode
 
-	Name             string       `parser:"@Ident"               json:"name"`
-	Labels           []string     `parser:"@( Ident | String )*" json:"labels,omitempty"` // TODO: this is not gonna work
-	Body             []*BlockItem `parser:"'{' @@*       "       json:"body"`
-	TrailingComments []string     `parser:"@Comment* '}' "       json:"trailing_comments,omitempty"`
+	Name             string       `parser:"@Ident"                                  json:"name"`
+	Labels           []string     `parser:"((String @Char StringEnd) | @Ident)* '{'" json:"labels,omitempty"` // TODO: this is not gonna work
+	Body             []*BlockItem `parser:"(NewLine @@)*"                           json:"body"`
+	TrailingComments []string     `parser:"@Comment* NewLine? '}' "                          json:"trailing_comments,omitempty"`
 }
 
 func (n *Block) Clone() *Block {
@@ -39,6 +37,10 @@ func (n *Block) Children() (children []Node) {
 }
 
 func (n Block) String() string {
+	if n.Name == "" {
+		return ""
+	}
+
 	var sb strings.Builder
 
 	sb.WriteString(n.Name)
@@ -47,13 +49,17 @@ func (n Block) String() string {
 		mustFprintf(&sb, ` "%v"`, item)
 	}
 
-	sb.WriteString(" {\n")
+	if len(n.Body) != 0 {
+		sb.WriteString(" {\n")
 
-	for _, item := range n.Body {
-		sb.WriteString(indent(item.String(), indentationChar))
+		for _, item := range n.Body {
+			sb.WriteString(indent(item.String(), indentationChar))
+		}
+
+		sb.WriteString("\n}")
+	} else {
+		sb.WriteString(" {}")
 	}
-
-	sb.WriteString("\n}")
 
 	return sb.String()
 }
@@ -99,6 +105,6 @@ func (n BlockItem) String() string {
 	case n.Attribute != nil:
 		return n.Attribute.String()
 	default:
-		panic(repr.String(n, repr.Hide(Position{})))
+		return ""
 	}
 }

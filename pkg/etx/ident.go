@@ -16,7 +16,7 @@ func (i *Ident) Children() (children []Node) {
 	return
 }
 
-// Clone the AST.
+// Clone the AST node.
 func (i *Ident) Clone() *Ident {
 	if i == nil {
 		return nil

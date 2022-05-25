@@ -459,3 +459,38 @@ func TestMapEntry_Children(t *testing.T) {
 		})
 	}
 }
+
+func TestMapEntry_String(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     *MapEntry
+		wantPanic bool
+		want      string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name: "Values",
+			input: &MapEntry{
+				Key: Value{
+					Ident: &Ident{
+						Parts: []string{"a"},
+					},
+				},
+				Value: Value{
+					Number: &ValueNumber{big.NewFloat(1), `1`},
+				},
+			},
+			want: `a: 1`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
+		})
+	}
+}

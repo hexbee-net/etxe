@@ -45,7 +45,7 @@ func (n *Type) Children() (children []Node) {
 func (n Type) String() string {
 	var sb strings.Builder
 
-	sb.WriteString("type ")
+	mustFprintf(&sb, "type %s ", n.Label)
 
 	switch {
 	case n.Enum != nil:
@@ -134,7 +134,7 @@ func (n *TypeEnumItem) Children() (children []Node) {
 }
 
 func (n *TypeEnumItem) String() string {
-	return fmt.Sprintf("%v: %v", n.Label, n.Value)
+	return fmt.Sprintf("%v: %v", n.Label, n.Value.String())
 }
 
 // /////////////////////////////////////
@@ -214,5 +214,5 @@ func (n *TypeObjectItem) Children() (children []Node) {
 }
 
 func (n TypeObjectItem) String() string {
-	return fmt.Sprintf("%v: %v", n.Label, n.Type)
+	return fmt.Sprintf("%v: %v", n.Label, n.Type.String())
 }

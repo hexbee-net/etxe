@@ -72,14 +72,16 @@ func (n *AST) Children() (children []Node) {
 }
 
 func (n AST) String() string {
-	var sb strings.Builder
-
-	// TODO: group declarations by kind?
-	for _, item := range n.Items {
-		mustFprintf(&sb, "%s\n\n", item)
+	if len(n.Items) == 0 {
+		return ""
 	}
 
-	return sb.String()
+	items := make([]string, 0, len(n.Items))
+	for _, item := range n.Items {
+		items = append(items, item.String())
+	}
+
+	return strings.Join(items, "\n\n") + "\n"
 }
 
 // /////////////////////////////////////
@@ -88,11 +90,11 @@ func (n AST) String() string {
 type RootItem struct {
 	ASTNode
 
-	Attribute *Attribute `parser:"(   @@  " json:"attribute,omitempty"`
-	Decl      *Decl      `parser:"  | @@  " json:"decl,omitempty"`
+	Decl      *Decl      `parser:"(   @@  " json:"decl,omitempty"`
 	Func      *Func      `parser:"  | @@  " json:"func,omitempty"`
 	Type      *Type      `parser:"  | @@  " json:"type,omitempty"`
-	Block     *Block     `parser:"  | @@ )" json:"block,omitempty"`
+	Block     *Block     `parser:"  | @@  " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@ )" json:"attribute,omitempty"`
 }
 
 func (n *RootItem) Clone() *RootItem {
@@ -222,14 +224,12 @@ func (n *FuncSignature) Children() (children []Node) {
 func (n FuncSignature) String() string {
 	var sb strings.Builder
 
-	sb.WriteString("(")
-
 	params := make([]string, 0, len(n.Parameters))
 	for _, item := range n.Parameters {
 		params = append(params, item.String())
 	}
 
-	mustFprintf(&sb, "(%v) %v %v", strings.Join(params, ", "), OpLambdaDef, n.Return)
+	mustFprintf(&sb, "(%v) %v %v", strings.Join(params, ", "), OpLambdaDef, n.Return.String())
 
 	return sb.String()
 }

@@ -40,7 +40,7 @@ func (n Lambda) String() string {
 		params = append(params, p.String())
 	}
 
-	return fmt.Sprintf("(%s) %s %s", strings.Join(params, ","), OpLambda, n.Expr)
+	return fmt.Sprintf("(%s) %s %s", strings.Join(params, ", "), OpLambda, n.Expr.String())
 }
 
 // /////////////////////////////////////

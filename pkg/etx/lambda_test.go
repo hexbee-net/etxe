@@ -3,6 +3,8 @@ package etx
 import (
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLambda_Parsing(t *testing.T) {
@@ -212,6 +214,153 @@ func TestLambda_Parsing(t *testing.T) {
 	}
 }
 
+func TestLambda_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *Lambda
+		want  *Lambda
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &Lambda{},
+			want:  &Lambda{},
+		},
+		{
+			name: "Parameters",
+			Input: &Lambda{
+				Parameters: []*LambdaParameter{{Label: "foo"}},
+			},
+			want: &Lambda{
+				Parameters: []*LambdaParameter{{Label: "foo"}},
+			},
+		},
+		{
+			name: "Expr",
+			Input: &Lambda{
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: &Lambda{
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*Lambda](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+func TestLambda_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Lambda
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &Lambda{},
+			want: []Node{
+				&Expr{},
+			},
+		},
+		{
+			name: "Parameters",
+			input: &Lambda{
+				Parameters: []*LambdaParameter{{Label: "foo"}},
+			},
+			want: []Node{
+				&LambdaParameter{Label: "foo"},
+				&Expr{},
+			},
+		},
+		{
+			name: "Expr",
+			input: &Lambda{
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: []Node{
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestLambda_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		input     *Lambda
+		wantPanic bool
+		want      string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name:      "Empty",
+			input:     &Lambda{},
+			wantPanic: true,
+		},
+		{
+			name: "No Parameters",
+			input: &Lambda{
+				Parameters: nil,
+				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: "() => 1",
+		},
+		{
+			name: "One Parameter",
+			input: &Lambda{
+				Parameters: []*LambdaParameter{
+					{Label: "foo"},
+				},
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: "(foo) => 1",
+		},
+		{
+			name: "Two Parameters",
+			input: &Lambda{
+				Parameters: []*LambdaParameter{
+					{Label: "foo"},
+					{Label: "bar"},
+				},
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: "(foo, bar) => 1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
+		})
+	}
+}
+
+// /////////////////////////////////////
+
 func TestLambdaParameter_Parsing(t *testing.T) {
 	t.Parallel()
 
@@ -248,6 +397,140 @@ func TestLambdaParameter_Parsing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testParser(t, tt.input, tt.want, tt.wantErr, true)
+		})
+	}
+}
+
+func TestLambdaParameter_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *LambdaParameter
+		want  *LambdaParameter
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &LambdaParameter{},
+			want:  &LambdaParameter{},
+		},
+		{
+			name: "Label",
+			Input: &LambdaParameter{
+				Label: "foo",
+			},
+			want: &LambdaParameter{
+				Label: "foo",
+			},
+		},
+		{
+			name: "Type",
+			Input: &LambdaParameter{
+				Type: &ParameterType{
+					Ident: &Ident{Parts: []string{"foo"}},
+				},
+			},
+			want: &LambdaParameter{
+				Type: &ParameterType{
+					Ident: &Ident{Parts: []string{"foo"}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*LambdaParameter](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+func TestLambdaParameter_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *LambdaParameter
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &LambdaParameter{},
+			want:  nil,
+		},
+		{
+			name:  "Label",
+			input: &LambdaParameter{},
+			want:  nil,
+		},
+		{
+			name: "Type",
+			input: &LambdaParameter{
+				Type: &ParameterType{
+					Ident: &Ident{Parts: []string{"foo"}},
+				},
+			},
+			want: []Node{
+				&ParameterType{
+					Ident: &Ident{Parts: []string{"foo"}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestLambdaParameter_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		input     *LambdaParameter
+		wantPanic bool
+		want      string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name:  "Empty",
+			input: &LambdaParameter{},
+			want:  "",
+		},
+		{
+			name: "No Type",
+			input: &LambdaParameter{
+				Label: "foo",
+			},
+			want: "foo",
+		},
+		{
+			name: "Typed",
+			input: &LambdaParameter{
+				Label: "foo",
+				Type: &ParameterType{
+					Ident: &Ident{Parts: []string{"number"}},
+				},
+			},
+			want: "foo: number",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
 		})
 	}
 }

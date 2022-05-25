@@ -263,6 +263,31 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(-0o1234), `-0o1234`},
 		},
+
+		{
+			name:    "Oct - 0-prefix - Implicit Positive",
+			Input:   `01234`,
+			wantErr: false,
+			want:    &ValueNumber{big.NewFloat(0o1234), `0o1234`},
+		},
+		{
+			name:    "Oct - 0-prefix - Implicit Positive with Underscores",
+			Input:   `012_34`,
+			wantErr: false,
+			want:    &ValueNumber{big.NewFloat(0o1234), `0o12_34`},
+		},
+		{
+			name:    "Oct - 0-prefix - Explicit Positive",
+			Input:   `+01234`,
+			wantErr: false,
+			want:    &ValueNumber{big.NewFloat(0o1234), `+0o1234`},
+		},
+		{
+			name:    "Oct - 0-prefix - Negative",
+			Input:   `-01234`,
+			wantErr: false,
+			want:    &ValueNumber{big.NewFloat(-0o1234), `-0o1234`},
+		},
 	}
 
 	for _, tt := range tests {
@@ -285,7 +310,14 @@ func TestNumber_Parsing(t *testing.T) {
 					require.NotNil(t, res.Number)
 					require.NotNil(t, res.Number.Float)
 					assert.Equal(t, tt.want.string, res.Number.string)
-					assert.Zero(t, tt.want.Float.Cmp(res.Number.Float))
+
+					if eq := tt.want.Float.Cmp(res.Number.Float); eq != 0 {
+						if eq < 0 {
+							assert.Failf(t, "want < res", "want: %s\nres: %s", tt.want.Float, res.Number.Float)
+						} else {
+							assert.Failf(t, "want(%s) > res(%s)", tt.want.Float.String(), res.Number.Float)
+						}
+					}
 				} else {
 					assert.Nil(t, res.Number)
 				}
@@ -326,6 +358,35 @@ func TestNumber_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testCloner[*ValueNumber](t, tt.want, tt.input)
+		})
+	}
+}
+
+func TestNumber_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ValueNumber
+		want  []Node
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name: "Value",
+			input: &ValueNumber{
+				Float: big.NewFloat(1),
+			},
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
 		})
 	}
 }

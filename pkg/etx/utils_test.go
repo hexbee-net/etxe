@@ -115,24 +115,26 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 		require.NoError(t, err)
 	}
 
-	numberComparer := cmp.Comparer(func(x, y *ValueNumber) bool {
-		if x == nil && y == nil {
-			return true
+	if !wantErr || (wantErr && want != nil) {
+		numberComparer := cmp.Comparer(func(x, y *ValueNumber) bool {
+			if x == nil && y == nil {
+				return true
+			}
+			return x.Float.Cmp(y.Float) == 0
+		})
+
+		posComparer := cmp.Comparer(func(x, y ASTNode) bool {
+			if !compareNodes {
+				return true
+			}
+
+			return reflect.DeepEqual(x, y)
+		})
+
+		if !cmp.Equal(want, &res, numberComparer, posComparer) {
+			assert.Fail(t, "Not equal -want +res", cmp.Diff(want, res, numberComparer))
+			repr.Println(res)
 		}
-		return x.Float.Cmp(y.Float) == 0
-	})
-
-	posComparer := cmp.Comparer(func(x, y ASTNode) bool {
-		if !compareNodes {
-			return true
-		}
-
-		return reflect.DeepEqual(x, y)
-	})
-
-	if !cmp.Equal(want, &res, numberComparer, posComparer) {
-		assert.Fail(t, "Not equal -want +res", cmp.Diff(want, res, numberComparer))
-		repr.Println(res)
 	}
 }
 

@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	needsOctalPrefix = regexp.MustCompile(`^0\d+$`)
+	needsOctalPrefix = regexp.MustCompile(`^([+-])?0([\d_]+)$`)
+	heredocDelimiter = regexp.MustCompile(`^<<([-]?)(\w+\b)$`)
 )
 
 // Value is a scalar, list or map.
@@ -153,9 +154,12 @@ type ValueNumber struct {
 // 0-prefix octal parsing ¯\_(ツ)_/¯.
 func (v *ValueNumber) Capture(values []string) error {
 	v.string = values[0]
-	if needsOctalPrefix.MatchString(v.string) {
-		v.string = "0o" + v.string[1:]
+
+	sm := needsOctalPrefix.FindStringSubmatch(v.string)
+	if sm != nil {
+		v.string = sm[1] + "0o" + sm[2]
 	}
+
 	v.Float = big.NewFloat(0)
 	if _, _, err := v.Float.Parse(v.string, 0); err != nil {
 		return fmt.Errorf("failed to parse number value '%s': %w", v.string, err)
@@ -247,8 +251,6 @@ type HeredocDelimiter struct {
 }
 
 func (v *HeredocDelimiter) Capture(values []string) error {
-	heredocDelimiter := regexp.MustCompile(`^<<([-]?)(\w+\b)$`)
-
 	sm := heredocDelimiter.FindStringSubmatch(values[0])
 	if sm == nil {
 		panic("missing heredoc delimiter")
@@ -486,7 +488,7 @@ func (f *StringFragment) Children() (children []Node) {
 func (f StringFragment) String() string {
 	switch {
 	case f.Escaped != "":
-		return f.Escaped
+		return fmt.Sprintf("\\%s", f.Escaped)
 	case f.Unicode != "":
 		return fmt.Sprintf("\\u%s", f.Unicode)
 	case f.Expr != nil:

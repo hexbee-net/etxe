@@ -46,6 +46,10 @@ func (n *Decl) Children() (children []Node) {
 func (n Decl) String() string {
 	var sb strings.Builder
 
+	if n.Label == "" {
+		return ""
+	}
+
 	mustFprintf(&sb, "%v %v", n.DeclType, n.Label)
 
 	if n.Type != nil {
@@ -53,7 +57,7 @@ func (n Decl) String() string {
 	}
 
 	if n.Value != nil {
-		mustFprintf(&sb, "= %v", n.Value)
+		mustFprintf(&sb, " = %v", n.Value)
 	}
 
 	return sb.String()

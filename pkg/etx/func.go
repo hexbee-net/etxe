@@ -10,7 +10,7 @@ type Func struct {
 
 	Label      string           `parser:"Func @Ident "                               json:"label"`
 	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                   json:"parameters,omitempty"`
-	Return     *ParameterType   `parser:"@@?"                                        json:"return,omitempty"`
+	Return     *ParameterType   `parser:"@@?"                                        json:"return,omitempty"` // TODO: let return several values
 	Body       []*FuncStatement `parser:"NewLine? '{' ( NewLine? @@ NewLine? )* '}'" json:"body,omitempty"`
 }
 
@@ -58,14 +58,18 @@ func (n Func) String() string {
 		mustFprintf(&sb, " %v", n.Return)
 	}
 
-	sb.WriteString(" {\n")
+	if len(n.Body) != 0 {
+		sb.WriteString(" {\n")
 
-	for _, b := range n.Body {
-		sb.WriteString(indent(b.String(), indentationChar))
-		sb.WriteString("\n")
+		for _, b := range n.Body {
+			sb.WriteString(indent(b.String(), indentationChar))
+			sb.WriteString("\n")
+		}
+
+		sb.WriteString("}")
+	} else {
+		sb.WriteString(" {}")
 	}
-
-	sb.WriteString("\n}")
 
 	return sb.String()
 }
@@ -75,8 +79,8 @@ func (n Func) String() string {
 type FuncParameter struct {
 	ASTNode
 
-	Label string         `parser:"@Ident" json:"label"`
-	Type  *ParameterType `parser:"':' @@" json:"type"`
+	Label string         `parser:"@Ident"   json:"label"`
+	Type  *ParameterType `parser:"[':' @@]" json:"type"`
 }
 
 func (n *FuncParameter) Clone() *FuncParameter {
@@ -149,7 +153,7 @@ func (n FuncStatement) String() string {
 	case n.Expr != nil:
 		return n.Expr.String()
 	default:
-		return TokenNull
+		return ""
 	}
 }
 
@@ -158,10 +162,10 @@ func (n FuncStatement) String() string {
 type FuncDecl struct {
 	ASTNode
 
-	DeclType string `parser:"@(Const | Val)" json:"decl_type"`
-	Label    string `parser:"@Ident"         json:"label"`
-	Type     string `parser:"[ ':' @Ident ]" json:"type,omitempty"`
-	Value    *Expr  `parser:"[ '=' @@     ]" json:"value,omitempty"`
+	DeclType string         `parser:"@(Const | Val)" json:"decl_type"`
+	Label    string         `parser:"@Ident"         json:"label"`
+	Type     *ParameterType `parser:"[ ':' @@ ]"     json:"type,omitempty"`
+	Value    *Expr          `parser:"[ '=' @@     ]" json:"value,omitempty"`
 }
 
 func (n *FuncDecl) Clone() *FuncDecl {
@@ -179,6 +183,10 @@ func (n *FuncDecl) Clone() *FuncDecl {
 }
 
 func (n *FuncDecl) Children() (children []Node) {
+	if n.Type != nil {
+		children = append(children, n.Type)
+	}
+
 	if n.Value != nil {
 		children = append(children, n.Value)
 	}
@@ -189,10 +197,14 @@ func (n *FuncDecl) Children() (children []Node) {
 func (n FuncDecl) String() string {
 	var sb strings.Builder
 
+	if n.Label == "" {
+		return ""
+	}
+
 	mustFprintf(&sb, "%v %v", n.DeclType, n.Label)
 
-	if n.Type != "" {
-		mustFprintf(&sb, ": %v", n.Type)
+	if n.Type != nil {
+		mustFprintf(&sb, ": %s", n.Type.String())
 	}
 
 	if n.Value != nil {

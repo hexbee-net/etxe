@@ -2,6 +2,8 @@ package etx
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIdent_Parsing(t *testing.T) {
@@ -43,6 +45,71 @@ func TestIdent_Parsing(t *testing.T) {
 		})
 	}
 
+}
+
+func TestIdent_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *Ident
+		want  *Ident
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &Ident{},
+			want:  &Ident{},
+		},
+		{
+			name: "Parts",
+			Input: &Ident{
+				Parts: []string{"foo", "bar"},
+			},
+			want: &Ident{
+				Parts: []string{"foo", "bar"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*Ident](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+func TestIdent_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Ident
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &Ident{},
+			want:  nil,
+		},
+		{
+			name: "Parts",
+			input: &Ident{
+				Parts: []string{"foo", "bar"},
+			},
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
 }
 
 func TestIdent_String(t *testing.T) {
