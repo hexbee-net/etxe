@@ -11,7 +11,7 @@ import (
 type Decl struct {
 	ASTNode
 
-	DeclType string         `parser:"@(input | Output | Const | Val)" json:"decl_type"`
+	DeclType string         `parser:"@(Input | Output | Const | Val)" json:"decl_type"`
 	Label    string         `parser:"@Ident"                          json:"label"`
 	Type     *ParameterType `parser:"[':' @@]"                        json:"type,omitempty"`
 	Value    *Expr          `parser:"['=' @@]"                        json:"value,omitempty"`

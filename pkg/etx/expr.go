@@ -718,7 +718,7 @@ func (e ExprMultiplicative) String() string {
 type ExprUnary struct {
 	ASTNode
 
-	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus ) ]" json:"op,omitempty"`
+	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus | OpPlus ) ]" json:"op,omitempty"`
 	Right ExprPostfix `parser:"@@"                                             json:"right"`
 }
 

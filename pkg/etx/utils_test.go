@@ -120,7 +120,7 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 			if x == nil && y == nil {
 				return true
 			}
-			return x.Float.Cmp(y.Float) == 0
+			return x.Value.Cmp(y.Value) == 0
 		})
 
 		posComparer := cmp.Comparer(func(x, y ASTNode) bool {

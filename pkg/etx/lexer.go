@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	OpAssign            = `=`
 	OpBitwiseAnd        = `&`
 	OpBitwiseNot        = `~`
 	OpBitwiseOr         = `|`
@@ -53,8 +54,6 @@ const (
 	lexerStringExpr = "StringExpr"
 	lexerUnicode    = "Unicode"
 	lexerHeredoc    = "Heredoc"
-	lexerExpr       = "Expr"
-	lexerFunc       = "Func"
 )
 
 // TODO: we need to switch to expr lexer not only in strings, but after an '='?
@@ -62,28 +61,68 @@ const (
 func lexRules() lexer.Rules {
 	return lexer.Rules{
 		lexerRoot: {
-			{Name: `input`, Pattern: `\b(input)\b`},
+			{Name: `Input`, Pattern: `\b(input)\b`},
 			{Name: `Output`, Pattern: `\b(output)\b`},
 			{Name: `Const`, Pattern: `\b(const)\b`},
 			{Name: `Val`, Pattern: `\b(val)\b`},
 			{Name: `Type`, Pattern: `\b(type)\b`},
 			{Name: `Enum`, Pattern: `\b(enum)\b`},
 			{Name: `Object`, Pattern: `\b(object)\b`},
-			{Name: `Func`, Pattern: `\b(def)\b`, Action: lexer.Push(lexerFunc)},
+			{Name: `Func`, Pattern: `\b(def)\b`},
+			{Name: `Return`, Pattern: `\b(return)\b`},
 
 			lexer.Include(lexerCore),
 		},
 		lexerCore: {
-			{Name: "OpLambda", Pattern: regexp.QuoteMeta(OpLambda), Action: lexer.Push(lexerStringExpr)},
+			{Name: "OpLambda", Pattern: regexp.QuoteMeta(OpLambda)},
 			{Name: "OpLambdaDef", Pattern: regexp.QuoteMeta(OpLambdaDef)},
 
 			{Name: `OpLParen`, Pattern: regexp.QuoteMeta(OpLParen)},
 			{Name: `OpRParen`, Pattern: regexp.QuoteMeta(OpRParen)},
 
-			{Name: "Punctuation", Pattern: `[][{}=:,]`},
+			{Name: `If`, Pattern: `\b(if)\b`},
+			{Name: `Else`, Pattern: `\b(else)\b`},
+			{Name: `Switch`, Pattern: `\b(switch)\b`},
+			{Name: `Case`, Pattern: `\b(case)\b`},
+			{Name: `Default`, Pattern: `\b(default)\b`},
+
+			{Name: `BlockStart`, Pattern: regexp.QuoteMeta(OpLBrace)},
+			{Name: `BlockEnd`, Pattern: regexp.QuoteMeta(OpRBrace)},
+
 			{Name: "Ident", Pattern: `\b[[:alpha:]]\w*(-\w+)*\b`},
-			{Name: "Number", Pattern: `[-+]?(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
-			{Name: "Heredoc", Pattern: `<<[-]?(\w+\b)`, Action: lexer.Push(lexerHeredoc)},
+			{Name: "Number", Pattern: `(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
+
+			{Name: "Heredoc", Pattern: `<<[-]?(\w+)\n`, Action: lexer.Push(lexerHeredoc)},
+
+			{Name: `OpComma`, Pattern: regexp.QuoteMeta(OpComma)},
+			{Name: `OpEqual`, Pattern: regexp.QuoteMeta(OpEqual)},
+			{Name: `OpNotEqual`, Pattern: regexp.QuoteMeta(OpNotEqual)},
+			{Name: `OpLogicalAnd`, Pattern: regexp.QuoteMeta(OpLogicalAnd)},
+			{Name: `OpLogicalOr`, Pattern: regexp.QuoteMeta(OpLogicalOr)},
+			{Name: `OpBitwiseShiftLeft`, Pattern: regexp.QuoteMeta(OpBitwiseShiftLeft)},
+			{Name: `OpBitwiseShiftRight`, Pattern: regexp.QuoteMeta(OpBitwiseShiftRight)},
+			{Name: `OpLogicalNot`, Pattern: regexp.QuoteMeta(OpLogicalNot)},
+			{Name: `OpBitwiseNot`, Pattern: regexp.QuoteMeta(OpBitwiseNot)},
+			{Name: `OpBitwiseAnd`, Pattern: regexp.QuoteMeta(OpBitwiseAnd)},
+			{Name: `OpBitwiseOr`, Pattern: regexp.QuoteMeta(OpBitwiseOr)},
+			{Name: `OpBitwiseXOr`, Pattern: regexp.QuoteMeta(OpBitwiseXOr)},
+			{Name: `OpMultiplication`, Pattern: regexp.QuoteMeta(OpMultiplication)},
+			{Name: `OpDivision`, Pattern: regexp.QuoteMeta(OpDivision)},
+			{Name: `OpModulo`, Pattern: regexp.QuoteMeta(OpModulo)},
+			{Name: `OpPlus`, Pattern: regexp.QuoteMeta(OpPlus)},
+			{Name: `OpMinus`, Pattern: regexp.QuoteMeta(OpMinus)},
+			{Name: `OpLessOrEqual`, Pattern: regexp.QuoteMeta(OpLessOrEqual)},
+			{Name: `OpMoreOrEqual`, Pattern: regexp.QuoteMeta(OpMoreOrEqual)},
+			{Name: `OpLess`, Pattern: regexp.QuoteMeta(OpLess)},
+			{Name: `OpMore`, Pattern: regexp.QuoteMeta(OpMore)},
+			{Name: `OpAssign`, Pattern: regexp.QuoteMeta(OpAssign)},
+			{Name: `OpCondition`, Pattern: regexp.QuoteMeta(OpCondition)},
+			{Name: `OpColon`, Pattern: regexp.QuoteMeta(OpColon)},
+			{Name: `OpLParen`, Pattern: regexp.QuoteMeta(OpLParen)},
+			{Name: `OpRParen`, Pattern: regexp.QuoteMeta(OpRParen)},
+			{Name: `OpLBracket`, Pattern: regexp.QuoteMeta(OpLBracket)},
+			{Name: `OpRBracket`, Pattern: regexp.QuoteMeta(OpRBracket)},
+
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
 			{Name: "Dot", Pattern: regexp.QuoteMeta(OpDot)},
 			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?$)|\/\*.*?\*\/`},
@@ -106,70 +145,12 @@ func lexRules() lexer.Rules {
 			{Name: "UnicodeShort", Pattern: `[0-9a-fA-F]{4}`, Action: lexer.Pop()},
 		},
 		lexerHeredoc: {
-			{Name: "End", Pattern: `\n\b\1\b`, Action: lexer.Pop()},
+			{Name: "End", Pattern: `^\1`, Action: lexer.Pop()},
 			{Name: "EOL", Pattern: `\n`},
 			{Name: "Body", Pattern: `[^\n]+`},
 		},
 		lexerStringExpr: {
 			{Name: "ExprEnd", Pattern: `}`, Action: lexer.Pop()},
-
-			lexer.Include(lexerExpr),
-		},
-
-		lexerExpr: {
-			// TODO: move to core to support expressions everywhere
-			{Name: `If`, Pattern: `\b(if)\b`},
-			{Name: `Else`, Pattern: `\b(else)\b`},
-			{Name: `Switch`, Pattern: `\b(switch)\b`},
-			{Name: `Case`, Pattern: `\b(case)\b`},
-			{Name: `Default`, Pattern: `\b(default)\b`},
-
-			{Name: `BlockStart`, Pattern: regexp.QuoteMeta(OpLBrace)},
-			{Name: `BlockEnd`, Pattern: regexp.QuoteMeta(OpRBrace)},
-
-			{Name: `OpComma`, Pattern: regexp.QuoteMeta(OpComma)},
-
-			{Name: `OpEqual`, Pattern: regexp.QuoteMeta(OpEqual)},
-			{Name: `OpNotEqual`, Pattern: regexp.QuoteMeta(OpNotEqual)},
-			{Name: `OpLogicalAnd`, Pattern: regexp.QuoteMeta(OpLogicalAnd)},
-			{Name: `OpLogicalOr`, Pattern: regexp.QuoteMeta(OpLogicalOr)},
-			{Name: `OpBitwiseShiftLeft`, Pattern: regexp.QuoteMeta(OpBitwiseShiftLeft)},
-			{Name: `OpBitwiseShiftRight`, Pattern: regexp.QuoteMeta(OpBitwiseShiftRight)},
-			{Name: `OpLogicalNot`, Pattern: regexp.QuoteMeta(OpLogicalNot)},
-			{Name: `OpBitwiseNot`, Pattern: regexp.QuoteMeta(OpBitwiseNot)},
-			{Name: `OpBitwiseAnd`, Pattern: regexp.QuoteMeta(OpBitwiseAnd)},
-			{Name: `OpBitwiseOr`, Pattern: regexp.QuoteMeta(OpBitwiseOr)},
-			{Name: `OpBitwiseXOr`, Pattern: regexp.QuoteMeta(OpBitwiseXOr)},
-			{Name: `OpMultiplication`, Pattern: regexp.QuoteMeta(OpMultiplication)},
-			{Name: `OpDivision`, Pattern: regexp.QuoteMeta(OpDivision)},
-			{Name: `OpModulo`, Pattern: regexp.QuoteMeta(OpModulo)},
-			{Name: `OpPlus`, Pattern: regexp.QuoteMeta(OpPlus)},
-			{Name: `OpMinus`, Pattern: regexp.QuoteMeta(OpMinus)},
-			{Name: `OpLessOrEqual`, Pattern: regexp.QuoteMeta(OpLessOrEqual)},
-			{Name: `OpMoreOrEqual`, Pattern: regexp.QuoteMeta(OpMoreOrEqual)},
-			{Name: `OpLess`, Pattern: regexp.QuoteMeta(OpLess)},
-			{Name: `OpMore`, Pattern: regexp.QuoteMeta(OpMore)},
-			{Name: `OpCondition`, Pattern: regexp.QuoteMeta(OpCondition)},
-			{Name: `OpColon`, Pattern: regexp.QuoteMeta(OpColon)},
-			{Name: `OpLParen`, Pattern: regexp.QuoteMeta(OpLParen)},
-			{Name: `OpRParen`, Pattern: regexp.QuoteMeta(OpRParen)},
-			{Name: `OpLBracket`, Pattern: regexp.QuoteMeta(OpLBracket)},
-			{Name: `OpRBracket`, Pattern: regexp.QuoteMeta(OpRBracket)},
-
-			lexer.Include(lexerCore),
-
-			lexer.Return(),
-		},
-
-		lexerFunc: {
-			{Name: "BodyStart", Pattern: `{`},
-			{Name: "BodyEnd", Pattern: `}`, Action: lexer.Pop()},
-
-			{Name: "FuncPunctuation", Pattern: `[(),:]`},
-
-			{Name: `Const`, Pattern: `\b(const)\b`},
-			{Name: `Val`, Pattern: `\b(val)\b`},
-			{Name: `Return`, Pattern: `\b(return)\b`},
 
 			lexer.Include(lexerCore),
 		},

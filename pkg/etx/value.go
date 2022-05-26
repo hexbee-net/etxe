@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	needsOctalPrefix = regexp.MustCompile(`^([+-])?0([\d_]+)$`)
-	heredocDelimiter = regexp.MustCompile(`^<<([-]?)(\w+\b)$`)
+	needsOctalPrefix = regexp.MustCompile(`^0([\d_]+)$`)
+	heredocDelimiter = regexp.MustCompile(`^<<([-]?)(\w+)\n$`)
 )
 
 // Value is a scalar, list or map.
@@ -146,23 +146,23 @@ func (v *ValueBool) Children() (children []Node) {
 
 // ValueNumber of arbitrary precision.
 type ValueNumber struct {
-	*big.Float
-	string
+	Value  *big.Float
+	Source string
 }
 
 // Capture override because big.Float doesn't directly support
 // 0-prefix octal parsing ¯\_(ツ)_/¯.
 func (v *ValueNumber) Capture(values []string) error {
-	v.string = values[0]
+	v.Source = values[0]
 
-	sm := needsOctalPrefix.FindStringSubmatch(v.string)
+	sm := needsOctalPrefix.FindStringSubmatch(v.Source)
 	if sm != nil {
-		v.string = sm[1] + "0o" + sm[2]
+		v.Source = "0o" + sm[1]
 	}
 
-	v.Float = big.NewFloat(0)
-	if _, _, err := v.Float.Parse(v.string, 0); err != nil {
-		return fmt.Errorf("failed to parse number value '%s': %w", v.string, err)
+	v.Value = big.NewFloat(0)
+	if _, _, err := v.Value.Parse(v.Source, 0); err != nil {
+		return fmt.Errorf("failed to parse number value '%s': %w", v.Source, err)
 	}
 
 	return nil
@@ -174,12 +174,12 @@ func (v *ValueNumber) Clone() *ValueNumber {
 	}
 
 	out := &ValueNumber{
-		string: v.string,
+		Source: v.Source,
 	}
 
-	if v.Float != nil {
-		out.Float = big.NewFloat(0)
-		out.Float.Copy(v.Float)
+	if v.Value != nil {
+		out.Value = big.NewFloat(0)
+		out.Value.Copy(v.Value)
 	}
 
 	return out
@@ -190,11 +190,11 @@ func (v *ValueNumber) Children() (children []Node) {
 }
 
 func (v ValueNumber) String() string {
-	if v.string == "" {
-		return v.Float.String()
+	if v.Source == "" {
+		return v.Value.String()
 	}
 
-	return v.string
+	return v.Source
 }
 
 // /////////////////////////////////////
@@ -246,8 +246,8 @@ func (v Heredoc) String() string {
 }
 
 type HeredocDelimiter struct {
-	LeadingTabs bool   `parser:"" json:"leading_tabs"`
-	Delimiter   string `parser:"" json:"delimiter"`
+	LeadingTabs bool   `json:"leading_tabs"`
+	Delimiter   string `json:"delimiter"`
 }
 
 func (v *HeredocDelimiter) Capture(values []string) error {

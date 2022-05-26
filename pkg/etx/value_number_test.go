@@ -32,18 +32,6 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(1234), `12_34`},
 		},
-		{
-			name:    "Int - Explicit Positive",
-			Input:   `+1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234), `+1234`},
-		},
-		{
-			name:    "Int - Negative",
-			Input:   `-1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-1234), `-1234`},
-		},
 
 		{
 			name:    "Float - Implicit Positive",
@@ -57,18 +45,6 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(1234.56), `12_34.5_6`},
 		},
-		{
-			name:    "Float - Explicit Positive",
-			Input:   `+1234.56`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234.56), `+1234.56`},
-		},
-		{
-			name:    "Float - Negative",
-			Input:   `-1234.56`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-1234.56), `-1234.56`},
-		},
 
 		{
 			name:    "Float - Implicit Positive - Empty Integer",
@@ -76,36 +52,12 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(.56), `.56`},
 		},
-		{
-			name:    "Float - Explicit Positive - Empty Integer",
-			Input:   `+.56`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(.56), `+.56`},
-		},
-		{
-			name:    "Float - Negative - Empty Integer",
-			Input:   `-.56`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-.56), `-.56`},
-		},
 
 		{
 			name:    "Float - Implicit Positive - Empty Fractional",
 			Input:   `1234.`,
 			wantErr: true,
 			want:    &ValueNumber{nil, `1234.`},
-		},
-		{
-			name:    "Float - Explicit Positive - Empty Fractional",
-			Input:   `+1234.`,
-			wantErr: true,
-			want:    &ValueNumber{nil, `+1234.`},
-		},
-		{
-			name:    "Float - Negative - Empty Fractional",
-			Input:   `-1234.`,
-			wantErr: true,
-			want:    &ValueNumber{nil, `-1234.`},
 		},
 
 		{
@@ -120,18 +72,6 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(1234e12), `12_34e1_2`},
 		},
-		{
-			name:    "Int - Exponent - Explicit Positive",
-			Input:   `1234e+2`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234e2), `1234e+2`},
-		},
-		{
-			name:    "Int - Exponent - Negative",
-			Input:   `1234e-2`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234e-2), `1234e-2`},
-		},
 
 		{
 			name:    "Float - Exponent - Implicit Positive",
@@ -139,36 +79,12 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(1234.56e2), `1234.56e2`},
 		},
-		{
-			name:    "Float - Exponent - Explicit Positive",
-			Input:   `1234.56e+2`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234.56e2), `1234.56e+2`},
-		},
-		{
-			name:    "Float - Exponent - Negative",
-			Input:   `1234.56e-2`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(1234.56e-2), `1234.56e-2`},
-		},
 
 		{
 			name:    "Float - Implicit Positive - Empty integer and fractional",
 			Input:   `.`,
 			wantErr: true,
 			want:    &ValueNumber{nil, `.`},
-		},
-		{
-			name:    "Float - Explicit Positive - Empty integer and fractional",
-			Input:   `+.`,
-			wantErr: true,
-			want:    &ValueNumber{nil, `+.`},
-		},
-		{
-			name:    "Float - Negative - Empty integer and fractional",
-			Input:   `-.`,
-			wantErr: true,
-			want:    &ValueNumber{nil, `-.`},
 		},
 
 		{
@@ -189,18 +105,6 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(0x1234), `0x12_34`},
 		},
-		{
-			name:    "Hex - Explicit Positive",
-			Input:   `+0x1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(0x1234), `+0x1234`},
-		},
-		{
-			name:    "Hex -  Negative",
-			Input:   `-0x1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-0x1234), `-0x1234`},
-		},
 
 		{
 			name:    "Bin - Implicit Positive",
@@ -219,18 +123,6 @@ func TestNumber_Parsing(t *testing.T) {
 			Input:   `0b10_10`,
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(0b1010), `0b10_10`},
-		},
-		{
-			name:    "Bin - Explicit Positive",
-			Input:   `+0b1010`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(0b1010), `+0b1010`},
-		},
-		{
-			name:    "Bin - Negative",
-			Input:   `-0b1010`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-0b1010), `-0b1010`},
 		},
 
 		{
@@ -251,18 +143,6 @@ func TestNumber_Parsing(t *testing.T) {
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(0o1234), `0o12_34`},
 		},
-		{
-			name:    "Oct - Explicit Positive",
-			Input:   `+0o1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(0o1234), `+0o1234`},
-		},
-		{
-			name:    "Oct - Negative",
-			Input:   `-0o1234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-0o1234), `-0o1234`},
-		},
 
 		{
 			name:    "Oct - 0-prefix - Implicit Positive",
@@ -275,18 +155,6 @@ func TestNumber_Parsing(t *testing.T) {
 			Input:   `012_34`,
 			wantErr: false,
 			want:    &ValueNumber{big.NewFloat(0o1234), `0o12_34`},
-		},
-		{
-			name:    "Oct - 0-prefix - Explicit Positive",
-			Input:   `+01234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(0o1234), `+0o1234`},
-		},
-		{
-			name:    "Oct - 0-prefix - Negative",
-			Input:   `-01234`,
-			wantErr: false,
-			want:    &ValueNumber{big.NewFloat(-0o1234), `-0o1234`},
 		},
 	}
 
@@ -308,14 +176,14 @@ func TestNumber_Parsing(t *testing.T) {
 
 				if tt.want != nil {
 					require.NotNil(t, res.Number)
-					require.NotNil(t, res.Number.Float)
-					assert.Equal(t, tt.want.string, res.Number.string)
+					require.NotNil(t, res.Number.Value)
+					assert.Equal(t, tt.want.Source, res.Number.Source)
 
-					if eq := tt.want.Float.Cmp(res.Number.Float); eq != 0 {
+					if eq := tt.want.Value.Cmp(res.Number.Value); eq != 0 {
 						if eq < 0 {
-							assert.Failf(t, "want < res", "want: %s\nres: %s", tt.want.Float, res.Number.Float)
+							assert.Failf(t, "want < res", "want: %s\nres: %s", tt.want.Value, res.Number.Value)
 						} else {
-							assert.Failf(t, "want(%s) > res(%s)", tt.want.Float.String(), res.Number.Float)
+							assert.Failf(t, "want(%s) > res(%s)", tt.want.Value.String(), res.Number.Value)
 						}
 					}
 				} else {
@@ -347,10 +215,10 @@ func TestNumber_Clone(t *testing.T) {
 		{
 			name: "Value",
 			input: &ValueNumber{
-				Float: big.NewFloat(1),
+				Value: big.NewFloat(1),
 			},
 			want: &ValueNumber{
-				Float: big.NewFloat(1),
+				Value: big.NewFloat(1),
 			},
 		},
 	}
@@ -378,7 +246,7 @@ func TestNumber_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &ValueNumber{
-				Float: big.NewFloat(1),
+				Value: big.NewFloat(1),
 			},
 			want: nil,
 		},

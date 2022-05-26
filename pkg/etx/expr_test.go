@@ -3,12 +3,6 @@ package etx
 import (
 	"math/big"
 	"testing"
-
-	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/google/go-cmp/cmp"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestExpr_Parsing(t *testing.T) {
@@ -1259,6 +1253,36 @@ switch foo {
 				},
 			),
 		},
+		{
+			name:    "Unary - Plus - no spaces",
+			input:   `+1`,
+			wantErr: false,
+			want: testBuildExprTree[*Expr](t,
+				&ExprUnary{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Op:      OpPlus,
+					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			),
+		},
+		{
+			name:    "Unary - Plus - spaces",
+			input:   `+ 1`,
+			wantErr: false,
+			want: testBuildExprTree[*Expr](t,
+				&ExprUnary{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Op:      OpPlus,
+					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			),
+		},
 
 		{
 			name:    "Postfix - no spaces",
@@ -1424,35 +1448,7 @@ switch foo {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			type Exp struct {
-				Expr *Expr `parser:"@@*"`
-			}
-
-			parser := participle.MustBuild(
-				&Exp{},
-				participle.Lexer(lexer.MustStateful(lexRules(), lexer.InitialState(lexerExpr))),
-				participle.Elide(TokenWhitespace),
-			)
-
-			res := &Exp{}
-			err := parser.ParseString("", tt.input, res)
-
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
-
-			opt := cmp.Comparer(func(x, y *ValueNumber) bool {
-				if x == nil && y == nil {
-					return true
-				}
-				return x.Float.Cmp(y.Float) == 0
-			})
-
-			if !cmp.Equal(tt.want, res.Expr, opt) {
-				assert.Fail(t, "Not equal", cmp.Diff(tt.want, res.Expr, opt))
-			}
+			testParser(t, tt.input, tt.want, tt.wantErr, true)
 		})
 	}
 }
