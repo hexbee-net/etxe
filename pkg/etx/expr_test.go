@@ -3,6 +3,8 @@ package etx
 import (
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExpr_Parsing(t *testing.T) {
@@ -1455,6 +1457,2065 @@ switch foo {
 
 // /////////////////////////////////////
 
+func TestExpr_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Expr
+		want  *Expr
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name: "Empty",
+			input: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
+		},
+
+		{
+			name: "Left",
+			input: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Left:    &ExprConditional{},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Left:    &ExprConditional{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*Expr](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestIf_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprIf
+		want  *ExprIf
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprIf{},
+			want:  &ExprIf{},
+		},
+
+		{
+			name: "Condition",
+			input: &ExprIf{
+				Condition: ExprLogicalOr{},
+			},
+			want: &ExprIf{
+				Condition: ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprIf{
+				Left: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprIf{
+				Left: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprIf{
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprIf{
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprIf](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestSwitch_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprSwitch
+		want  *ExprSwitch
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprSwitch{},
+			want:  &ExprSwitch{},
+		},
+
+		{
+			name: "Selector",
+			input: &ExprSwitch{
+				Selector: ExprLogicalOr{},
+			},
+			want: &ExprSwitch{
+				Selector: ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Cases",
+			input: &ExprSwitch{
+				Cases: []*ExprCase{{}},
+			},
+			want: &ExprSwitch{
+				Cases: []*ExprCase{{}},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprSwitch](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestCase_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprCase
+		want  *ExprCase
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprCase{},
+			want:  &ExprCase{},
+		},
+
+		{
+			name: "Conditions",
+			input: &ExprCase{
+				Conditions: []*ExprLogicalOr{{}},
+			},
+			want: &ExprCase{
+				Conditions: []*ExprLogicalOr{{}},
+			},
+		},
+		{
+			name: "Default",
+			input: &ExprCase{
+				Default: true,
+			},
+			want: &ExprCase{
+				Default: true,
+			},
+		},
+		{
+			name: "Expr",
+			input: &ExprCase{
+				Expr: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprCase{
+				Expr: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprCase](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestConditional_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprConditional
+		want  *ExprConditional
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprConditional{},
+			want:  &ExprConditional{},
+		},
+
+		{
+			name: "With Data",
+			input: &ExprConditional{
+				Condition:   ExprLogicalOr{},
+				ConditionOp: true,
+				TrueExpr:    &ExprLogicalOr{},
+				FalseExpr:   &ExprLogicalOr{},
+			},
+			want: &ExprConditional{
+				Condition:   ExprLogicalOr{},
+				ConditionOp: true,
+				TrueExpr:    &ExprLogicalOr{},
+				FalseExpr:   &ExprLogicalOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprConditional](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestLogicalOr_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprLogicalOr
+		want  *ExprLogicalOr
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprLogicalOr{},
+			want:  &ExprLogicalOr{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprLogicalOr{
+				Left: ExprLogicalAnd{},
+			},
+			want: &ExprLogicalOr{
+				Left: ExprLogicalAnd{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprLogicalOr{
+				Op: "||",
+			},
+			want: &ExprLogicalOr{
+				Op: "||",
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprLogicalOr{
+				Right: &ExprLogicalOr{},
+			},
+			want: &ExprLogicalOr{
+				Right: &ExprLogicalOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprLogicalOr](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestLogicalAnd_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprLogicalAnd
+		want  *ExprLogicalAnd
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprLogicalAnd{},
+			want:  &ExprLogicalAnd{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprLogicalAnd{
+				Left: ExprBitwiseOr{},
+			},
+			want: &ExprLogicalAnd{
+				Left: ExprBitwiseOr{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprLogicalAnd{
+				Left:  ExprBitwiseOr{},
+				Op:    OpLogicalAnd,
+				Right: &ExprLogicalAnd{},
+			},
+			want: &ExprLogicalAnd{
+				Left:  ExprBitwiseOr{},
+				Op:    OpLogicalAnd,
+				Right: &ExprLogicalAnd{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprLogicalAnd](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestBitwiseOr_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseOr
+		want  *ExprBitwiseOr
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprBitwiseOr{},
+			want:  &ExprBitwiseOr{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprBitwiseOr{
+				Left: ExprBitwiseXor{},
+			},
+			want: &ExprBitwiseOr{
+				Left: ExprBitwiseXor{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprBitwiseOr{
+				Op: "|",
+			},
+			want: &ExprBitwiseOr{
+				Op: "|",
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprBitwiseOr{
+				Right: &ExprBitwiseOr{},
+			},
+			want: &ExprBitwiseOr{
+				Right: &ExprBitwiseOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprBitwiseOr](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestBitwiseXor_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseXor
+		want  *ExprBitwiseXor
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprBitwiseXor{},
+			want:  &ExprBitwiseXor{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprBitwiseXor{
+				Left: ExprBitwiseAnd{},
+			},
+			want: &ExprBitwiseXor{
+				Left: ExprBitwiseAnd{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprBitwiseXor{
+				Op: "^",
+			},
+			want: &ExprBitwiseXor{
+				Op: "^",
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprBitwiseXor{
+				Right: &ExprBitwiseXor{},
+			},
+			want: &ExprBitwiseXor{
+				Right: &ExprBitwiseXor{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprBitwiseXor](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestBitwiseAnd_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseAnd
+		want  *ExprBitwiseAnd
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprBitwiseAnd{},
+			want:  &ExprBitwiseAnd{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprBitwiseAnd{
+				Left: ExprEquality{},
+			},
+			want: &ExprBitwiseAnd{
+				Left: ExprEquality{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprBitwiseAnd{
+				Left:  ExprEquality{},
+				Op:    OpBitwiseAnd,
+				Right: &ExprBitwiseAnd{},
+			},
+			want: &ExprBitwiseAnd{
+				Left:  ExprEquality{},
+				Op:    OpBitwiseAnd,
+				Right: &ExprBitwiseAnd{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprBitwiseAnd](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestEquality_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprEquality
+		want  *ExprEquality
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprEquality{},
+			want:  &ExprEquality{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprEquality{
+				Left: ExprRelational{},
+			},
+			want: &ExprEquality{
+				Left: ExprRelational{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprEquality{
+				Left:  ExprRelational{},
+				Op:    OpNotEqual,
+				Right: &ExprEquality{},
+			},
+			want: &ExprEquality{
+				Left:  ExprRelational{},
+				Op:    OpNotEqual,
+				Right: &ExprEquality{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprEquality](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestRelational_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprRelational
+		want  *ExprRelational
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprRelational{},
+			want:  &ExprRelational{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprRelational{
+				Left: ExprShift{},
+			},
+			want: &ExprRelational{
+				Left: ExprShift{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprRelational{
+				Left:  ExprShift{},
+				Op:    OpLessOrEqual,
+				Right: &ExprRelational{},
+			},
+			want: &ExprRelational{
+				Left:  ExprShift{},
+				Op:    OpLessOrEqual,
+				Right: &ExprRelational{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprRelational](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestShift_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprShift
+		want  *ExprShift
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprShift{},
+			want:  &ExprShift{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprShift{
+				Left: ExprAdditive{},
+			},
+			want: &ExprShift{
+				Left: ExprAdditive{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprShift{
+				Left:  ExprAdditive{},
+				Op:    OpBitwiseShiftRight,
+				Right: &ExprShift{},
+			},
+			want: &ExprShift{
+				Left:  ExprAdditive{},
+				Op:    OpBitwiseShiftRight,
+				Right: &ExprShift{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprShift](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestAdditive_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprAdditive
+		want  *ExprAdditive
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprAdditive{},
+			want:  &ExprAdditive{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprAdditive{
+				Left: ExprMultiplicative{},
+			},
+			want: &ExprAdditive{
+				Left: ExprMultiplicative{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprAdditive{
+				Left:  ExprMultiplicative{},
+				Op:    OpMinus,
+				Right: &ExprAdditive{},
+			},
+			want: &ExprAdditive{
+				Left:  ExprMultiplicative{},
+				Op:    OpMinus,
+				Right: &ExprAdditive{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprAdditive](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestMultiplicative_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprMultiplicative
+		want  *ExprMultiplicative
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprMultiplicative{},
+			want:  &ExprMultiplicative{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprMultiplicative{
+				Left: ExprUnary{},
+			},
+			want: &ExprMultiplicative{
+				Left: ExprUnary{},
+			},
+		},
+		{
+			name: "Both",
+			input: &ExprMultiplicative{
+				Left:  ExprUnary{},
+				Op:    OpModulo,
+				Right: &ExprMultiplicative{},
+			},
+			want: &ExprMultiplicative{
+				Left:  ExprUnary{},
+				Op:    OpModulo,
+				Right: &ExprMultiplicative{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprMultiplicative](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestUnary_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprUnary
+		want  *ExprUnary
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprUnary{},
+			want:  &ExprUnary{},
+		},
+
+		{
+			name: "Operator",
+			input: &ExprUnary{
+				Op:    OpMinus,
+				Right: ExprPostfix{},
+			},
+			want: &ExprUnary{
+				Op:    OpMinus,
+				Right: ExprPostfix{},
+			},
+		},
+		{
+			name: "No Operator",
+			input: &ExprUnary{
+				Right: ExprPostfix{},
+			},
+			want: &ExprUnary{
+				Right: ExprPostfix{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprUnary](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestPostfix_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprPostfix
+		want  *ExprPostfix
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &ExprPostfix{},
+			want:  &ExprPostfix{},
+		},
+
+		{
+			name: "Left",
+			input: &ExprPostfix{
+				Left: ExprPrimary{},
+			},
+			want: &ExprPostfix{
+				Left: ExprPrimary{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprPostfix{
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprPostfix{
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+		{
+			name: "Left and Right",
+			input: &ExprPostfix{
+				Left: ExprPrimary{},
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprPostfix{
+				Left: ExprPrimary{},
+				Right: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprPostfix](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestPrimary_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *ExprPrimary
+		want  *ExprPrimary
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &ExprPrimary{},
+			want:  &ExprPrimary{},
+		},
+
+		{
+			name: "Sub Expression",
+			Input: &ExprPrimary{
+				SubExpression: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+			want: &ExprPrimary{
+				SubExpression: &Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				},
+			},
+		},
+		{
+			name: "Invocation",
+			Input: &ExprPrimary{
+				Invocation: &ExprInvocation{},
+			},
+			want: &ExprPrimary{
+				Invocation: &ExprInvocation{},
+			},
+		},
+		{
+			name: "Value",
+			Input: &ExprPrimary{
+				Value: &Value{},
+			},
+			want: &ExprPrimary{
+				Value: &Value{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprPrimary](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+func TestInvocation_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *ExprInvocation
+		want  *ExprInvocation
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &ExprInvocation{},
+			want:  &ExprInvocation{},
+		},
+
+		{
+			name: "Ident",
+			Input: &ExprInvocation{
+				Ident: Ident{},
+			},
+			want: &ExprInvocation{
+				Ident: Ident{},
+			},
+		},
+		{
+			name: "Monads",
+			Input: &ExprInvocation{
+				Monads: []*ExprInvocationParams{{}},
+			},
+			want: &ExprInvocation{
+				Monads: []*ExprInvocationParams{{}},
+			},
+		},
+		{
+			name: "Postfix",
+			Input: &ExprInvocation{
+				Postfix: &ExprPostfix{},
+			},
+			want: &ExprInvocation{
+				Postfix: &ExprPostfix{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprInvocation](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+func TestInvocationParams_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		Input *ExprInvocationParams
+		want  *ExprInvocationParams
+	}{
+		{
+			name:  "Nil",
+			Input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			Input: &ExprInvocationParams{},
+			want:  &ExprInvocationParams{},
+		},
+		{
+			name: "No Values",
+			Input: &ExprInvocationParams{
+				Values: []*Expr{},
+			},
+			want: &ExprInvocationParams{
+				Values: []*Expr{},
+			},
+		},
+		{
+			name: "Values",
+			Input: &ExprInvocationParams{
+				Values: []*Expr{
+					testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			},
+			want: &ExprInvocationParams{
+				Values: []*Expr{
+					testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*ExprInvocationParams](t, tt.want, tt.Input.Clone())
+		})
+	}
+}
+
+// /////////////////////////////////////
+
+func TestExpr_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Expr
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &Expr{},
+			want:  nil,
+		},
+		{
+			name: "Left",
+			input: &Expr{
+				Left: &ExprConditional{},
+			},
+			want: []Node{
+				&ExprConditional{},
+			},
+		},
+		{
+			name: "If",
+			input: &Expr{
+				If: &ExprIf{},
+			},
+			want: []Node{
+				&ExprIf{},
+			},
+		},
+		{
+			name: "Switch",
+			input: &Expr{
+				Switch: &ExprSwitch{},
+			},
+			want: []Node{
+				&ExprSwitch{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestIf_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprIf
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprIf{},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Condition",
+			input: &ExprIf{
+				Condition: ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprIf{
+				Left: &Expr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&Expr{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprIf{
+				Right: &Expr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&Expr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestSwitch_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprSwitch
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprSwitch{},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Selector",
+			input: &ExprSwitch{
+				Selector: ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Cases",
+			input: &ExprSwitch{
+				Cases: []*ExprCase{
+					{}, {},
+				},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&ExprCase{},
+				&ExprCase{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestCase_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprCase
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprCase{},
+			want:  nil,
+		},
+		{
+			name: "Conditions",
+			input: &ExprCase{
+				Conditions: []*ExprLogicalOr{
+					{}, {},
+				},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Default",
+			input: &ExprCase{
+				Default: true,
+			},
+			want: nil,
+		},
+		{
+			name: "Expr",
+			input: &ExprCase{
+				Expr: &Expr{},
+			},
+			want: []Node{
+				&Expr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestConditional_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprConditional
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprConditional{},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "Condition",
+			input: &ExprConditional{
+				Condition: ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "ConditionOp",
+			input: &ExprConditional{
+				ConditionOp: true,
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "TrueExpr",
+			input: &ExprConditional{
+				TrueExpr: &ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&ExprLogicalOr{},
+			},
+		},
+		{
+			name: "FalseExpr",
+			input: &ExprConditional{
+				FalseExpr: &ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalOr{},
+				&ExprLogicalOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestLogicalOr_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprLogicalOr
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprLogicalOr{},
+			want: []Node{
+				&ExprLogicalAnd{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprLogicalOr{
+				Left: ExprLogicalAnd{},
+			},
+			want: []Node{
+				&ExprLogicalAnd{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprLogicalOr{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprLogicalAnd{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprLogicalOr{
+				Right: &ExprLogicalOr{},
+			},
+			want: []Node{
+				&ExprLogicalAnd{},
+				&ExprLogicalOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestLogicalAnd_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprLogicalAnd
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprLogicalAnd{},
+			want: []Node{
+				&ExprBitwiseOr{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprLogicalAnd{
+				Left: ExprBitwiseOr{},
+			},
+			want: []Node{
+				&ExprBitwiseOr{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprLogicalAnd{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprBitwiseOr{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprLogicalAnd{
+				Right: &ExprLogicalAnd{},
+			},
+			want: []Node{
+				&ExprBitwiseOr{},
+				&ExprLogicalAnd{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestBitwiseOr_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseOr
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprBitwiseOr{},
+			want: []Node{
+				&ExprBitwiseXor{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprBitwiseOr{
+				Left: ExprBitwiseXor{},
+			},
+			want: []Node{
+				&ExprBitwiseXor{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprBitwiseOr{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprBitwiseXor{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprBitwiseOr{
+				Right: &ExprBitwiseOr{},
+			},
+			want: []Node{
+				&ExprBitwiseXor{},
+				&ExprBitwiseOr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestBitwiseXor_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseXor
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprBitwiseXor{},
+			want: []Node{
+				&ExprBitwiseAnd{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprBitwiseXor{
+				Left: ExprBitwiseAnd{},
+			},
+			want: []Node{
+				&ExprBitwiseAnd{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprBitwiseXor{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprBitwiseAnd{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprBitwiseXor{
+				Right: &ExprBitwiseXor{},
+			},
+			want: []Node{
+				&ExprBitwiseAnd{},
+				&ExprBitwiseXor{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestBitwiseAnd_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprBitwiseAnd
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprBitwiseAnd{},
+			want: []Node{
+				&ExprEquality{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprBitwiseAnd{
+				Left: ExprEquality{},
+			},
+			want: []Node{
+				&ExprEquality{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprBitwiseAnd{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprEquality{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprBitwiseAnd{
+				Right: &ExprBitwiseAnd{},
+			},
+			want: []Node{
+				&ExprEquality{},
+				&ExprBitwiseAnd{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestEquality_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprEquality
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprEquality{},
+			want: []Node{
+				&ExprRelational{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprEquality{
+				Left: ExprRelational{},
+			},
+			want: []Node{
+				&ExprRelational{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprEquality{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprRelational{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprEquality{
+				Right: &ExprEquality{},
+			},
+			want: []Node{
+				&ExprRelational{},
+				&ExprEquality{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestRelational_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprRelational
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprRelational{},
+			want: []Node{
+				&ExprShift{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprRelational{
+				Left: ExprShift{},
+			},
+			want: []Node{
+				&ExprShift{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprRelational{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprShift{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprRelational{
+				Right: &ExprRelational{},
+			},
+			want: []Node{
+				&ExprShift{},
+				&ExprRelational{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestShift_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprShift
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprShift{},
+			want: []Node{
+				&ExprAdditive{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprShift{
+				Left: ExprAdditive{},
+			},
+			want: []Node{
+				&ExprAdditive{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprShift{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprAdditive{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprShift{
+				Right: &ExprShift{},
+			},
+			want: []Node{
+				&ExprAdditive{},
+				&ExprShift{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestAdditive_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprAdditive
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprAdditive{},
+			want: []Node{
+				&ExprMultiplicative{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprAdditive{
+				Left: ExprMultiplicative{},
+			},
+			want: []Node{
+				&ExprMultiplicative{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprAdditive{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprMultiplicative{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprAdditive{
+				Right: &ExprAdditive{},
+			},
+			want: []Node{
+				&ExprMultiplicative{},
+				&ExprAdditive{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestMultiplicative_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprMultiplicative
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprMultiplicative{},
+			want: []Node{
+				&ExprUnary{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprMultiplicative{
+				Left: ExprUnary{},
+			},
+			want: []Node{
+				&ExprUnary{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprMultiplicative{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprUnary{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprMultiplicative{
+				Right: &ExprMultiplicative{},
+			},
+			want: []Node{
+				&ExprUnary{},
+				&ExprMultiplicative{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestUnary_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprUnary
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprUnary{},
+			want: []Node{
+				&ExprPostfix{},
+			},
+		},
+		{
+			name: "Op",
+			input: &ExprUnary{
+				Op: "foo",
+			},
+			want: []Node{
+				&ExprPostfix{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprUnary{
+				Right: ExprPostfix{},
+			},
+			want: []Node{
+				&ExprPostfix{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestPostfix_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprPostfix
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprPostfix{},
+			want: []Node{
+				&ExprPrimary{},
+			},
+		},
+		{
+			name: "Left",
+			input: &ExprPostfix{
+				Left: ExprPrimary{},
+			},
+			want: []Node{
+				&ExprPrimary{},
+			},
+		},
+		{
+			name: "Right",
+			input: &ExprPostfix{
+				Right: &Expr{},
+			},
+			want: []Node{
+				&ExprPrimary{},
+				&Expr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestPrimary_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprPrimary
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprPrimary{},
+			want:  nil,
+		},
+		{
+			name: "SubExpression",
+			input: &ExprPrimary{
+				SubExpression: &Expr{},
+			},
+			want: []Node{
+				&Expr{},
+			},
+		},
+		{
+			name: "Invocation",
+			input: &ExprPrimary{
+				Invocation: &ExprInvocation{},
+			},
+			want: []Node{
+				&ExprInvocation{},
+			},
+		},
+		{
+			name: "Value",
+			input: &ExprPrimary{
+				Value: &Value{},
+			},
+			want: []Node{
+				&Value{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestInvocation_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprInvocation
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprInvocation{},
+			want: []Node{
+				&Ident{},
+			},
+		},
+		{
+			name: "Ident",
+			input: &ExprInvocation{
+				Ident: Ident{},
+			},
+			want: []Node{
+				&Ident{},
+			},
+		},
+		{
+			name: "Monads",
+			input: &ExprInvocation{
+				Monads: []*ExprInvocationParams{
+					{}, {},
+				},
+			},
+			want: []Node{
+				&Ident{},
+				&ExprInvocationParams{},
+				&ExprInvocationParams{},
+			},
+		},
+		{
+			name: "Postfix",
+			input: &ExprInvocation{
+				Postfix: &ExprPostfix{},
+			},
+			want: []Node{
+				&Ident{},
+				&ExprPostfix{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestInvocationParams_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *ExprInvocationParams
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &ExprInvocationParams{},
+			want:  nil,
+		},
+		{
+			name: "Values",
+			input: &ExprInvocationParams{
+				Values: []*Expr{
+					{}, {},
+				},
+			},
+			want: []Node{
+				&Expr{},
+				&Expr{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+// /////////////////////////////////////
+
 func TestExpr_String(t *testing.T) {
 	t.Parallel()
 
@@ -1532,7 +3593,7 @@ func TestExpr_String(t *testing.T) {
 	}
 }
 
-func TestExprIf_String(t *testing.T) {
+func TestIf_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1615,7 +3676,7 @@ if foo {
 	}
 }
 
-func TestExprSwitch_String(t *testing.T) {
+func TestSwitch_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1826,7 +3887,7 @@ switch foo {
 	}
 }
 
-func TestExprCase_String(t *testing.T) {
+func TestCase_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -2976,890 +5037,50 @@ func TestInvocation_String(t *testing.T) {
 	}
 }
 
-// /////////////////////////////////////
-
-func TestExpr_Clone(t *testing.T) {
+func TestInvocationParams_String(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		input *Expr
-		want  *Expr
+		name        string
+		description string
+		input       *ExprInvocationParams
+		want        string
+		wantPanic   bool
 	}{
 		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name: "Empty",
-			input: &Expr{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-			},
-			want: &Expr{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-			},
-		},
-
-		{
-			name: "Left",
-			input: &Expr{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left:    &ExprConditional{},
-			},
-			want: &Expr{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left:    &ExprConditional{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*Expr](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestIf_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprIf
-		want  *ExprIf
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
 		},
 		{
 			name:  "Empty",
-			input: &ExprIf{},
-			want:  &ExprIf{},
+			input: &ExprInvocationParams{},
+			want:  "",
 		},
-
 		{
-			name: "Condition",
-			input: &ExprIf{
-				Condition: ExprLogicalOr{},
-			},
-			want: &ExprIf{
-				Condition: ExprLogicalOr{},
-			},
-		},
-		{
-			name: "Left",
-			input: &ExprIf{
-				Left: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprIf{
-				Left: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-		{
-			name: "Right",
-			input: &ExprIf{
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprIf{
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprIf](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestSwitch_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprSwitch
-		want  *ExprSwitch
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprSwitch{},
-			want:  &ExprSwitch{},
-		},
-
-		{
-			name: "Selector",
-			input: &ExprSwitch{
-				Selector: ExprLogicalOr{},
-			},
-			want: &ExprSwitch{
-				Selector: ExprLogicalOr{},
-			},
-		},
-		{
-			name: "Cases",
-			input: &ExprSwitch{
-				Cases: []*ExprCase{{}},
-			},
-			want: &ExprSwitch{
-				Cases: []*ExprCase{{}},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprSwitch](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestCase_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprCase
-		want  *ExprCase
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprCase{},
-			want:  &ExprCase{},
-		},
-
-		{
-			name: "Conditions",
-			input: &ExprCase{
-				Conditions: []*ExprLogicalOr{{}},
-			},
-			want: &ExprCase{
-				Conditions: []*ExprLogicalOr{{}},
-			},
-		},
-		{
-			name: "Default",
-			input: &ExprCase{
-				Default: true,
-			},
-			want: &ExprCase{
-				Default: true,
-			},
-		},
-		{
-			name: "Expr",
-			input: &ExprCase{
-				Expr: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprCase{
-				Expr: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprCase](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestConditional_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprConditional
-		want  *ExprConditional
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprConditional{},
-			want:  &ExprConditional{},
-		},
-
-		{
-			name: "With Data",
-			input: &ExprConditional{
-				Condition:   ExprLogicalOr{},
-				ConditionOp: true,
-				TrueExpr:    &ExprLogicalOr{},
-				FalseExpr:   &ExprLogicalOr{},
-			},
-			want: &ExprConditional{
-				Condition:   ExprLogicalOr{},
-				ConditionOp: true,
-				TrueExpr:    &ExprLogicalOr{},
-				FalseExpr:   &ExprLogicalOr{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprConditional](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestLogicalAnd_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprLogicalAnd
-		want  *ExprLogicalAnd
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprLogicalAnd{},
-			want:  &ExprLogicalAnd{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprLogicalAnd{
-				Left: ExprBitwiseOr{},
-			},
-			want: &ExprLogicalAnd{
-				Left: ExprBitwiseOr{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprLogicalAnd{
-				Left:  ExprBitwiseOr{},
-				Op:    OpLogicalAnd,
-				Right: &ExprLogicalAnd{},
-			},
-			want: &ExprLogicalAnd{
-				Left:  ExprBitwiseOr{},
-				Op:    OpLogicalAnd,
-				Right: &ExprLogicalAnd{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprLogicalAnd](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestBitwiseAnd_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprBitwiseAnd
-		want  *ExprBitwiseAnd
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprBitwiseAnd{},
-			want:  &ExprBitwiseAnd{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprBitwiseAnd{
-				Left: ExprEquality{},
-			},
-			want: &ExprBitwiseAnd{
-				Left: ExprEquality{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprBitwiseAnd{
-				Left:  ExprEquality{},
-				Op:    OpBitwiseAnd,
-				Right: &ExprBitwiseAnd{},
-			},
-			want: &ExprBitwiseAnd{
-				Left:  ExprEquality{},
-				Op:    OpBitwiseAnd,
-				Right: &ExprBitwiseAnd{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprBitwiseAnd](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestEquality_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprEquality
-		want  *ExprEquality
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprEquality{},
-			want:  &ExprEquality{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprEquality{
-				Left: ExprRelational{},
-			},
-			want: &ExprEquality{
-				Left: ExprRelational{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprEquality{
-				Left:  ExprRelational{},
-				Op:    OpNotEqual,
-				Right: &ExprEquality{},
-			},
-			want: &ExprEquality{
-				Left:  ExprRelational{},
-				Op:    OpNotEqual,
-				Right: &ExprEquality{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprEquality](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestRelational_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprRelational
-		want  *ExprRelational
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprRelational{},
-			want:  &ExprRelational{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprRelational{
-				Left: ExprShift{},
-			},
-			want: &ExprRelational{
-				Left: ExprShift{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprRelational{
-				Left:  ExprShift{},
-				Op:    OpLessOrEqual,
-				Right: &ExprRelational{},
-			},
-			want: &ExprRelational{
-				Left:  ExprShift{},
-				Op:    OpLessOrEqual,
-				Right: &ExprRelational{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprRelational](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestShift_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprShift
-		want  *ExprShift
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprShift{},
-			want:  &ExprShift{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprShift{
-				Left: ExprAdditive{},
-			},
-			want: &ExprShift{
-				Left: ExprAdditive{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprShift{
-				Left:  ExprAdditive{},
-				Op:    OpBitwiseShiftRight,
-				Right: &ExprShift{},
-			},
-			want: &ExprShift{
-				Left:  ExprAdditive{},
-				Op:    OpBitwiseShiftRight,
-				Right: &ExprShift{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprShift](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestAdditive_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprAdditive
-		want  *ExprAdditive
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprAdditive{},
-			want:  &ExprAdditive{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprAdditive{
-				Left: ExprMultiplicative{},
-			},
-			want: &ExprAdditive{
-				Left: ExprMultiplicative{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprAdditive{
-				Left:  ExprMultiplicative{},
-				Op:    OpMinus,
-				Right: &ExprAdditive{},
-			},
-			want: &ExprAdditive{
-				Left:  ExprMultiplicative{},
-				Op:    OpMinus,
-				Right: &ExprAdditive{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprAdditive](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestMultiplicative_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprMultiplicative
-		want  *ExprMultiplicative
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprMultiplicative{},
-			want:  &ExprMultiplicative{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprMultiplicative{
-				Left: ExprUnary{},
-			},
-			want: &ExprMultiplicative{
-				Left: ExprUnary{},
-			},
-		},
-		{
-			name: "Both",
-			input: &ExprMultiplicative{
-				Left:  ExprUnary{},
-				Op:    OpModulo,
-				Right: &ExprMultiplicative{},
-			},
-			want: &ExprMultiplicative{
-				Left:  ExprUnary{},
-				Op:    OpModulo,
-				Right: &ExprMultiplicative{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprMultiplicative](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestUnary_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprUnary
-		want  *ExprUnary
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprUnary{},
-			want:  &ExprUnary{},
-		},
-
-		{
-			name: "Operator",
-			input: &ExprUnary{
-				Op:    OpMinus,
-				Right: ExprPostfix{},
-			},
-			want: &ExprUnary{
-				Op:    OpMinus,
-				Right: ExprPostfix{},
-			},
-		},
-		{
-			name: "No Operator",
-			input: &ExprUnary{
-				Right: ExprPostfix{},
-			},
-			want: &ExprUnary{
-				Right: ExprPostfix{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprUnary](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestPostfix_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		input *ExprPostfix
-		want  *ExprPostfix
-	}{
-		{
-			name:  "Nil",
-			input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			input: &ExprPostfix{},
-			want:  &ExprPostfix{},
-		},
-
-		{
-			name: "Left",
-			input: &ExprPostfix{
-				Left: ExprPrimary{},
-			},
-			want: &ExprPostfix{
-				Left: ExprPrimary{},
-			},
-		},
-		{
-			name: "Right",
-			input: &ExprPostfix{
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprPostfix{
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-		{
-			name: "Left and Right",
-			input: &ExprPostfix{
-				Left: ExprPrimary{},
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprPostfix{
-				Left: ExprPrimary{},
-				Right: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprPostfix](t, tt.want, tt.input.Clone())
-		})
-	}
-}
-
-func TestPrimary_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		Input *ExprPrimary
-		want  *ExprPrimary
-	}{
-		{
-			name:  "Nil",
-			Input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			Input: &ExprPrimary{},
-			want:  &ExprPrimary{},
-		},
-
-		{
-			name: "Sub Expression",
-			Input: &ExprPrimary{
-				SubExpression: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-			want: &ExprPrimary{
-				SubExpression: &Expr{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				},
-			},
-		},
-		{
-			name: "Invocation",
-			Input: &ExprPrimary{
-				Invocation: &ExprInvocation{},
-			},
-			want: &ExprPrimary{
-				Invocation: &ExprInvocation{},
-			},
-		},
-		{
-			name: "Value",
-			Input: &ExprPrimary{
-				Value: &Value{},
-			},
-			want: &ExprPrimary{
-				Value: &Value{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprPrimary](t, tt.want, tt.Input.Clone())
-		})
-	}
-}
-
-func TestInvocation_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		Input *ExprInvocation
-		want  *ExprInvocation
-	}{
-		{
-			name:  "Nil",
-			Input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			Input: &ExprInvocation{},
-			want:  &ExprInvocation{},
-		},
-
-		{
-			name: "Ident",
-			Input: &ExprInvocation{
-				Ident: Ident{},
-			},
-			want: &ExprInvocation{
-				Ident: Ident{},
-			},
-		},
-		{
-			name: "Monads",
-			Input: &ExprInvocation{
-				Monads: []*ExprInvocationParams{{}},
-			},
-			want: &ExprInvocation{
-				Monads: []*ExprInvocationParams{{}},
-			},
-		},
-		{
-			name: "Postfix",
-			Input: &ExprInvocation{
-				Postfix: &ExprPostfix{},
-			},
-			want: &ExprInvocation{
-				Postfix: &ExprPostfix{},
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprInvocation](t, tt.want, tt.Input.Clone())
-		})
-	}
-}
-
-func TestInvocationParams_Clone(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		Input *ExprInvocationParams
-		want  *ExprInvocationParams
-	}{
-		{
-			name:  "Nil",
-			Input: nil,
-			want:  nil,
-		},
-		{
-			name:  "Empty",
-			Input: &ExprInvocationParams{},
-			want:  &ExprInvocationParams{},
-		},
-		{
-			name: "No Values",
-			Input: &ExprInvocationParams{
-				Values: []*Expr{},
-			},
-			want: &ExprInvocationParams{
-				Values: []*Expr{},
-			},
-		},
-		{
-			name: "Values",
-			Input: &ExprInvocationParams{
+			name: "One value",
+			input: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{
-						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Number:  &ValueNumber{big.NewFloat(1), "1"},
-					}),
+					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 				},
 			},
-			want: &ExprInvocationParams{
+			want: "foo",
+		},
+		{
+			name: "Two values",
+			input: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{
-						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Number:  &ValueNumber{big.NewFloat(1), "1"},
-					}),
+					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 				},
 			},
+			want: "foo, bar",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*ExprInvocationParams](t, tt.want, tt.Input.Clone())
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
 		})
 	}
 }
