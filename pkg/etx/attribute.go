@@ -6,8 +6,9 @@ import "fmt"
 type Attribute struct {
 	ASTNode
 
-	Key   string `parser:"@Ident"    json:"key"`
-	Value *Expr  `parser:"['=' @@ ]" json:"value,omitempty"`
+	Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Key      string   `parser:"@Ident"                  json:"key"`
+	Value    *Expr    `parser:"['=' @@ ]"               json:"value,omitempty"`
 }
 
 func (n *Attribute) Clone() *Attribute {
@@ -16,9 +17,10 @@ func (n *Attribute) Clone() *Attribute {
 	}
 
 	return &Attribute{
-		ASTNode: n.ASTNode.Clone(),
-		Key:     n.Key,
-		Value:   n.Value.Clone(),
+		ASTNode:  n.ASTNode.Clone(),
+		Comments: cloneStrings(n.Comments),
+		Key:      n.Key,
+		Value:    n.Value.Clone(),
 	}
 }
 

@@ -127,12 +127,30 @@ func TestType_Clone(t *testing.T) {
 			want:  &Type{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &Type{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &Type{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comments",
+			Input: &Type{
+				Comments: []string{"foo"},
+			},
+			want: &Type{
+				Comments: []string{"foo"},
+			},
+		},
+		{
+			name: "TrailingComments",
+			Input: &Type{
+				TrailingComments: []string{"foo"},
+			},
+			want: &Type{
+				TrailingComments: []string{"foo"},
 			},
 		},
 		{
@@ -376,7 +394,7 @@ func TestTypeEnum_Clone(t *testing.T) {
 			want:  &TypeEnum{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &TypeEnum{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
@@ -544,12 +562,21 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 			want:  &TypeEnumItem{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comments",
+			Input: &TypeEnumItem{
+				Comments: []string{"foo"},
+			},
+			want: &TypeEnumItem{
+				Comments: []string{"foo"},
 			},
 		},
 		{
@@ -768,7 +795,7 @@ func TestTypeObject_Clone(t *testing.T) {
 			want:  &TypeObject{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &TypeObject{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
@@ -940,12 +967,21 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 			want:  &TypeObjectItem{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comments",
+			Input: &TypeObjectItem{
+				Comments: []string{"foo"},
+			},
+			want: &TypeObjectItem{
+				Comments: []string{"foo"},
 			},
 		},
 		{

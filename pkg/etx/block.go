@@ -8,10 +8,11 @@ import (
 type Block struct {
 	ASTNode
 
-	Name             string       `parser:"@Ident"                                  json:"name"`
+	Comments         []string     `parser:"(@Comment [ NewLine ])*"                  json:"comments,omitempty"`
+	Name             string       `parser:"@Ident"                                   json:"name"`
 	Labels           []string     `parser:"((String @Char StringEnd) | @Ident)* '{'" json:"labels,omitempty"` // TODO: this is not gonna work
-	Body             []*BlockItem `parser:"(NewLine @@)*"                           json:"body"`
-	TrailingComments []string     `parser:"@Comment* NewLine? '}' "                          json:"trailing_comments,omitempty"`
+	Body             []*BlockItem `parser:"(NewLine @@)*"                            json:"body"`
+	TrailingComments []string     `parser:"(@Comment [ NewLine ])* [ NewLine ] '}' " json:"trailing_comments,omitempty"`
 }
 
 func (n *Block) Clone() *Block {
@@ -21,6 +22,7 @@ func (n *Block) Clone() *Block {
 
 	return &Block{
 		ASTNode:          n.ASTNode.Clone(),
+		Comments:         cloneStrings(n.Comments),
 		Name:             n.Name,
 		Labels:           cloneStrings(n.Labels),
 		Body:             cloneCollection(n.Body),

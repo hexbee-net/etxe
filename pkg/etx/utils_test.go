@@ -7,7 +7,6 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/alecthomas/repr"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -132,8 +131,7 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 		})
 
 		if !cmp.Equal(want, &res, numberComparer, posComparer) {
-			assert.Fail(t, "Not equal -want +res", cmp.Diff(want, res, numberComparer))
-			repr.Println(res)
+			assert.Fail(t, "Not equal -want +res", cmp.Diff(want, &res, numberComparer, posComparer))
 		}
 	}
 }

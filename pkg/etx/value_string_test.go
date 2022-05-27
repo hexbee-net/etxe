@@ -323,7 +323,7 @@ func TestString_Clone(t *testing.T) {
 			want:  nil,
 		},
 		{
-			name:  "Empty String",
+			name:  "Empty",
 			input: &ValueString{},
 			want:  &ValueString{},
 		},

@@ -19,14 +19,15 @@ var (
 type Value struct {
 	ASTNode
 
-	Null    bool         `parser:"(  @'null'"               json:"null,omitempty"`
-	Bool    *ValueBool   `parser:" | @('true' | 'false')"   json:"bool,omitempty"`
-	Number  *ValueNumber `parser:" | @Number"               json:"number,omitempty"`
-	Str     *ValueString `parser:" | @@"                    json:"str,omitempty"`
-	Ident   *Ident       `parser:" | @@"                    json:"ident,omitempty"`
-	Heredoc *Heredoc     `parser:" | @@"                    json:"heredoc,omitempty"`
-	List    *ValueList   `parser:" | @@"                    json:"list,omitempty"`
-	Map     *ValueMap    `parser:" | @@ )"                  json:"map,omitempty"`
+	Comments []string     `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Null     bool         `parser:"(  @'null'"               json:"null,omitempty"`
+	Bool     *ValueBool   `parser:" | @('true' | 'false')"   json:"bool,omitempty"`
+	Number   *ValueNumber `parser:" | @Number"               json:"number,omitempty"`
+	Str      *ValueString `parser:" | @@"                    json:"str,omitempty"`
+	Ident    *Ident       `parser:" | @@"                    json:"ident,omitempty"`
+	Heredoc  *Heredoc     `parser:" | @@"                    json:"heredoc,omitempty"`
+	List     *ValueList   `parser:" | @@"                    json:"list,omitempty"`
+	Map      *ValueMap    `parser:" | @@ )"                  json:"map,omitempty"`
 }
 
 func (v *Value) Clone() *Value {
@@ -35,15 +36,16 @@ func (v *Value) Clone() *Value {
 	}
 
 	out := Value{
-		ASTNode: v.ASTNode.Clone(),
-		Null:    v.Null,
-		Bool:    v.Bool.Clone(),
-		Number:  v.Number.Clone(),
-		Str:     v.Str.Clone(),
-		Ident:   v.Ident.Clone(),
-		Heredoc: v.Heredoc.Clone(),
-		List:    v.List.Clone(),
-		Map:     v.Map.Clone(),
+		ASTNode:  v.ASTNode.Clone(),
+		Comments: cloneStrings(v.Comments),
+		Null:     v.Null,
+		Bool:     v.Bool.Clone(),
+		Number:   v.Number.Clone(),
+		Str:      v.Str.Clone(),
+		Ident:    v.Ident.Clone(),
+		Heredoc:  v.Heredoc.Clone(),
+		List:     v.List.Clone(),
+		Map:      v.Map.Clone(),
 	}
 
 	if v.Heredoc != nil {
@@ -377,10 +379,10 @@ func (v ValueMap) String() string {
 // MapEntry represents a key+value in a map.
 type MapEntry struct {
 	ASTNode
-	CommentNode
 
-	Key   Value `parser:"@@ ':'"    json:"key"`
-	Value Value `parser:"@@"        json:"value"`
+	Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Key      Value    `parser:"@@ ':'"    json:"key"`
+	Value    Value    `parser:"@@"        json:"value"`
 }
 
 func (v *MapEntry) Clone() *MapEntry {
@@ -389,10 +391,10 @@ func (v *MapEntry) Clone() *MapEntry {
 	}
 
 	return &MapEntry{
-		ASTNode:     v.ASTNode.Clone(),
-		CommentNode: v.CommentNode.Clone(),
-		Key:         *v.Key.Clone(),
-		Value:       *v.Value.Clone(),
+		ASTNode:  v.ASTNode.Clone(),
+		Comments: cloneStrings(v.Comments),
+		Key:      *v.Key.Clone(),
+		Value:    *v.Value.Clone(),
 	}
 }
 

@@ -32,22 +32,9 @@ func (n ASTNode) Clone() ASTNode {
 
 // /////////////////////////////////////
 
-type CommentNode struct {
-	Comments []string `parser:"@Comment*" json:"comments,omitempty"`
-}
-
-func (n CommentNode) Clone() CommentNode {
-	return CommentNode{
-		Comments: cloneStrings(n.Comments),
-	}
-}
-
-// /////////////////////////////////////
-
 // AST for ETX files.
 type AST struct {
-	Items            []*RootItem `parser:"(@@ (NewLine @@)* )*" json:"items,omitempty"`
-	TrailingComments []string    `parser:"@Comment*"            json:"trailing_comments,omitempty"`
+	Items []*RootItem `parser:"(@@ (NewLine @@)* )*" json:"items,omitempty"`
 }
 
 func (n *AST) Clone() *AST {
@@ -56,8 +43,7 @@ func (n *AST) Clone() *AST {
 	}
 
 	out := &AST{
-		Items:            cloneCollection(n.Items),
-		TrailingComments: cloneStrings(n.TrailingComments),
+		Items: cloneCollection(n.Items),
 	}
 
 	return out
@@ -90,11 +76,12 @@ func (n AST) String() string {
 type RootItem struct {
 	ASTNode
 
-	Decl      *Decl      `parser:"(   @@  " json:"decl,omitempty"`
-	Func      *Func      `parser:"  | @@  " json:"func,omitempty"`
-	Type      *Type      `parser:"  | @@  " json:"type,omitempty"`
-	Block     *Block     `parser:"  | @@  " json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@ )" json:"attribute,omitempty"`
+	Decl      *Decl      `parser:"(   @@  "       json:"decl,omitempty"`
+	Func      *Func      `parser:"  | @@  "       json:"func,omitempty"`
+	Type      *Type      `parser:"  | @@  "       json:"type,omitempty"`
+	Block     *Block     `parser:"  | @@  "       json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@  "       json:"attribute,omitempty"`
+	Comments  []string   `parser:"  | @Comment )" json:"comments,omitempty"`
 }
 
 func (n *RootItem) Clone() *RootItem {
@@ -104,11 +91,12 @@ func (n *RootItem) Clone() *RootItem {
 
 	return &RootItem{
 		ASTNode:   n.ASTNode.Clone(),
-		Attribute: n.Attribute.Clone(),
+		Comments:  cloneStrings(n.Comments),
 		Decl:      n.Decl.Clone(),
 		Func:      n.Func.Clone(),
 		Type:      n.Type.Clone(),
 		Block:     n.Block.Clone(),
+		Attribute: n.Attribute.Clone(),
 	}
 }
 

@@ -456,6 +456,15 @@ func TestRootItem_Clone(t *testing.T) {
 			},
 		},
 		{
+			name: "Comments",
+			input: &RootItem{
+				Comments: []string{"foo"},
+			},
+			want: &RootItem{
+				Comments: []string{"foo"},
+			},
+		},
+		{
 			name: "Attribute",
 			input: &RootItem{
 				Attribute: &Attribute{},

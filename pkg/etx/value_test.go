@@ -245,6 +245,15 @@ func TestValue_Clone(t *testing.T) {
 			want:  &Value{},
 		},
 		{
+			name: "Comments",
+			input: &Value{
+				Comments: []string{"foo"},
+			},
+			want: &Value{
+				Comments: []string{"foo"},
+			},
+		},
+		{
 			name: "ASTNode",
 			input: &Value{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},

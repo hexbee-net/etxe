@@ -233,12 +233,21 @@ func TestLambda_Clone(t *testing.T) {
 			want:  &Lambda{},
 		},
 		{
-			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			name: "ASTNode",
 			Input: &Lambda{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &Lambda{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comments",
+			Input: &Lambda{
+				Comments: []string{"foo"},
+			},
+			want: &Lambda{
+				Comments: []string{"foo"},
 			},
 		},
 		{

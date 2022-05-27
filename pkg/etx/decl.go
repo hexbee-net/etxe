@@ -11,6 +11,7 @@ import (
 type Decl struct {
 	ASTNode
 
+	Comments []string       `parser:"(@Comment [ NewLine ])*"         json:"comments,omitempty"`
 	DeclType string         `parser:"@(Input | Output | Const | Val)" json:"decl_type"`
 	Label    string         `parser:"@Ident"                          json:"label"`
 	Type     *ParameterType `parser:"[':' @@]"                        json:"type,omitempty"`
@@ -24,6 +25,7 @@ func (n *Decl) Clone() *Decl {
 
 	return &Decl{
 		ASTNode:  n.ASTNode.Clone(),
+		Comments: cloneStrings(n.Comments),
 		DeclType: n.DeclType,
 		Label:    n.Label,
 		Type:     n.Type.Clone(),

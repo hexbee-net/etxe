@@ -121,6 +121,15 @@ func TestDecl_Clone(t *testing.T) {
 			},
 		},
 		{
+			name: "Comments",
+			input: &Decl{
+				Comments: []string{"foo"},
+			},
+			want: &Decl{
+				Comments: []string{"foo"},
+			},
+		},
+		{
 			name: "DeclType",
 			input: &Decl{
 				DeclType: "val",

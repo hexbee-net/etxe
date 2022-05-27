@@ -94,6 +94,8 @@ func lexRules() lexer.Rules {
 
 			{Name: "Heredoc", Pattern: `<<[-]?(\w+)\n`, Action: lexer.Push(lexerHeredoc)},
 
+			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?(\n|$))|\/\*(.|\n)*?\*\/`},
+
 			{Name: `OpComma`, Pattern: regexp.QuoteMeta(OpComma)},
 			{Name: `OpEqual`, Pattern: regexp.QuoteMeta(OpEqual)},
 			{Name: `OpNotEqual`, Pattern: regexp.QuoteMeta(OpNotEqual)},
@@ -125,7 +127,6 @@ func lexRules() lexer.Rules {
 
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
 			{Name: "Dot", Pattern: regexp.QuoteMeta(OpDot)},
-			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?$)|\/\*.*?\*\/`},
 			{Name: TokenNewLine, Pattern: `[\r\n]+`},
 			{Name: TokenWhitespace, Pattern: `\s+`},
 		},

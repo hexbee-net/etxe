@@ -390,6 +390,15 @@ func TestMapEntry_Clone(t *testing.T) {
 			want:  &MapEntry{},
 		},
 		{
+			name: "Comments",
+			input: &MapEntry{
+				Comments: []string{"foo"},
+			},
+			want: &MapEntry{
+				Comments: []string{"foo"},
+			},
+		},
+		{
 			name: "Values",
 			input: &MapEntry{
 				Key:   Value{},

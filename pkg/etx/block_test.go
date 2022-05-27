@@ -169,6 +169,24 @@ func TestBlock_Clone(t *testing.T) {
 			},
 		},
 		{
+			name: "Comments",
+			input: &Block{
+				Comments: []string{"foo"},
+			},
+			want: &Block{
+				Comments: []string{"foo"},
+			},
+		},
+		{
+			name: "TrailingComments",
+			input: &Block{
+				TrailingComments: []string{"foo"},
+			},
+			want: &Block{
+				TrailingComments: []string{"foo"},
+			},
+		},
+		{
 			name: "Name",
 			input: &Block{
 				Name: "resource",

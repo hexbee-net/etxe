@@ -319,6 +319,24 @@ func TestFunc_Clone(t *testing.T) {
 			},
 		},
 		{
+			name: "Comments",
+			input: &Func{
+				Comments: []string{"foo"},
+			},
+			want: &Func{
+				Comments: []string{"foo"},
+			},
+		},
+		{
+			name: "TrailingComments",
+			input: &Func{
+				TrailingComments: []string{"foo"},
+			},
+			want: &Func{
+				TrailingComments: []string{"foo"},
+			},
+		},
+		{
 			name: "Label",
 			input: &Func{
 				Label: "foo",
@@ -757,6 +775,15 @@ func TestFuncStatement_Clone(t *testing.T) {
 			},
 			want: &FuncStatement{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comments",
+			input: &FuncStatement{
+				Comments: []string{"foo"},
+			},
+			want: &FuncStatement{
+				Comments: []string{"foo"},
 			},
 		},
 		{

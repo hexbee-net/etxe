@@ -75,6 +75,15 @@ func TestAttribute_Clone(t *testing.T) {
 			},
 		},
 		{
+			name: "Comments",
+			input: &Attribute{
+				Comments: []string{"foo"},
+			},
+			want: &Attribute{
+				Comments: []string{"foo"},
+			},
+		},
+		{
 			name: "Key",
 			input: &Attribute{
 				Key: "foo",

@@ -8,6 +8,7 @@ import (
 type Lambda struct {
 	ASTNode
 
+	Comments   []string           `parser:"(@Comment [ NewLine ])*"           json:"comments,omitempty"`
 	Parameters []*LambdaParameter `parser:"'(' [ @@ (',' @@)* ] ')' OpLambda" json:"parameters"`
 	Expr       Expr               `parser:"@@"                                json:"expr"`
 }
@@ -19,6 +20,7 @@ func (n *Lambda) Clone() *Lambda {
 
 	return &Lambda{
 		ASTNode:    n.ASTNode.Clone(),
+		Comments:   cloneStrings(n.Comments),
 		Parameters: cloneCollection(n.Parameters),
 		Expr:       *n.Expr.Clone(),
 	}

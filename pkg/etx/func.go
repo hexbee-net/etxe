@@ -8,10 +8,12 @@ import (
 type Func struct {
 	ASTNode
 
-	Label      string           `parser:"Func @Ident "                               json:"label"`
-	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                   json:"parameters,omitempty"`
-	Return     *ParameterType   `parser:"@@?"                                        json:"return,omitempty"` // TODO: let return several values
-	Body       []*FuncStatement `parser:"NewLine? '{' ( NewLine? @@ NewLine? )* '}'" json:"body,omitempty"`
+	Comments         []string         `parser:"(@Comment [ NewLine ])*"                    json:"comments,omitempty"`
+	Label            string           `parser:"Func @Ident "                               json:"label"`
+	Parameters       []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                   json:"parameters,omitempty"`
+	Return           *ParameterType   `parser:"@@?"                                        json:"return,omitempty"` // TODO: let return several values
+	Body             []*FuncStatement `parser:"NewLine? '{' ( NewLine? @@ NewLine? )*"     json:"body,omitempty"`
+	TrailingComments []string         `parser:"(@Comment [ NewLine ])* [ NewLine ] '}'"    json:"trailing_comments,omitempty"`
 }
 
 func (n *Func) Clone() *Func {
@@ -20,11 +22,13 @@ func (n *Func) Clone() *Func {
 	}
 
 	return &Func{
-		ASTNode:    n.ASTNode.Clone(),
-		Label:      n.Label,
-		Parameters: cloneCollection(n.Parameters),
-		Return:     n.Return.Clone(),
-		Body:       cloneCollection(n.Body),
+		ASTNode:          n.ASTNode.Clone(),
+		Comments:         cloneStrings(n.Comments),
+		Label:            n.Label,
+		Parameters:       cloneCollection(n.Parameters),
+		Return:           n.Return.Clone(),
+		Body:             cloneCollection(n.Body),
+		TrailingComments: cloneStrings(n.TrailingComments),
 	}
 }
 
@@ -115,10 +119,10 @@ func (n FuncParameter) String() string {
 
 type FuncStatement struct {
 	ASTNode
-	CommentNode
 
-	Decl *FuncDecl `parser:"(   @@  "  json:"decl,omitempty"`
-	Expr *Expr     `parser:"  | @@ )"  json:"expr,omitempty"`
+	Comments []string  `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Decl     *FuncDecl `parser:"(   @@  "  json:"decl,omitempty"`
+	Expr     *Expr     `parser:"  | @@ )"  json:"expr,omitempty"`
 }
 
 func (n *FuncStatement) Clone() *FuncStatement {
@@ -127,10 +131,10 @@ func (n *FuncStatement) Clone() *FuncStatement {
 	}
 
 	return &FuncStatement{
-		ASTNode:     n.ASTNode.Clone(),
-		CommentNode: n.CommentNode.Clone(),
-		Decl:        n.Decl.Clone(),
-		Expr:        n.Expr.Clone(),
+		ASTNode:  n.ASTNode.Clone(),
+		Comments: cloneStrings(n.Comments),
+		Decl:     n.Decl.Clone(),
+		Expr:     n.Expr.Clone(),
 	}
 }
 

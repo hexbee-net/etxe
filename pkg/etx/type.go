@@ -10,9 +10,11 @@ import (
 type Type struct {
 	ASTNode
 
-	Label  string      `parser:"'type' @Ident"                    json:"label"`
-	Enum   *TypeEnum   `parser:"(   Enum   '{' @@ NewLine? '}' "  json:"enum,omitempty"`
-	Object *TypeObject `parser:"  | Object '{' @@ NewLine? '}' )" json:"object,omitempty"`
+	Comments         []string    `parser:"(@Comment [ NewLine ])*"                 json:"comments,omitempty"`
+	Label            string      `parser:"'type' @Ident"                           json:"label"`
+	Enum             *TypeEnum   `parser:"(   Enum   '{' @@ NewLine? "             json:"enum,omitempty"`
+	Object           *TypeObject `parser:"  | Object '{' @@ NewLine? )"            json:"object,omitempty"`
+	TrailingComments []string    `parser:"(@Comment [ NewLine ])* [ NewLine ] '}'" json:"trailing_comments,omitempty"`
 }
 
 func (n *Type) Clone() *Type {
@@ -21,10 +23,12 @@ func (n *Type) Clone() *Type {
 	}
 
 	out := &Type{
-		ASTNode: n.ASTNode.Clone(),
-		Label:   n.Label,
-		Enum:    n.Enum.Clone(),
-		Object:  n.Object.Clone(),
+		ASTNode:          n.ASTNode.Clone(),
+		Comments:         cloneStrings(n.Comments),
+		Label:            n.Label,
+		Enum:             n.Enum.Clone(),
+		Object:           n.Object.Clone(),
+		TrailingComments: cloneStrings(n.TrailingComments),
 	}
 
 	return out
@@ -108,10 +112,10 @@ func (n TypeEnum) String() string {
 
 type TypeEnumItem struct {
 	ASTNode
-	CommentNode
 
-	Label string `parser:"@Ident ':'" json:"label"`
-	Value Expr   `parser:"@@"         json:"value"`
+	Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Label    string   `parser:"@Ident ':'" json:"label"`
+	Value    Expr     `parser:"@@"         json:"value"`
 }
 
 func (n *TypeEnumItem) Clone() *TypeEnumItem {
@@ -120,10 +124,10 @@ func (n *TypeEnumItem) Clone() *TypeEnumItem {
 	}
 
 	return &TypeEnumItem{
-		ASTNode:     n.ASTNode.Clone(),
-		CommentNode: n.CommentNode.Clone(),
-		Label:       n.Label,
-		Value:       *n.Value.Clone(),
+		ASTNode:  n.ASTNode.Clone(),
+		Comments: cloneStrings(n.Comments),
+		Label:    n.Label,
+		Value:    *n.Value.Clone(),
 	}
 }
 
@@ -188,10 +192,10 @@ func (n TypeObject) String() string {
 
 type TypeObjectItem struct {
 	ASTNode
-	CommentNode
 
-	Label string        `parser:"@Ident ':'" json:"label"`
-	Type  ParameterType `parser:"@@"         json:"type"`
+	Comments []string      `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
+	Label    string        `parser:"@Ident ':'" json:"label"`
+	Type     ParameterType `parser:"@@"         json:"type"`
 }
 
 func (n *TypeObjectItem) Clone() *TypeObjectItem {
@@ -200,10 +204,10 @@ func (n *TypeObjectItem) Clone() *TypeObjectItem {
 	}
 
 	return &TypeObjectItem{
-		ASTNode:     n.ASTNode.Clone(),
-		CommentNode: n.CommentNode.Clone(),
-		Label:       n.Label,
-		Type:        *n.Type.Clone(),
+		ASTNode:  n.ASTNode.Clone(),
+		Comments: cloneStrings(n.Comments),
+		Label:    n.Label,
+		Type:     *n.Type.Clone(),
 	}
 }
 
