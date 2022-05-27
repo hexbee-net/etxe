@@ -310,6 +310,15 @@ func TestFunc_Clone(t *testing.T) {
 			want:  &Func{},
 		},
 		{
+			name: "ASTNode",
+			input: &Func{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Func{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Label",
 			input: &Func{
 				Label: "foo",
@@ -562,6 +571,15 @@ func TestFuncParameter_Clone(t *testing.T) {
 			want:  &FuncParameter{},
 		},
 		{
+			name: "ASTNode",
+			input: &FuncParameter{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &FuncParameter{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Label",
 			input: &FuncParameter{
 				Label: "foo",
@@ -731,6 +749,15 @@ func TestFuncStatement_Clone(t *testing.T) {
 			name:  "Empty",
 			input: &FuncStatement{},
 			want:  &FuncStatement{},
+		},
+		{
+			name: "ASTNode",
+			input: &FuncStatement{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &FuncStatement{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Decl",
@@ -970,6 +997,15 @@ func TestFuncDecl_Clone(t *testing.T) {
 			name:  "Empty",
 			Input: &FuncDecl{},
 			want:  &FuncDecl{},
+		},
+		{
+			name: "ASTNode",
+			Input: &FuncDecl{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &FuncDecl{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "DeclType",

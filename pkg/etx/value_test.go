@@ -245,6 +245,15 @@ func TestValue_Clone(t *testing.T) {
 			want:  &Value{},
 		},
 		{
+			name: "ASTNode",
+			input: &Value{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Value{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Bool Value",
 			input: &Value{
 				Bool: testValPtr[ValueBool](t, true),

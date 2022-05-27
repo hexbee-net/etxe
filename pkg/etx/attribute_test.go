@@ -66,6 +66,15 @@ func TestAttribute_Clone(t *testing.T) {
 			want:  &Attribute{},
 		},
 		{
+			name: "ASTNode",
+			input: &Attribute{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Attribute{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Key",
 			input: &Attribute{
 				Key: "foo",

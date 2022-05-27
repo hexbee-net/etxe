@@ -233,6 +233,15 @@ func TestLambda_Clone(t *testing.T) {
 			want:  &Lambda{},
 		},
 		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &Lambda{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Lambda{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Parameters",
 			Input: &Lambda{
 				Parameters: []*LambdaParameter{{Label: "foo"}},
@@ -418,6 +427,15 @@ func TestLambdaParameter_Clone(t *testing.T) {
 			name:  "Empty",
 			Input: &LambdaParameter{},
 			want:  &LambdaParameter{},
+		},
+		{
+			name: "ASTNode",
+			Input: &LambdaParameter{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &LambdaParameter{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Label",

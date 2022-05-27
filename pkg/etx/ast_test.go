@@ -447,6 +447,15 @@ func TestRootItem_Clone(t *testing.T) {
 			want:  &RootItem{},
 		},
 		{
+			name: "ASTNode",
+			input: &RootItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &RootItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Attribute",
 			input: &RootItem{
 				Attribute: &Attribute{},
@@ -703,6 +712,15 @@ func TestParameterType_Clone(t *testing.T) {
 			want:  nil,
 		},
 		{
+			name: "ASTNode",
+			input: &ParameterType{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &ParameterType{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name:  "Empty",
 			input: &ParameterType{},
 			want:  &ParameterType{},
@@ -883,6 +901,15 @@ func TestFuncSignature_Clone(t *testing.T) {
 			name:  "Empty",
 			input: &FuncSignature{},
 			want:  &FuncSignature{},
+		},
+		{
+			name: "ASTNode",
+			input: &FuncSignature{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &FuncSignature{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Parameters",

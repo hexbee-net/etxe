@@ -127,6 +127,15 @@ func TestType_Clone(t *testing.T) {
 			want:  &Type{},
 		},
 		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &Type{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Type{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Label",
 			Input: &Type{
 				Label: "foo",
@@ -367,6 +376,15 @@ func TestTypeEnum_Clone(t *testing.T) {
 			want:  &TypeEnum{},
 		},
 		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &TypeEnum{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &TypeEnum{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Items",
 			Input: &TypeEnum{
 				Items: []*TypeEnumItem{{Label: "foo"}},
@@ -524,6 +542,15 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 			name:  "Empty",
 			Input: &TypeEnumItem{},
 			want:  &TypeEnumItem{},
+		},
+		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &TypeEnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &TypeEnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Label",
@@ -741,6 +768,15 @@ func TestTypeObject_Clone(t *testing.T) {
 			want:  &TypeObject{},
 		},
 		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &TypeObject{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &TypeObject{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Items",
 			Input: &TypeObject{
 				Items: []*TypeObjectItem{{Label: "foo"}},
@@ -902,6 +938,15 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 			name:  "Empty",
 			Input: &TypeObjectItem{},
 			want:  &TypeObjectItem{},
+		},
+		{
+			name: "ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},",
+			Input: &TypeObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &TypeObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Label",

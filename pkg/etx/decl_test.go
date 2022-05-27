@@ -112,6 +112,15 @@ func TestDecl_Clone(t *testing.T) {
 			want:  &Decl{},
 		},
 		{
+			name: "ASTNode",
+			input: &Decl{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Decl{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "DeclType",
 			input: &Decl{
 				DeclType: "val",

@@ -160,6 +160,15 @@ func TestBlock_Clone(t *testing.T) {
 			want:  &Block{},
 		},
 		{
+			name: "ASTNode",
+			input: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Name",
 			input: &Block{
 				Name: "resource",
@@ -365,6 +374,15 @@ func TestBlockItem_Clone(t *testing.T) {
 			name:  "Empty",
 			input: &BlockItem{},
 			want:  &BlockItem{},
+		},
+		{
+			name: "ASTNode",
+			input: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
 		},
 		{
 			name: "Attribute",
