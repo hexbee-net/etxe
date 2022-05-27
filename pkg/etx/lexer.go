@@ -144,9 +144,12 @@ func lexRules() lexer.Rules {
 			{Name: "UnicodeShort", Pattern: `[0-9a-fA-F]{4}`, Action: lexer.Pop()},
 		},
 		lexerHeredoc: {
-			{Name: "End", Pattern: `^\1`, Action: lexer.Pop()},
+			{Name: "HeredocEnd", Pattern: `^\1`, Action: lexer.Pop()},
 			{Name: "EOL", Pattern: `\n`},
-			{Name: "Body", Pattern: `[^\n]+`},
+			{Name: "NonExpr", Pattern: `(\$\${|%%{)`},
+			{Name: "Expr", Pattern: `\${`, Action: lexer.Push(lexerStringExpr)},
+			{Name: "Directive", Pattern: `%{`, Action: lexer.Push(lexerStringExpr)},
+			{Name: "Body", Pattern: `[^\n$%]+`},
 		},
 		lexerStringExpr: {
 			{Name: "ExprEnd", Pattern: `}`, Action: lexer.Pop()},

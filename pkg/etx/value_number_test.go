@@ -17,7 +17,6 @@ func TestNumber_Parsing(t *testing.T) {
 		name    string
 		Input   string
 		wantErr bool
-		wantX   *big.Float
 		want    *ValueNumber
 	}{
 		{

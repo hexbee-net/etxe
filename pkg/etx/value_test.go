@@ -97,7 +97,7 @@ FOO`[1:],
 						LeadingTabs: false,
 						Delimiter:   "FOO",
 					},
-					Value: nil,
+					Fragments: nil,
 				},
 			},
 		},
@@ -116,7 +116,12 @@ FOO`[1:],
 						LeadingTabs: false,
 						Delimiter:   "FOO",
 					},
-					Value: testValPtr(t, "bar\n"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+							Text:    "bar\n",
+						},
+					},
 				},
 			},
 		},
@@ -135,7 +140,12 @@ FOO`[1:],
 						LeadingTabs: true,
 						Delimiter:   "FOO",
 					},
-					Value: testValPtr(t, "bar\n"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 1}},
+							Text:    "bar\n",
+						},
+					},
 				},
 			},
 		},
@@ -313,7 +323,12 @@ func TestValue_Clone(t *testing.T) {
 					Delimiter: HeredocDelimiter{
 						Delimiter: "foo",
 					},
-					Value: testValPtr(t, "bar"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Text:    "bar",
+						},
+					},
 				},
 			},
 			want: &Value{
@@ -321,7 +336,12 @@ func TestValue_Clone(t *testing.T) {
 					Delimiter: HeredocDelimiter{
 						Delimiter: "foo",
 					},
-					Value: testValPtr(t, "bar"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Text:    "bar",
+						},
+					},
 				},
 			},
 		},
@@ -425,7 +445,12 @@ func TestValue_Children(t *testing.T) {
 					Delimiter: HeredocDelimiter{
 						Delimiter: "foo",
 					},
-					Value: testValPtr(t, "bar"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Text:    "bar",
+						},
+					},
 				},
 			},
 			want: []Node{
@@ -433,7 +458,12 @@ func TestValue_Children(t *testing.T) {
 					Delimiter: HeredocDelimiter{
 						Delimiter: "foo",
 					},
-					Value: testValPtr(t, "bar"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Text:    "bar",
+						},
+					},
 				},
 			},
 		},
@@ -479,7 +509,6 @@ func TestValue_String(t *testing.T) {
 		name        string
 		description string
 		input       *Value
-		wantX       *Value
 		wantPanic   bool
 		want        string
 	}{
@@ -541,7 +570,12 @@ func TestValue_String(t *testing.T) {
 					Delimiter: HeredocDelimiter{
 						Delimiter: "FOO",
 					},
-					Value: testValPtr(t, "\nbar"),
+					Fragments: []*HeredocFragment{
+						{
+							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+							Text:    "\nbar",
+						},
+					},
 				},
 			},
 			want: `

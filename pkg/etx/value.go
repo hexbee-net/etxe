@@ -204,9 +204,8 @@ func (v ValueNumber) String() string {
 type Heredoc struct {
 	ASTNode
 
-	// TODO: change to ValueString to support expressions.
-	Delimiter HeredocDelimiter `parser:"@Heredoc"           json:"delimiter,omitempty"`
-	Value     *string          `parser:"@(Body | EOL)* End" json:"value,omitempty"`
+	Delimiter HeredocDelimiter   `parser:"@Heredoc"       json:"delimiter,omitempty"`
+	Fragments []*HeredocFragment `parser:"@@* HeredocEnd" json:"fragments,omitempty"`
 }
 
 func (v *Heredoc) Clone() *Heredoc {
@@ -214,21 +213,18 @@ func (v *Heredoc) Clone() *Heredoc {
 		return nil
 	}
 
-	out := &Heredoc{
+	return &Heredoc{
 		ASTNode:   v.ASTNode.Clone(),
 		Delimiter: *v.Delimiter.Clone(),
-		Value:     nil,
+		Fragments: cloneCollection(v.Fragments),
 	}
-
-	if v.Value != nil {
-		value := *v.Value
-		out.Value = &value
-	}
-
-	return out
 }
 
 func (v *Heredoc) Children() (children []Node) {
+	for _, item := range v.Fragments {
+		children = append(children, item)
+	}
+
 	return
 }
 
@@ -237,8 +233,8 @@ func (v Heredoc) String() string {
 
 	mustFprintf(&sb, "<<%v", v.Delimiter.String())
 
-	if v.Value != nil {
-		sb.WriteString(*v.Value)
+	for _, fragment := range v.Fragments {
+		sb.WriteString(fragment.String())
 	}
 
 	sb.WriteString("\n")
@@ -284,6 +280,147 @@ func (v HeredocDelimiter) String() string {
 	}
 
 	return v.Delimiter
+}
+
+type HeredocFragment struct {
+	ASTNode
+
+	Expr      *Expr  `parser:"(  Expr @@ ExprEnd       " json:"expr,omitempty"`
+	Directive *Expr  `parser:" | Directive @@ ExprEnd  " json:"directive,omitempty"`
+	Text      string `parser:" | @(Body|EOL|NonExpr)+ )" json:"text,omitempty"`
+}
+
+func (f *HeredocFragment) Clone() *HeredocFragment {
+	if f == nil {
+		return nil
+	}
+
+	return &HeredocFragment{
+		ASTNode:   f.ASTNode.Clone(),
+		Expr:      f.Expr.Clone(),
+		Directive: f.Directive.Clone(),
+		Text:      f.Text,
+	}
+}
+
+func (f *HeredocFragment) Children() (children []Node) {
+	if f.Expr != nil {
+		children = append(children, f.Expr)
+	}
+
+	if f.Directive != nil {
+		children = append(children, f.Directive)
+	}
+
+	return
+}
+
+func (f HeredocFragment) String() string {
+	switch {
+	case f.Expr != nil:
+		return fmt.Sprintf("${ %s }", f.Expr)
+	case f.Directive != nil:
+		return fmt.Sprintf("%%{ %s }", f.Directive)
+	case f.Text != "":
+		return f.Text
+	default:
+		return ""
+	}
+}
+
+// /////////////////////////////////////
+
+type ValueString struct {
+	ASTNode
+
+	Fragment []*StringFragment `parser:"String @@* StringEnd" json:"fragment,omitempty"`
+}
+
+func (v *ValueString) Clone() *ValueString {
+	if v == nil {
+		return nil
+	}
+
+	return &ValueString{
+		ASTNode:  v.ASTNode.Clone(),
+		Fragment: cloneCollection(v.Fragment),
+	}
+}
+
+func (v *ValueString) Children() (children []Node) {
+	for _, item := range v.Fragment {
+		children = append(children, item)
+	}
+
+	return
+}
+
+func (v ValueString) String() string {
+	var sb strings.Builder
+
+	sb.WriteString(`"`)
+
+	for _, f := range v.Fragment {
+		sb.WriteString(f.String())
+	}
+
+	sb.WriteString(`"`)
+
+	return sb.String()
+}
+
+type StringFragment struct {
+	ASTNode
+
+	Escaped   string `parser:"(  @Escaped"                           json:"escaped,omitempty"`
+	Unicode   string `parser:" | Unicode@(UnicodeLong|UnicodeShort)" json:"unicode,omitempty"`
+	Expr      *Expr  `parser:" | Expr @@ ExprEnd"                    json:"expr,omitempty"`
+	Directive *Expr  `parser:" | Directive @@ ExprEnd"               json:"directive,omitempty"`
+	Text      string `parser:" | @(Char|Quote|NonExpr))"             json:"text,omitempty"`
+}
+
+func (f *StringFragment) Clone() *StringFragment {
+	if f == nil {
+		return nil
+	}
+
+	return &StringFragment{
+		ASTNode:   f.ASTNode.Clone(),
+		Escaped:   f.Escaped,
+		Unicode:   f.Unicode,
+		Expr:      f.Expr.Clone(),
+		Directive: f.Directive.Clone(),
+		Text:      f.Text,
+	}
+}
+
+func (f *StringFragment) Children() (children []Node) {
+	if f.Expr != nil {
+		children = append(children, f.Expr)
+	}
+
+	if f.Directive != nil {
+		children = append(children, f.Directive)
+	}
+
+	return
+}
+
+func (f StringFragment) String() string {
+	switch {
+	case f.Escaped != "":
+		return fmt.Sprintf("\\%s", f.Escaped)
+	case f.Unicode != "":
+		return fmt.Sprintf("\\u%s", f.Unicode)
+	case f.Expr != nil:
+		return fmt.Sprintf("${%s}", f.Expr)
+	case f.Directive != nil:
+		return fmt.Sprintf("%%{%s}", f.Directive)
+	case f.Text != "":
+		return f.Text
+	default:
+		return ""
+	}
 }
 
 // /////////////////////////////////////
@@ -407,99 +544,4 @@ func (v *MapEntry) Children() (children []Node) {
 
 func (v MapEntry) String() string {
 	return fmt.Sprintf("%v: %v", v.Key, v.Value)
-}
-
-// /////////////////////////////////////
-
-type ValueString struct {
-	ASTNode
-
-	Fragment []*StringFragment `parser:"String @@* StringEnd" json:"fragment,omitempty"`
-}
-
-func (v *ValueString) Clone() *ValueString {
-	if v == nil {
-		return nil
-	}
-
-	return &ValueString{
-		ASTNode:  v.ASTNode.Clone(),
-		Fragment: cloneCollection(v.Fragment),
-	}
-}
-
-func (v *ValueString) Children() (children []Node) {
-	for _, item := range v.Fragment {
-		children = append(children, item)
-	}
-
-	return
-}
-
-func (v ValueString) String() string {
-	var sb strings.Builder
-
-	sb.WriteString(`"`)
-
-	for _, f := range v.Fragment {
-		sb.WriteString(f.String())
-	}
-
-	sb.WriteString(`"`)
-
-	return sb.String()
-}
-
-type StringFragment struct {
-	ASTNode
-
-	Escaped   string `parser:"(  @Escaped"                           json:"escaped,omitempty"`
-	Unicode   string `parser:" | Unicode@(UnicodeLong|UnicodeShort)" json:"unicode,omitempty"`
-	Expr      *Expr  `parser:" | Expr @@ ExprEnd"                    json:"expr,omitempty"`
-	Directive *Expr  `parser:" | Directive @@ ExprEnd"               json:"directive,omitempty"`
-	Text      string `parser:" | @(Char|Quote|NonExpr))"             json:"text,omitempty"`
-}
-
-func (f *StringFragment) Clone() *StringFragment {
-	if f == nil {
-		return nil
-	}
-
-	return &StringFragment{
-		ASTNode:   f.ASTNode.Clone(),
-		Escaped:   f.Escaped,
-		Unicode:   f.Unicode,
-		Expr:      f.Expr.Clone(),
-		Directive: f.Directive.Clone(),
-		Text:      f.Text,
-	}
-}
-
-func (f *StringFragment) Children() (children []Node) {
-	if f.Expr != nil {
-		children = append(children, f.Expr)
-	}
-
-	if f.Directive != nil {
-		children = append(children, f.Directive)
-	}
-
-	return
-}
-
-func (f StringFragment) String() string {
-	switch {
-	case f.Escaped != "":
-		return fmt.Sprintf("\\%s", f.Escaped)
-	case f.Unicode != "":
-		return fmt.Sprintf("\\u%s", f.Unicode)
-	case f.Expr != nil:
-		return fmt.Sprintf("${%s}", f.Expr)
-	case f.Directive != nil:
-		return fmt.Sprintf("%%{%s}", f.Directive)
-	case f.Text != "":
-		return f.Text
-	default:
-		return ""
-	}
 }

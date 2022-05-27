@@ -1,7 +1,10 @@
 package etx
 
 import (
+	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHeredoc_Parsing(t *testing.T) {
@@ -23,7 +26,7 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: nil,
+				Fragments: nil,
 			},
 		},
 		{
@@ -39,7 +42,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "\n",
+					},
+				},
 			},
 		},
 		{
@@ -56,7 +64,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\nfoo\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "\nfoo\n",
+					},
+				},
 			},
 		},
 		{
@@ -73,7 +86,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "foo\n\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "foo\n\n",
+					},
+				},
 			},
 		},
 		{
@@ -89,7 +107,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "foo\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "foo\n",
+					},
+				},
 			},
 		},
 		{
@@ -105,7 +128,78 @@ EOF`[1:],
 					LeadingTabs: true,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "foo\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 1}},
+						Text:    "foo\n",
+					},
+				},
+			},
+		},
+
+		{
+			name: "value - expression",
+			input: `
+<<EOF
+foo ${ 1 } bar
+EOF`[1:],
+			wantErr: false,
+			want: &Heredoc{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Delimiter: HeredocDelimiter{
+					LeadingTabs: false,
+					Delimiter:   "EOF",
+				},
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "foo ",
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 2, Column: 5}},
+						Expr: testBuildExprTree[*Expr](t, &Value{
+							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
+							Number:  &ValueNumber{big.NewFloat(1), "1"},
+						}),
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 11}},
+						Text:    " bar\n",
+					},
+				},
+			},
+		},
+
+		{
+			name: "value - directive",
+			input: `
+<<EOF
+foo %{ 1 } bar
+EOF`[1:],
+			wantErr: false,
+			want: &Heredoc{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Delimiter: HeredocDelimiter{
+					LeadingTabs: false,
+					Delimiter:   "EOF",
+				},
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 1}},
+						Text:    "foo ",
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 2, Column: 5}},
+						Directive: testBuildExprTree[*Expr](t, &Value{
+							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
+							Number:  &ValueNumber{big.NewFloat(1), "1"},
+						}),
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 11}},
+						Text:    " bar\n",
+					},
+				},
 			},
 		},
 	}
@@ -134,20 +228,39 @@ func TestHeredoc_Clone(t *testing.T) {
 			want:  &Heredoc{},
 		},
 		{
+			name: "ASTNode",
+			input: &Heredoc{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Heredoc{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
 			name: "Delimiter and Value",
 			input: &Heredoc{
 				Delimiter: HeredocDelimiter{
 					LeadingTabs: false,
 					Delimiter:   "FOO",
 				},
-				Value: testValPtr(t, "bar"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "bar",
+					},
+				},
 			},
 			want: &Heredoc{
 				Delimiter: HeredocDelimiter{
 					LeadingTabs: false,
 					Delimiter:   "FOO",
 				},
-				Value: testValPtr(t, "bar"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "bar",
+					},
+				},
 			},
 		},
 	}
@@ -155,6 +268,48 @@ func TestHeredoc_Clone(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testCloner[*Heredoc](t, tt.want, tt.input)
+		})
+	}
+}
+
+func TestHeredoc_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Heredoc
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &Heredoc{},
+			want:  nil,
+		},
+		{
+			name: "Delimiter",
+			input: &Heredoc{
+				Delimiter: HeredocDelimiter{
+					Delimiter: "foo",
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "Fragments",
+			input: &Heredoc{
+				Fragments: []*HeredocFragment{
+					{Text: "foo"},
+				},
+			},
+			want: []Node{
+				&HeredocFragment{Text: "foo"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
 		})
 	}
 }
@@ -196,7 +351,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\n\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "\n\n",
+					},
+				},
 			},
 			want: `
 <<EOF
@@ -212,7 +372,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\n\nfoo"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "\n\nfoo",
+					},
+				},
 			},
 			want: `
 <<EOF
@@ -228,7 +393,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\nfoo\n"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "\nfoo\n",
+					},
+				},
 			},
 			want: `
 <<EOF
@@ -244,7 +414,12 @@ EOF`[1:],
 					LeadingTabs: false,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\nfoo"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "\nfoo",
+					},
+				},
 			},
 			want: `
 <<EOF
@@ -259,7 +434,12 @@ EOF`[1:],
 					LeadingTabs: true,
 					Delimiter:   "EOF",
 				},
-				Value: testValPtr(t, "\nfoo"),
+				Fragments: []*HeredocFragment{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Text:    "\nfoo",
+					},
+				},
 			},
 			want: `
 <<-EOF
@@ -271,6 +451,168 @@ EOF`[1:],
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testStringer(t, tt.wantPanic, tt.want, tt.input)
+		})
+	}
+}
+
+// /////////////////////////////////////
+
+func TestHeredocFragment_Clone(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *HeredocFragment
+		want  *HeredocFragment
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &HeredocFragment{},
+			want:  &HeredocFragment{},
+		},
+		{
+			name: "ASTNode",
+			input: &HeredocFragment{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &HeredocFragment{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Expr",
+			input: &HeredocFragment{
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: &HeredocFragment{
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+		{
+			name: "Directive",
+			input: &HeredocFragment{
+				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: &HeredocFragment{
+				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+		{
+			name: "Text",
+			input: &HeredocFragment{
+				Text: "foo",
+			},
+			want: &HeredocFragment{
+				Text: "foo",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*HeredocFragment](t, tt.want, tt.input)
+		})
+	}
+
+}
+
+func TestHeredocFragment_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *HeredocFragment
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &HeredocFragment{},
+			want:  nil,
+		},
+		{
+			name: "Expr",
+			input: &HeredocFragment{
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: []Node{
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+		{
+			name: "Directive",
+			input: &HeredocFragment{
+				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: []Node{
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+		{
+			name: "Text",
+			input: &HeredocFragment{
+				Text: "foo",
+			},
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestHeredocFragment_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		description string
+		input       *HeredocFragment
+		wantPanic   bool
+		want        string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name:  "Empty",
+			input: &HeredocFragment{},
+			want:  "",
+		},
+
+		{
+			name: "Expr",
+			input: &HeredocFragment{
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: "${ 1 }",
+		},
+		{
+			name: "Directive",
+			input: &HeredocFragment{
+				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: "%{ 1 }",
+		},
+		{
+			name: "Text",
+			input: &HeredocFragment{
+				Text: "foo",
+			},
+			want: "foo",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input, tt.description)
 		})
 	}
 }
