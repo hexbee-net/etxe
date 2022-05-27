@@ -11,7 +11,7 @@ type Func struct {
 	Comments         []string         `parser:"(@Comment [ NewLine ])*"                    json:"comments,omitempty"`
 	Label            string           `parser:"Func @Ident "                               json:"label"`
 	Parameters       []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                   json:"parameters,omitempty"`
-	Return           *ParameterType   `parser:"@@?"                                        json:"return,omitempty"` // TODO: let return several values
+	Return           []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?"           json:"return,omitempty"`
 	Body             []*FuncStatement `parser:"NewLine? '{' ( NewLine? @@ NewLine? )*"     json:"body,omitempty"`
 	TrailingComments []string         `parser:"(@Comment [ NewLine ])* [ NewLine ] '}'"    json:"trailing_comments,omitempty"`
 }
@@ -26,7 +26,7 @@ func (n *Func) Clone() *Func {
 		Comments:         cloneStrings(n.Comments),
 		Label:            n.Label,
 		Parameters:       cloneCollection(n.Parameters),
-		Return:           n.Return.Clone(),
+		Return:           cloneCollection(n.Return),
 		Body:             cloneCollection(n.Body),
 		TrailingComments: cloneStrings(n.TrailingComments),
 	}
@@ -37,8 +37,8 @@ func (n *Func) Children() (children []Node) {
 		children = append(children, item)
 	}
 
-	if n.Return != nil {
-		children = append(children, n.Return)
+	for _, item := range n.Return {
+		children = append(children, item)
 	}
 
 	for _, item := range n.Body {
@@ -58,8 +58,16 @@ func (n Func) String() string {
 
 	mustFprintf(&sb, "def %v(%v)", n.Label, strings.Join(params, ", "))
 
-	if n.Return != nil {
-		mustFprintf(&sb, " %v", n.Return)
+	switch l := len(n.Return); {
+	case l == 1:
+		mustFprintf(&sb, " %v", n.Return[0].String())
+	case l > 1:
+		rets := make([]string, 0, l)
+		for _, item := range n.Return {
+			rets = append(rets, item.String())
+		}
+
+		mustFprintf(&sb, " (%v)", strings.Join(rets, ", "))
 	}
 
 	if len(n.Body) != 0 {

@@ -56,8 +56,6 @@ const (
 	lexerHeredoc    = "Heredoc"
 )
 
-// TODO: we need to switch to expr lexer not only in strings, but after an '='?
-
 func lexRules() lexer.Rules {
 	return lexer.Rules{
 		lexerRoot: {

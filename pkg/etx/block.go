@@ -10,7 +10,7 @@ type Block struct {
 
 	Comments         []string     `parser:"(@Comment [ NewLine ])*"                  json:"comments,omitempty"`
 	Name             string       `parser:"@Ident"                                   json:"name"`
-	Labels           []string     `parser:"((String @Char StringEnd) | @Ident)* '{'" json:"labels,omitempty"` // TODO: this is not gonna work
+	Labels           []string     `parser:"((String @Char StringEnd) | @Ident)* '{'" json:"labels,omitempty"`
 	Body             []*BlockItem `parser:"(NewLine @@)*"                            json:"body"`
 	TrailingComments []string     `parser:"(@Comment [ NewLine ])* [ NewLine ] '}' " json:"trailing_comments,omitempty"`
 }

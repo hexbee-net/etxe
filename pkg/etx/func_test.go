@@ -72,15 +72,36 @@ func TestFunc_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name:    "Empty body, no params, ident return",
+			name:    "Empty body, no params, one return",
 			input:   `def foo() bool {}`,
 			wantErr: false,
 			want: &Func{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Label:   "foo",
-				Return: &ParameterType{
-					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-					Ident:   &Ident{Parts: []string{"bool"}},
+				Return: []*ParameterType{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+						Ident:   &Ident{Parts: []string{"bool"}},
+					},
+				},
+			},
+		},
+		{
+			name:    "Empty body, no params, two returns",
+			input:   `def foo() (bool, number) {}`,
+			wantErr: false,
+			want: &Func{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Label:   "foo",
+				Return: []*ParameterType{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+						Ident:   &Ident{Parts: []string{"bool"}},
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+						Ident:   &Ident{Parts: []string{"number"}},
+					},
 				},
 			},
 		},
@@ -169,24 +190,26 @@ func TestFunc_Parsing(t *testing.T) {
 		},
 		{
 			name:    "Empty body, no params, func return",
-			input:   `def foo() (int) -> bool {}`,
+			input:   `def foo() ((int) -> bool) {}`,
 			wantErr: false,
 			want: &Func{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Label:   "foo",
-				Return: &ParameterType{
-					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-					Func: &FuncSignature{
-						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-						Parameters: []*ParameterType{
-							{
-								ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
-								Ident:   &Ident{Parts: []string{"int"}},
+				Return: []*ParameterType{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+						Func: &FuncSignature{
+							ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+							Parameters: []*ParameterType{
+								{
+									ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
+									Ident:   &Ident{Parts: []string{"int"}},
+								},
 							},
-						},
-						Return: ParameterType{
-							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 1, Column: 20}},
-							Ident:   &Ident{Parts: []string{"bool"}},
+							Return: ParameterType{
+								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
+								Ident:   &Ident{Parts: []string{"bool"}},
+							},
 						},
 					},
 				},
@@ -361,10 +384,14 @@ func TestFunc_Clone(t *testing.T) {
 		{
 			name: "Return",
 			input: &Func{
-				Return: &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
+				Return: []*ParameterType{
+					{Ident: &Ident{Parts: []string{"number"}}},
+				},
 			},
 			want: &Func{
-				Return: &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
+				Return: []*ParameterType{
+					{Ident: &Ident{Parts: []string{"number"}}},
+				},
 			},
 		},
 		{
@@ -423,7 +450,9 @@ func TestFunc_Children(t *testing.T) {
 		{
 			name: "Return",
 			input: &Func{
-				Return: &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
+				Return: []*ParameterType{
+					{Ident: &Ident{Parts: []string{"number"}}},
+				},
 			},
 			want: []Node{
 				&ParameterType{Ident: &Ident{Parts: []string{"number"}}},
@@ -499,12 +528,25 @@ func TestFunc_String(t *testing.T) {
 			want: "def foo(bar, baz) {}",
 		},
 		{
-			name: "Label - no params - return - no body",
+			name: "Label - no params - one return type - no body",
 			input: &Func{
-				Label:  "foo",
-				Return: &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
+				Label: "foo",
+				Return: []*ParameterType{
+					{Ident: &Ident{Parts: []string{"number"}}},
+				},
 			},
 			want: "def foo() number {}",
+		},
+		{
+			name: "Label - no params - two return types - no body",
+			input: &Func{
+				Label: "foo",
+				Return: []*ParameterType{
+					{Ident: &Ident{Parts: []string{"number"}}},
+					{Ident: &Ident{Parts: []string{"bool"}}},
+				},
+			},
+			want: "def foo() (number, bool) {}",
 		},
 		{
 			name: "Label - no params - no return - body",
