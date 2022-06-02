@@ -212,10 +212,10 @@ func (e ExprCase) String() string {
 type ExprConditional struct {
 	ASTNode
 
-	Condition   ExprLogicalOr  `parser:"@@"          json:"condition"`
-	ConditionOp bool           `parser:"[ @'?'     " json:"condition_op,omitempty"`
-	TrueExpr    *ExprLogicalOr `parser:"  @@       " json:"true_expr,omitempty"`
-	FalseExpr   *ExprLogicalOr `parser:"  ':' @@  ]" json:"false_expr,omitempty"`
+	Condition   ExprLogicalOr `parser:"@@"          json:"condition"`
+	ConditionOp bool          `parser:"[ @'?'     " json:"condition_op,omitempty"`
+	TrueExpr    *Expr         `parser:"  @@       " json:"true_expr,omitempty"`
+	FalseExpr   *Expr         `parser:"  ':' @@  ]" json:"false_expr,omitempty"`
 }
 
 func (e *ExprConditional) Clone() *ExprConditional {

@@ -459,14 +459,88 @@ switch foo {
 						Number:  &ValueNumber{big.NewFloat(1), "1"},
 					}),
 					ConditionOp: true,
-					TrueExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+					TrueExpr: testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number:  &ValueNumber{big.NewFloat(2), "2"},
 					}),
-					FalseExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+					FalseExpr: testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 						Number:  &ValueNumber{big.NewFloat(3), "3"},
 					}),
+				},
+			),
+		},
+		{
+			name:    "Nested Ternary - Left",
+			input:   "1 ? 2 ? 3 : 4 : 5",
+			wantErr: false,
+			want: testBuildExprTree[*Expr](t,
+				&ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+					ConditionOp: true,
+					TrueExpr: testBuildExprTree[*Expr](t,
+						&ExprConditional{
+							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+							Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+								Number:  &ValueNumber{big.NewFloat(2), "2"},
+							}),
+							ConditionOp: true,
+							TrueExpr: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+								Number:  &ValueNumber{big.NewFloat(3), "3"},
+							}),
+							FalseExpr: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
+								Number:  &ValueNumber{big.NewFloat(4), "4"},
+							}),
+						},
+					),
+					FalseExpr: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
+						Number:  &ValueNumber{big.NewFloat(5), "5"},
+					}),
+				},
+			),
+		},
+		{
+			name:    "Nested Ternary - Right",
+			input:   "1 ? 2 : 3 ? 4 : 5",
+			wantErr: false,
+			want: testBuildExprTree[*Expr](t,
+				&ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+					ConditionOp: true,
+					TrueExpr: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+						Number:  &ValueNumber{big.NewFloat(2), "2"},
+					}),
+					FalseExpr: testBuildExprTree[*Expr](t,
+						&ExprConditional{
+							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+							Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+								Number:  &ValueNumber{big.NewFloat(3), "3"},
+							}),
+							ConditionOp: true,
+							TrueExpr: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
+								Number:  &ValueNumber{big.NewFloat(4), "4"},
+							}),
+							FalseExpr: testBuildExprTree[*Expr](t, &Value{
+								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
+								Number:  &ValueNumber{big.NewFloat(5), "5"},
+							}),
+						},
+					),
 				},
 			),
 		},
@@ -1692,14 +1766,14 @@ func TestConditional_Clone(t *testing.T) {
 			input: &ExprConditional{
 				Condition:   ExprLogicalOr{},
 				ConditionOp: true,
-				TrueExpr:    &ExprLogicalOr{},
-				FalseExpr:   &ExprLogicalOr{},
+				TrueExpr:    &Expr{},
+				FalseExpr:   &Expr{},
 			},
 			want: &ExprConditional{
 				Condition:   ExprLogicalOr{},
 				ConditionOp: true,
-				TrueExpr:    &ExprLogicalOr{},
-				FalseExpr:   &ExprLogicalOr{},
+				TrueExpr:    &Expr{},
+				FalseExpr:   &Expr{},
 			},
 		},
 	}
@@ -2744,21 +2818,21 @@ func TestConditional_Children(t *testing.T) {
 		{
 			name: "TrueExpr",
 			input: &ExprConditional{
-				TrueExpr: &ExprLogicalOr{},
+				TrueExpr: &Expr{},
 			},
 			want: []Node{
 				&ExprLogicalOr{},
-				&ExprLogicalOr{},
+				&Expr{},
 			},
 		},
 		{
 			name: "FalseExpr",
 			input: &ExprConditional{
-				FalseExpr: &ExprLogicalOr{},
+				FalseExpr: &Expr{},
 			},
 			want: []Node{
 				&ExprLogicalOr{},
-				&ExprLogicalOr{},
+				&Expr{},
 			},
 		},
 	}
@@ -4009,11 +4083,11 @@ func TestConditional_String(t *testing.T) {
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(1), "1"},
 				}),
-				TrueExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				TrueExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(2), "2"},
 				}),
-				FalseExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				FalseExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(3), "3"},
 				}),
@@ -4039,7 +4113,7 @@ func TestConditional_String(t *testing.T) {
 					Number:  &ValueNumber{big.NewFloat(1), "1"},
 				}),
 				ConditionOp: true,
-				TrueExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				TrueExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(2), "2"},
 				}),
@@ -4054,7 +4128,7 @@ func TestConditional_String(t *testing.T) {
 					Number:  &ValueNumber{big.NewFloat(1), "1"},
 				}),
 				ConditionOp: true,
-				FalseExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				FalseExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(3), "3"},
 				}),
@@ -4070,11 +4144,11 @@ func TestConditional_String(t *testing.T) {
 					Number:  &ValueNumber{big.NewFloat(1), "1"},
 				}),
 				ConditionOp: true,
-				TrueExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				TrueExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(2), "2"},
 				}),
-				FalseExpr: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				FalseExpr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number:  &ValueNumber{big.NewFloat(3), "3"},
 				}),
