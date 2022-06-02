@@ -168,15 +168,15 @@ FOO`[1:],
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				List: &ValueList{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Items: []*Value{
-						{
+					Items: []*Expr{
+						testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Number:  &ValueNumber{big.NewFloat(1), "1"},
-						},
-						{
+						}),
+						testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number:  &ValueNumber{big.NewFloat(2), "2"},
-						},
+						}),
 					},
 				},
 			},
@@ -194,7 +194,7 @@ FOO`[1:],
 		},
 		{
 			name:    "Map - Elements",
-			input:   `{ foo : bar , baz : qux }`,
+			input:   `{ foo = bar , baz = qux }`,
 			wantErr: false,
 			want: &Value{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -207,10 +207,10 @@ FOO`[1:],
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 								Ident:   &Ident{Parts: []string{"foo"}},
 							},
-							Value: Value{
+							Value: *testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 								Ident:   &Ident{Parts: []string{"bar"}},
-							},
+							}),
 						},
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
@@ -218,10 +218,10 @@ FOO`[1:],
 								ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 								Ident:   &Ident{Parts: []string{"baz"}},
 							},
-							Value: Value{
+							Value: *testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
 								Ident:   &Ident{Parts: []string{"qux"}},
-							},
+							}),
 						},
 					},
 				},
@@ -349,12 +349,12 @@ func TestValue_Clone(t *testing.T) {
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Value{},
+					Items: []*Expr{},
 				},
 			},
 			want: &Value{
 				List: &ValueList{
-					Items: []*Value{},
+					Items: []*Expr{},
 				},
 			},
 		},
@@ -471,12 +471,12 @@ func TestValue_Children(t *testing.T) {
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Value{},
+					Items: []*Expr{},
 				},
 			},
 			want: []Node{
 				&ValueList{
-					Items: []*Value{},
+					Items: []*Expr{},
 				},
 			},
 		},
@@ -587,7 +587,7 @@ FOO`[1:],
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Value{},
+					Items: []*Expr{},
 				},
 			},
 			want: "[]",

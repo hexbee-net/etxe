@@ -25,7 +25,7 @@ func TestMap_Parsing(t *testing.T) {
 		},
 		{
 			name:    "One entry - One line",
-			input:   `{ a: 1 }`,
+			input:   `{ a= 1 }`,
 			wantErr: false,
 			want: &ValueMap{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -38,17 +38,17 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 				},
 			},
 		},
 		{
 			name:    "One entry - One line - Trailing comma",
-			input:   `{ a: 1, }`,
+			input:   `{ a= 1, }`,
 			wantErr: false,
 			want: &ValueMap{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -61,10 +61,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 				},
 			},
@@ -73,7 +73,7 @@ func TestMap_Parsing(t *testing.T) {
 			name: "One entry - Linebreaks",
 			input: `
 {
-    a: 1
+    a= 1
 }`[1:],
 			wantErr: false,
 			want: &ValueMap{
@@ -87,17 +87,17 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 				},
 			},
 		},
 		{
 			name:    "Two entries - One line",
-			input:   `{ a: 1, b: 2 }`,
+			input:   `{ a= 1, b= 2 }`,
 			wantErr: false,
 			want: &ValueMap{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -110,10 +110,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -123,10 +123,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"b"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
 							Number:  &ValueNumber{big.NewFloat(2), `2`},
-						},
+						}),
 					},
 				},
 			},
@@ -135,8 +135,8 @@ func TestMap_Parsing(t *testing.T) {
 			name: "Two entries - Linebreaks",
 			input: `
 {
-    a: 1,
-    b: 2
+    a= 1,
+    b= 2
 }`[1:],
 			wantErr: false,
 			want: &ValueMap{
@@ -150,10 +150,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
@@ -163,10 +163,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"b"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
 							Number:  &ValueNumber{big.NewFloat(2), `2`},
-						},
+						}),
 					},
 				},
 			},
@@ -175,8 +175,8 @@ func TestMap_Parsing(t *testing.T) {
 			name: "Two entries - Linebreaks - Trailing comma",
 			input: `
 {
-    a: 1,
-    b: 2,
+    a= 1,
+    b= 2,
 }`[1:],
 			wantErr: false,
 			want: &ValueMap{
@@ -190,10 +190,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number:  &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
@@ -203,10 +203,10 @@ func TestMap_Parsing(t *testing.T) {
 								Parts: []string{"b"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
 							Number:  &ValueNumber{big.NewFloat(2), `2`},
-						},
+						}),
 					},
 				},
 			},
@@ -319,9 +319,9 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 				},
 			},
@@ -340,9 +340,9 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{big.NewFloat(1), `1`},
-						},
+						}),
 					},
 					{
 						Key: Value{
@@ -350,9 +350,9 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"b"},
 							},
 						},
-						Value: Value{
+						Value: *testBuildExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{big.NewFloat(1), `2`},
-						},
+						}),
 					},
 				},
 			},
@@ -402,11 +402,11 @@ func TestMapEntry_Clone(t *testing.T) {
 			name: "Values",
 			input: &MapEntry{
 				Key:   Value{},
-				Value: Value{},
+				Value: *testBuildExprTree[*Expr](t, &Value{}),
 			},
 			want: &MapEntry{
 				Key:   Value{},
-				Value: Value{},
+				Value: *testBuildExprTree[*Expr](t, &Value{}),
 			},
 		},
 	}
@@ -429,7 +429,7 @@ func TestMapEntry_Children(t *testing.T) {
 			input: MapEntry{},
 			want: []Node{
 				&Value{},
-				&Value{},
+				&Expr{},
 			},
 		},
 		{
@@ -443,21 +443,21 @@ func TestMapEntry_Children(t *testing.T) {
 				&Value{
 					Ident: &Ident{Parts: []string{"a"}},
 				},
-				&Value{},
+				&Expr{},
 			},
 		},
 		{
 			name: "Value",
 			input: MapEntry{
-				Value: Value{
+				Value: *testBuildExprTree[*Expr](t, &Value{
 					Ident: &Ident{Parts: []string{"a"}},
-				},
+				}),
 			},
 			want: []Node{
 				&Value{},
-				&Value{
+				testBuildExprTree[*Expr](t, &Value{
 					Ident: &Ident{Parts: []string{"a"}},
-				},
+				}),
 			},
 		},
 	}
@@ -489,9 +489,9 @@ func TestMapEntry_String(t *testing.T) {
 						Parts: []string{"a"},
 					},
 				},
-				Value: Value{
+				Value: *testBuildExprTree[*Expr](t, &Value{
 					Number: &ValueNumber{big.NewFloat(1), `1`},
-				},
+				}),
 			},
 			want: `a: 1`,
 		},

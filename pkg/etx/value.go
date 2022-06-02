@@ -428,7 +428,7 @@ func (f StringFragment) String() string {
 type ValueList struct {
 	ASTNode
 
-	Items []*Value `parser:"'[' NewLine? [ @@ ( NewLine? ',' NewLine? @@? )* ','? ] NewLine? ']'"   json:"items,omitempty"`
+	Items []*Expr `parser:"'[' NewLine? [ @@ ( NewLine? ',' NewLine? @@? )* ','? ] NewLine? ']'"   json:"items,omitempty"`
 }
 
 func (v *ValueList) Clone() *ValueList {
@@ -518,8 +518,8 @@ type MapEntry struct {
 	ASTNode
 
 	Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
-	Key      Value    `parser:"@@ ':'"    json:"key"`
-	Value    Value    `parser:"@@"        json:"value"`
+	Key      Value    `parser:"@@ '='"    json:"key"`
+	Value    Expr     `parser:"@@"        json:"value"`
 }
 
 func (v *MapEntry) Clone() *MapEntry {

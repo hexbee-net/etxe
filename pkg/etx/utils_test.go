@@ -119,6 +119,11 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 			if x == nil && y == nil {
 				return true
 			}
+
+			if x == nil || y == nil {
+				return false
+			}
+
 			return x.Value.Cmp(y.Value) == 0
 		})
 
@@ -169,6 +174,8 @@ func testCloner[T any](t *testing.T, want, input Cloner[T]) {
 
 	testRefFields(t, assert.NotSame, want, input)
 }
+
+// /////////////////////////////////////
 
 func TestIndent(t *testing.T) {
 	type args struct {

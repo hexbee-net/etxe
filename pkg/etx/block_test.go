@@ -1,6 +1,7 @@
 package etx
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -363,6 +364,89 @@ func TestBlockItem_Parsing(t *testing.T) {
 				Attribute: &Attribute{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Key:     "foo",
+				},
+			},
+		},
+		{
+			name:    "Attribute with scalar",
+			input:   "foo = 1",
+			wantErr: false,
+			want: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Attribute: &Attribute{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Key:     "foo",
+					Value: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			},
+		},
+		{
+			name:    "Attribute with list",
+			input:   "foo = [1, 2]",
+			wantErr: false,
+			want: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Attribute: &Attribute{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Key:     "foo",
+					Value: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+						List: &ValueList{
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+							Items: []*Expr{
+								testBuildExprTree[*Expr](t, &Value{
+									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+									Number:  &ValueNumber{big.NewFloat(1), "1"},
+								}),
+								testBuildExprTree[*Expr](t, &Value{
+									ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+									Number:  &ValueNumber{big.NewFloat(2), "2"},
+								}),
+							},
+						},
+					}),
+				},
+			},
+		},
+		{
+			name:    "Attribute with map",
+			input:   `foo = {"bar" = 1}`,
+			wantErr: false,
+			want: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Attribute: &Attribute{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Key:     "foo",
+					Value: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+						Map: &ValueMap{
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+							Entries: []*MapEntry{
+								{
+									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+									Key: Value{
+										ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+										Str: &ValueString{
+											ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+											Fragment: []*StringFragment{
+												{
+													ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+													Text:    "bar",
+												},
+											},
+										},
+									},
+									Value: *testBuildExprTree[*Expr](t, &Value{
+										ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+										Number:  &ValueNumber{big.NewFloat(1), "1"},
+									}),
+								},
+							},
+						},
+					}),
 				},
 			},
 		},
