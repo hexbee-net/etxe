@@ -34,7 +34,7 @@ func (n ASTNode) Clone() ASTNode {
 
 // AST for ETX files.
 type AST struct {
-	Items []*RootItem `parser:"(@@ (NewLine @@)* )*" json:"items,omitempty"`
+	Items []*RootItem `parser:"(@@ (NewLine+ @@)* )*" json:"items,omitempty"`
 }
 
 func (n *AST) Clone() *AST {
@@ -76,12 +76,13 @@ func (n AST) String() string {
 type RootItem struct {
 	ASTNode
 
-	Decl      *Decl      `parser:"(   @@  "       json:"decl,omitempty"`
-	Func      *Func      `parser:"  | @@  "       json:"func,omitempty"`
-	Type      *Type      `parser:"  | @@  "       json:"type,omitempty"`
-	Block     *Block     `parser:"  | @@  "       json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@  "       json:"attribute,omitempty"`
-	Comments  []string   `parser:"  | @Comment )" json:"comments,omitempty"`
+	Decl      *Decl      `parser:"(   @@  "        json:"decl,omitempty"`
+	Func      *Func      `parser:"  | @@  "        json:"func,omitempty"`
+	Type      *Type      `parser:"  | @@  "        json:"type,omitempty"`
+	Block     *Block     `parser:"  | @@  "        json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@  "        json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@  "        json:"comment,omitempty"`
+	EmptyLine string     `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
 }
 
 func (n *RootItem) Clone() *RootItem {
@@ -91,12 +92,13 @@ func (n *RootItem) Clone() *RootItem {
 
 	return &RootItem{
 		ASTNode:   n.ASTNode.Clone(),
-		Comments:  cloneStrings(n.Comments),
 		Decl:      n.Decl.Clone(),
 		Func:      n.Func.Clone(),
 		Type:      n.Type.Clone(),
 		Block:     n.Block.Clone(),
 		Attribute: n.Attribute.Clone(),
+		Comment:   n.Comment.Clone(),
+		EmptyLine: n.EmptyLine,
 	}
 }
 
@@ -112,6 +114,9 @@ func (n *RootItem) Children() (children []Node) {
 		children = append(children, n.Type)
 	case n.Block != nil:
 		children = append(children, n.Block)
+	case n.Comment != nil:
+		children = append(children, n.Comment)
+
 	}
 
 	return
@@ -119,8 +124,6 @@ func (n *RootItem) Children() (children []Node) {
 
 func (n RootItem) String() string {
 	switch {
-	case n.Attribute != nil:
-		return n.Attribute.String()
 	case n.Decl != nil:
 		return n.Decl.String()
 	case n.Func != nil:
@@ -129,6 +132,12 @@ func (n RootItem) String() string {
 		return n.Type.String()
 	case n.Block != nil:
 		return n.Block.String()
+	case n.Attribute != nil:
+		return n.Attribute.String()
+	case n.Comment != nil:
+		return n.Comment.String()
+	case n.EmptyLine != "":
+		return n.EmptyLine
 	default:
 		panic(repr.String(n, repr.Hide(Position{})))
 	}

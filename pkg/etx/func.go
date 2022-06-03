@@ -8,12 +8,11 @@ import (
 type Func struct {
 	ASTNode
 
-	Comments         []string         `parser:"(@Comment [ NewLine ])*"                    json:"comments,omitempty"`
-	Label            string           `parser:"Func @Ident "                               json:"label"`
-	Parameters       []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                   json:"parameters,omitempty"`
-	Return           []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?"           json:"return,omitempty"`
-	Body             []*FuncStatement `parser:"NewLine? '{' ( NewLine? @@ NewLine? )*"     json:"body,omitempty"`
-	TrailingComments []string         `parser:"(@Comment [ NewLine ])* [ NewLine ] '}'"    json:"trailing_comments,omitempty"`
+	Comment    *Comment         `parser:"[ @@ ]"                                                  json:"comment,omitempty"`
+	Label      string           `parser:"Func @Ident "                                            json:"label"`
+	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                                json:"parameters,omitempty"`
+	Return     []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?"                        json:"return,omitempty"`
+	Body       []*FuncStatement `parser:"[ NewLine+ ] '{' ( [ NewLine+ ] @@ [ NewLine+ ] )* '}' " json:"body,omitempty"`
 }
 
 func (n *Func) Clone() *Func {
@@ -22,17 +21,20 @@ func (n *Func) Clone() *Func {
 	}
 
 	return &Func{
-		ASTNode:          n.ASTNode.Clone(),
-		Comments:         cloneStrings(n.Comments),
-		Label:            n.Label,
-		Parameters:       cloneCollection(n.Parameters),
-		Return:           cloneCollection(n.Return),
-		Body:             cloneCollection(n.Body),
-		TrailingComments: cloneStrings(n.TrailingComments),
+		ASTNode:    n.ASTNode.Clone(),
+		Comment:    n.Comment.Clone(),
+		Label:      n.Label,
+		Parameters: cloneCollection(n.Parameters),
+		Return:     cloneCollection(n.Return),
+		Body:       cloneCollection(n.Body),
 	}
 }
 
 func (n *Func) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	for _, item := range n.Parameters {
 		children = append(children, item)
 	}
@@ -50,6 +52,10 @@ func (n *Func) Children() (children []Node) {
 
 func (n Func) String() string {
 	var sb strings.Builder
+
+	if n.Comment != nil {
+		sb.WriteString(n.Comment.String())
+	}
 
 	params := make([]string, 0, len(n.Parameters))
 	for _, p := range n.Parameters {
@@ -128,9 +134,10 @@ func (n FuncParameter) String() string {
 type FuncStatement struct {
 	ASTNode
 
-	Comments []string  `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
-	Decl     *FuncDecl `parser:"(   @@  "  json:"decl,omitempty"`
-	Expr     *Expr     `parser:"  | @@ )"  json:"expr,omitempty"`
+	Comment   *Comment  `parser:"(   @@  "        json:"comment,omitempty"`
+	Decl      *FuncDecl `parser:"  | @@  "        json:"decl,omitempty"`
+	Expr      *Expr     `parser:"  | @@  "        json:"expr,omitempty"`
+	EmptyLine string    `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
 }
 
 func (n *FuncStatement) Clone() *FuncStatement {
@@ -139,14 +146,19 @@ func (n *FuncStatement) Clone() *FuncStatement {
 	}
 
 	return &FuncStatement{
-		ASTNode:  n.ASTNode.Clone(),
-		Comments: cloneStrings(n.Comments),
-		Decl:     n.Decl.Clone(),
-		Expr:     n.Expr.Clone(),
+		ASTNode:   n.ASTNode.Clone(),
+		Comment:   n.Comment.Clone(),
+		Decl:      n.Decl.Clone(),
+		Expr:      n.Expr.Clone(),
+		EmptyLine: n.EmptyLine,
 	}
 }
 
 func (n *FuncStatement) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	if n.Decl != nil {
 		children = append(children, n.Decl)
 	}
@@ -160,10 +172,14 @@ func (n *FuncStatement) Children() (children []Node) {
 
 func (n FuncStatement) String() string {
 	switch {
+	case n.Comment != nil:
+		return n.Comment.String()
 	case n.Decl != nil:
 		return n.Decl.String()
 	case n.Expr != nil:
 		return n.Expr.String()
+	case n.EmptyLine != "":
+		return n.EmptyLine
 	default:
 		return ""
 	}

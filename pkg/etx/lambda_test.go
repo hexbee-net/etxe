@@ -205,6 +205,52 @@ func TestLambda_Parsing(t *testing.T) {
 				),
 			},
 		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+() => 1`[1:],
+			wantErr: false,
+			want: &Lambda{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				Parameters: nil,
+				Expr: *testBuildExprTree[*Expr](t, &Value{
+					ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 7}},
+					Number:  &ValueNumber{big.NewFloat(1), "1"},
+				}),
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+() => 1`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */
+() => 1`[1:],
+			wantErr: false,
+			want: &Lambda{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				Parameters: nil,
+				Expr: *testBuildExprTree[*Expr](t, &Value{
+					ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 7}},
+					Number:  &ValueNumber{big.NewFloat(1), "1"},
+				}),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -244,10 +290,10 @@ func TestLambda_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			Input: &Lambda{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Lambda{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -289,6 +335,16 @@ func TestLambda_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Lambda{},
 			want: []Node{
+				&Expr{},
+			},
+		},
+		{
+			name: "Comment",
+			input: &Lambda{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
 				&Expr{},
 			},
 		},
@@ -367,6 +423,17 @@ func TestLambda_String(t *testing.T) {
 				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 			want: "(foo, bar) => 1",
+		},
+		{
+			name: "Comment",
+			input: &Lambda{
+				Comment:    &Comment{SingleLine: []string{"// foo"}},
+				Parameters: nil,
+				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+			want: `
+// foo
+() => 1`[1:],
 		},
 	}
 

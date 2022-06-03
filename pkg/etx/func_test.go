@@ -305,6 +305,44 @@ def foo() {
 				},
 			},
 		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+def foo() {}`[1:],
+			wantErr: false,
+			want: &Func{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				Label: "foo",
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+def foo() {}`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */
+def foo() {}`[1:],
+			wantErr: false,
+			want: &Func{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				Label: "foo",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -344,19 +382,10 @@ func TestFunc_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			input: &Func{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Func{
-				Comments: []string{"foo"},
-			},
-		},
-		{
-			name: "TrailingComments",
-			input: &Func{
-				TrailingComments: []string{"foo"},
-			},
-			want: &Func{
-				TrailingComments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -428,6 +457,15 @@ func TestFunc_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Func{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &Func{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Label",
@@ -560,6 +598,15 @@ func TestFunc_String(t *testing.T) {
 def foo() {
 	1
 }`[1:],
+		},
+		{
+			name: "Comment",
+			input: &Func{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: `
+// foo
+def () {}`[1:],
 		},
 	}
 
@@ -783,6 +830,30 @@ func TestFuncStatement_Parsing(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name:    "Single-line comment",
+			input:   `// foo`,
+			wantErr: false,
+			want: &FuncStatement{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+			},
+		},
+		{
+			name:    "Multi-line comment",
+			input:   `/* foo */`,
+			wantErr: false,
+			want: &FuncStatement{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */",
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -822,10 +893,10 @@ func TestFuncStatement_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			input: &FuncStatement{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &FuncStatement{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -854,6 +925,15 @@ func TestFuncStatement_Clone(t *testing.T) {
 				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
+		{
+			name: "EmptyLine",
+			input: &FuncStatement{
+				EmptyLine: "\n",
+			},
+			want: &FuncStatement{
+				EmptyLine: "\n",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -875,6 +955,15 @@ func TestFuncStatement_Children(t *testing.T) {
 			name:  "Empty",
 			input: &FuncStatement{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &FuncStatement{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Decl",
@@ -931,6 +1020,13 @@ func TestFuncStatement_String(t *testing.T) {
 			want:  "",
 		},
 		{
+			name: "EmptyLine",
+			input: &FuncStatement{
+				EmptyLine: "\n",
+			},
+			want: "\n",
+		},
+		{
 			name: "Decl",
 			input: &FuncStatement{
 				Decl: &FuncDecl{
@@ -947,6 +1043,13 @@ func TestFuncStatement_String(t *testing.T) {
 				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 			want: "1",
+		},
+		{
+			name: "Comment",
+			input: &FuncStatement{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: "// foo\n",
 		},
 	}
 

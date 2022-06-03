@@ -8,6 +8,8 @@ import (
 )
 
 func TestDecl_Parsing(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name    string
 		input   string
@@ -84,6 +86,46 @@ func TestDecl_Parsing(t *testing.T) {
 				}),
 			},
 		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+const foo`[1:],
+			wantErr: false,
+			want: &Decl{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				DeclType: "const",
+				Label:    "foo",
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+const foo`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */
+const bar`[1:],
+			wantErr: false,
+			want: &Decl{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				DeclType: "const",
+				Label:    "bar",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -123,10 +165,10 @@ func TestDecl_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			input: &Decl{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Decl{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -186,6 +228,15 @@ func TestDecl_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Decl{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &Decl{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "DeclType",
@@ -282,6 +333,17 @@ func TestDecl_String(t *testing.T) {
 				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 			want: "val foo: number = 1",
+		},
+		{
+			name: "Comment",
+			input: &Decl{
+				Comment:  &Comment{SingleLine: []string{"// foo"}},
+				DeclType: "val",
+				Label:    "foo",
+			},
+			want: `
+// foo
+val foo`[1:],
 		},
 	}
 

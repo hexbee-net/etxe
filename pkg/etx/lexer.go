@@ -41,7 +41,6 @@ const (
 	OpComma             = `,`
 	OpDot               = `.`
 
-	TokenNewLine    = "NewLine"
 	TokenWhitespace = "whitespace"
 
 	TokenNull = `null`
@@ -72,6 +71,9 @@ func lexRules() lexer.Rules {
 			lexer.Include(lexerCore),
 		},
 		lexerCore: {
+			{Name: "SingleLineComment", Pattern: `(?:\/\/|#)[^\n]*`},
+			{Name: "MultilineComment", Pattern: `\/\*(.|\n)*?\*\/`},
+
 			{Name: "OpLambda", Pattern: regexp.QuoteMeta(OpLambda)},
 			{Name: "OpLambdaDef", Pattern: regexp.QuoteMeta(OpLambdaDef)},
 
@@ -91,8 +93,6 @@ func lexRules() lexer.Rules {
 			{Name: "Number", Pattern: `(0[xX][0-9a-fA-F_]+|0[bB][01_]*|0[oO][0-7_]*|[0-9_]*\.?[0-9_]+([eE][-+]?[0-9_]+)?)`},
 
 			{Name: "Heredoc", Pattern: `<<[-]?(\w+)\n`, Action: lexer.Push(lexerHeredoc)},
-
-			{Name: "Comment", Pattern: `(?:(?:\/\/|#).*?(\n|$))|\/\*(.|\n)*?\*\/`},
 
 			{Name: `OpComma`, Pattern: regexp.QuoteMeta(OpComma)},
 			{Name: `OpEqual`, Pattern: regexp.QuoteMeta(OpEqual)},
@@ -125,8 +125,8 @@ func lexRules() lexer.Rules {
 
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
 			{Name: "Dot", Pattern: regexp.QuoteMeta(OpDot)},
-			{Name: TokenNewLine, Pattern: `[\r\n]+`},
-			{Name: TokenWhitespace, Pattern: `\s+`},
+			{Name: "NewLine", Pattern: `[\r\n]`},
+			{Name: TokenWhitespace, Pattern: `[\t ]+`},
 		},
 
 		lexerString: {

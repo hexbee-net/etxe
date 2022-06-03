@@ -58,9 +58,9 @@ func (e Expr) String() string {
 type ExprIf struct {
 	ASTNode
 
-	Condition ExprLogicalOr `parser:"If @@ NewLine? '{' NewLine?"           json:"condition"`
-	Left      *Expr         `parser:"@@? NewLine? '}' NewLine?"             json:"left,omitempty"`
-	Right     *Expr         `parser:"[ Else '{' NewLine? @@ NewLine? '}' ]" json:"right,omitempty"`
+	Condition ExprLogicalOr `parser:"If @@ [ NewLine+ ] '{' [ NewLine+ ]"           json:"condition"`
+	Left      *Expr         `parser:"@@? [ NewLine+ ] '}' [ NewLine+ ]"             json:"left,omitempty"`
+	Right     *Expr         `parser:"[ Else '{' [ NewLine+ ] @@ [ NewLine+ ] '}' ]" json:"right,omitempty"`
 }
 
 func (e *ExprIf) Clone() *ExprIf {
@@ -107,8 +107,8 @@ func (e ExprIf) String() string {
 type ExprSwitch struct {
 	ASTNode
 
-	Selector ExprLogicalOr `parser:"Switch @@ NewLine? '{' NewLine?"   json:"selector"`
-	Cases    []*ExprCase   `parser:"(@@ NewLine?)* '}'"                json:"cases,omitempty"`
+	Selector ExprLogicalOr `parser:"Switch @@ [ NewLine+ ] '{' [ NewLine+ ]" json:"selector"`
+	Cases    []*ExprCase   `parser:"(@@ [ NewLine+ ])* '}'"                  json:"cases,omitempty"`
 }
 
 func (e *ExprSwitch) Clone() *ExprSwitch {
@@ -154,9 +154,9 @@ func (e ExprSwitch) String() string {
 type ExprCase struct {
 	ASTNode
 
-	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "         json:"conditions"`
-	Default    bool             `parser:"  | @'default'          ':' )"         json:"default"`
-	Expr       *Expr            `parser:"NewLine? '{' NewLine? @@ NewLine? '}'" json:"expr,omitempty"`
+	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "                     json:"conditions"`
+	Default    bool             `parser:"  | @'default'          ':' )"                     json:"default"`
+	Expr       *Expr            `parser:"[ NewLine+ ] '{' [ NewLine+ ] @@ [ NewLine+ ] '}'" json:"expr,omitempty"`
 }
 
 func (e *ExprCase) Clone() *ExprCase {
@@ -719,7 +719,7 @@ type ExprUnary struct {
 	ASTNode
 
 	Op    string      `parser:"[ @( OpBitwiseNot | OpLogicalNot | OpMinus | OpPlus ) ]" json:"op,omitempty"`
-	Right ExprPostfix `parser:"@@"                                             json:"right"`
+	Right ExprPostfix `parser:"@@"                                                      json:"right"`
 }
 
 func (e *ExprUnary) Clone() *ExprUnary {

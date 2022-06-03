@@ -5,7 +5,7 @@ import (
 )
 
 type Ident struct {
-	Parts []string `parser:"@Ident [('.' @Ident)*]"`
+	Parts []string `parser:"@Ident [('.' @Ident)*]" json:"parts"`
 }
 
 func (i Ident) String() string {

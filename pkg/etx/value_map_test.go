@@ -392,10 +392,10 @@ func TestMapEntry_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			input: &MapEntry{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &MapEntry{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -428,6 +428,17 @@ func TestMapEntry_Children(t *testing.T) {
 			name:  "Empty",
 			input: MapEntry{},
 			want: []Node{
+				&Value{},
+				&Expr{},
+			},
+		},
+		{
+			name: "Comment",
+			input: MapEntry{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
 				&Value{},
 				&Expr{},
 			},
@@ -493,7 +504,24 @@ func TestMapEntry_String(t *testing.T) {
 					Number: &ValueNumber{big.NewFloat(1), `1`},
 				}),
 			},
-			want: `a: 1`,
+			want: `a = 1`,
+		},
+		{
+			name: "Comment",
+			input: &MapEntry{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+				Key: Value{
+					Ident: &Ident{
+						Parts: []string{"a"},
+					},
+				},
+				Value: *testBuildExprTree[*Expr](t, &Value{
+					Number: &ValueNumber{big.NewFloat(1), `1`},
+				}),
+			},
+			want: `
+// foo
+a = 1`[1:],
 		},
 	}
 

@@ -8,7 +8,7 @@ import (
 type Lambda struct {
 	ASTNode
 
-	Comments   []string           `parser:"(@Comment [ NewLine ])*"           json:"comments,omitempty"`
+	Comment    *Comment           `parser:"[ @@ ]"                            json:"comment,omitempty"`
 	Parameters []*LambdaParameter `parser:"'(' [ @@ (',' @@)* ] ')' OpLambda" json:"parameters"`
 	Expr       Expr               `parser:"@@"                                json:"expr"`
 }
@@ -20,13 +20,17 @@ func (n *Lambda) Clone() *Lambda {
 
 	return &Lambda{
 		ASTNode:    n.ASTNode.Clone(),
-		Comments:   cloneStrings(n.Comments),
+		Comment:    n.Comment.Clone(),
 		Parameters: cloneCollection(n.Parameters),
 		Expr:       *n.Expr.Clone(),
 	}
 }
 
 func (n *Lambda) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	for _, item := range n.Parameters {
 		children = append(children, item)
 	}
@@ -37,12 +41,20 @@ func (n *Lambda) Children() (children []Node) {
 }
 
 func (n Lambda) String() string {
+	var sb strings.Builder
+
+	if n.Comment != nil {
+		sb.WriteString(n.Comment.String())
+	}
+
 	params := make([]string, 0, len(n.Parameters))
 	for _, p := range n.Parameters {
 		params = append(params, p.String())
 	}
 
-	return fmt.Sprintf("(%s) %s %s", strings.Join(params, ", "), OpLambda, n.Expr.String())
+	mustFprintf(&sb, "(%s) %s %s", strings.Join(params, ", "), OpLambda, n.Expr.String())
+
+	return sb.String()
 }
 
 // /////////////////////////////////////

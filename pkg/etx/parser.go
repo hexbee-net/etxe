@@ -3,9 +3,6 @@ package etx
 import (
 	"fmt"
 	"io"
-	"regexp"
-	"strconv"
-	"strings"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
@@ -15,18 +12,9 @@ const (
 	parserLookahead = 50
 )
 
-var (
-	stripCommentRe = regexp.MustCompile(`^//\s*|^/\*|\*/$`)
-)
-
 func parser() *participle.Parser {
 	return participle.MustBuild(&AST{},
 		participle.Lexer(lexer.MustStateful(lexRules())),
-		participle.Elide(TokenWhitespace),
-		participle.Map(unquoteString, "String"),
-		participle.Map(cleanHeredocStart, "Heredoc"),
-		participle.Map(stripComment, "Comment"),
-		// We need lookahead to ensure prefixed comments are associated with the right nodes.
 		participle.UseLookahead(parserLookahead))
 }
 
@@ -58,30 +46,4 @@ func ParseBytes(data []byte) (*AST, error) {
 	}
 
 	return etx, AddParentRefs(etx)
-}
-
-func unquoteString(token lexer.Token) (lexer.Token, error) {
-	if token.Value[0] == '\'' {
-		token.Value = "\"" + strings.ReplaceAll(token.Value[1:len(token.Value)-1], "\"", "\\\"") + "\""
-	}
-
-	var err error
-	token.Value, err = strconv.Unquote(token.Value)
-	if err != nil {
-		return token, fmt.Errorf("%s: %w", token.Pos, err)
-	}
-
-	return token, nil
-}
-
-func cleanHeredocStart(token lexer.Token) (lexer.Token, error) {
-	token.Value = token.Value[2:]
-
-	return token, nil
-}
-
-func stripComment(token lexer.Token) (lexer.Token, error) {
-	token.Value = stripCommentRe.ReplaceAllString(token.Value, "")
-
-	return token, nil
 }

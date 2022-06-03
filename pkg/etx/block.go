@@ -8,11 +8,10 @@ import (
 type Block struct {
 	ASTNode
 
-	Comments         []string     `parser:"(@Comment [ NewLine ])*"                  json:"comments,omitempty"`
-	Name             string       `parser:"@Ident"                                   json:"name"`
-	Labels           []string     `parser:"((String @Char StringEnd) | @Ident)* '{'" json:"labels,omitempty"`
-	Body             []*BlockItem `parser:"(NewLine @@)*"                            json:"body"`
-	TrailingComments []string     `parser:"(@Comment [ NewLine ])* [ NewLine ] '}' " json:"trailing_comments,omitempty"`
+	Comment *Comment     `parser:"[ @@ ]"                                    json:"comment,omitempty"`
+	Name    string       `parser:"@Ident"                                    json:"name"`
+	Labels  []string     `parser:"((String @Char StringEnd) | @Ident)* '{'"  json:"labels,omitempty"`
+	Body    []*BlockItem `parser:"(NewLine+ @@)* [ NewLine ] '}'"            json:"body"`
 }
 
 func (n *Block) Clone() *Block {
@@ -21,16 +20,19 @@ func (n *Block) Clone() *Block {
 	}
 
 	return &Block{
-		ASTNode:          n.ASTNode.Clone(),
-		Comments:         cloneStrings(n.Comments),
-		Name:             n.Name,
-		Labels:           cloneStrings(n.Labels),
-		Body:             cloneCollection(n.Body),
-		TrailingComments: cloneStrings(n.TrailingComments),
+		ASTNode: n.ASTNode.Clone(),
+		Comment: n.Comment.Clone(),
+		Name:    n.Name,
+		Labels:  cloneStrings(n.Labels),
+		Body:    cloneCollection(n.Body),
 	}
 }
 
 func (n *Block) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	for _, item := range n.Body {
 		children = append(children, item)
 	}
@@ -44,6 +46,10 @@ func (n Block) String() string {
 	}
 
 	var sb strings.Builder
+
+	if n.Comment != nil {
+		sb.WriteString(n.Comment.String())
+	}
 
 	sb.WriteString(n.Name)
 
@@ -72,8 +78,10 @@ func (n Block) String() string {
 type BlockItem struct {
 	ASTNode
 
-	Block     *Block     `parser:"(   @@  " json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@ )" json:"attribute,omitempty"`
+	Block     *Block     `parser:"(   @@  "        json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@  "        json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@  "        json:"comment,omitempty"`
+	EmptyLine string     `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
 }
 
 func (n *BlockItem) Clone() *BlockItem {
@@ -85,10 +93,16 @@ func (n *BlockItem) Clone() *BlockItem {
 		ASTNode:   n.ASTNode.Clone(),
 		Block:     n.Block.Clone(),
 		Attribute: n.Attribute.Clone(),
+		Comment:   n.Comment.Clone(),
+		EmptyLine: n.EmptyLine,
 	}
 }
 
 func (n *BlockItem) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	if n.Block != nil {
 		children = append(children, n.Block)
 	}
@@ -101,12 +115,19 @@ func (n *BlockItem) Children() (children []Node) {
 }
 
 func (n BlockItem) String() string {
+	var sb strings.Builder
+
+	if n.Comment != nil {
+		sb.WriteString(n.Comment.String())
+	}
+
 	switch {
 	case n.Block != nil:
-		return n.Block.String()
+		sb.WriteString(n.Block.String())
 	case n.Attribute != nil:
-		return n.Attribute.String()
+		sb.WriteString(n.Attribute.String())
 	default:
-		return ""
 	}
+
+	return sb.String()
 }

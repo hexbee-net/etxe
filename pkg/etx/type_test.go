@@ -99,6 +99,52 @@ type foo object {
 				},
 			},
 		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+type foo enum {}`[1:],
+			wantErr: false,
+			want: &Type{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				Label: "foo",
+				Enum: &TypeEnum{
+					ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 2, Column: 16}},
+				},
+				Object: nil,
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+type foo enum {}`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Single-line comment",
+			input: `
+/* foo */
+type foo enum {}`[1:],
+			wantErr: false,
+			want: &Type{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				Label: "foo",
+				Enum: &TypeEnum{
+					ASTNode: ASTNode{Pos: Position{Offset: 25, Line: 2, Column: 16}},
+				},
+				Object: nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -138,19 +184,10 @@ func TestType_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			Input: &Type{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Type{
-				Comments: []string{"foo"},
-			},
-		},
-		{
-			name: "TrailingComments",
-			Input: &Type{
-				TrailingComments: []string{"foo"},
-			},
-			want: &Type{
-				TrailingComments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -201,6 +238,15 @@ func TestType_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Type{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &Type{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Label",
@@ -291,6 +337,26 @@ type foo object {
 	bar: number
 }`[1:],
 		},
+		{
+			name: "Comment",
+			input: &Type{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+				Label:   "bar",
+				Enum: &TypeEnum{
+					Items: []*TypeEnumItem{
+						{
+							Label: "baz",
+							Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+						},
+					},
+				},
+			},
+			want: `
+// foo
+type bar enum {
+	baz: 1
+}`[1:],
+		},
 	}
 
 	for _, tt := range tests {
@@ -366,7 +432,8 @@ bar: 2`,
 					},
 				},
 			},
-		}}
+		},
+	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -522,7 +589,7 @@ func TestTypeEnumItem_Parsing(t *testing.T) {
 		want    *TypeEnumItem
 	}{
 		{
-			name:    "",
+			name:    "Value",
 			input:   "foo: 1",
 			wantErr: false,
 			want: &TypeEnumItem{
@@ -532,6 +599,32 @@ func TestTypeEnumItem_Parsing(t *testing.T) {
 					ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 					Number:  &ValueNumber{big.NewFloat(1), "1"},
 				}),
+			},
+		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo`[1:],
+			wantErr: false,
+			want: &TypeEnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+			},
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */`[1:],
+			wantErr: false,
+			want: &TypeEnumItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */",
+				},
 			},
 		},
 	}
@@ -562,6 +655,15 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 			want:  &TypeEnumItem{},
 		},
 		{
+			name: "EmptyLine",
+			Input: &TypeEnumItem{
+				EmptyLine: "\n",
+			},
+			want: &TypeEnumItem{
+				EmptyLine: "\n",
+			},
+		},
+		{
 			name: "ASTNode",
 			Input: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
@@ -573,10 +675,10 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			Input: &TypeEnumItem{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &TypeEnumItem{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -618,6 +720,16 @@ func TestTypeEnumItem_Children(t *testing.T) {
 			name:  "Empty",
 			input: &TypeEnumItem{},
 			want: []Node{
+				&Expr{},
+			},
+		},
+		{
+			name: "Comment",
+			input: &TypeEnumItem{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
 				&Expr{},
 			},
 		},
@@ -678,6 +790,13 @@ func TestTypeEnumItem_String(t *testing.T) {
 				Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 			want: "foo: 1",
+		},
+		{
+			name: "Comment",
+			input: &TypeEnumItem{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: "// foo\n",
 		},
 	}
 
@@ -923,7 +1042,7 @@ func TestTypeObjectItem_Parsing(t *testing.T) {
 		want    *TypeObjectItem
 	}{
 		{
-			name:    "",
+			name:    "Item",
 			input:   "foo: number",
 			wantErr: false,
 			want: &TypeObjectItem{
@@ -936,6 +1055,32 @@ func TestTypeObjectItem_Parsing(t *testing.T) {
 							"number",
 						},
 					},
+				},
+			},
+		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo`[1:],
+			wantErr: false,
+			want: &TypeObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+			},
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */`[1:],
+			wantErr: false,
+			want: &TypeObjectItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */",
 				},
 			},
 		},
@@ -967,6 +1112,15 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 			want:  &TypeObjectItem{},
 		},
 		{
+			name: "EmptyLine",
+			Input: &TypeObjectItem{
+				EmptyLine: "\n",
+			},
+			want: &TypeObjectItem{
+				EmptyLine: "\n",
+			},
+		},
+		{
 			name: "ASTNode",
 			Input: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
@@ -978,10 +1132,10 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			Input: &TypeObjectItem{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &TypeObjectItem{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -1023,6 +1177,16 @@ func TestTypeObjectItem_Children(t *testing.T) {
 			name:  "Empty",
 			input: &TypeObjectItem{},
 			want: []Node{
+				&ParameterType{},
+			},
+		},
+		{
+			name: "Comment",
+			input: &TypeObjectItem{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
 				&ParameterType{},
 			},
 		},
@@ -1089,6 +1253,13 @@ func TestTypeObjectItem_String(t *testing.T) {
 				},
 			},
 			want: "foo: bar",
+		},
+		{
+			name: "Comment",
+			input: &TypeObjectItem{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: "// foo\n",
 		},
 	}
 

@@ -3,14 +3,16 @@ package etx
 import (
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestCommentNode_Parsing(t *testing.T) {
+func TestComment_Parsing(t *testing.T) {
 	t.Parallel()
 
 	type TestStruct struct {
-		Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
-		Value    *Expr    `parser:"[ @@ ]"`
+		Comments []*Comment `parser:"(@@ [NewLine+])*" json:"comments,omitempty"`
+		Value    *Expr      `parser:"[ @@ ]"`
 	}
 	tests := []struct {
 		name    string
@@ -19,79 +21,163 @@ func TestCommentNode_Parsing(t *testing.T) {
 		want    *TestStruct
 	}{
 		{
-			name: "None",
-			input: `
-1`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "2"}}),
-			},
-		},
-
-		{
-			name: "One slashed",
+			name: "One double-slash",
 			input: `
 // foo`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"// foo"},
-				Value:    nil,
+				Comments: []*Comment{
+					{
+						ASTNode:    ASTNode{},
+						SingleLine: []string{"// foo"},
+					},
+				},
 			},
 		},
 		{
-			name: "One slashed before value",
+			name: "One double-slash - new line",
 			input: `
 // foo
-1`[1:],
+`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"// foo\n"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Comments: []*Comment{
+					{
+						ASTNode:    ASTNode{},
+						SingleLine: []string{"// foo"},
+					},
+				},
 			},
 		},
-		{
-			name: "Two slashed",
-			input: `
-// foo
-// bar`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Comments: []string{"// foo\n", "// bar"},
-				Value:    nil,
-			},
-		},
-		{
-			name: "Two slashed before value",
-			input: `
-// foo
-// bar
-1`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Comments: []string{"// foo\n", "// bar\n"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
-			},
-		},
-
 		{
 			name: "One hashtag",
 			input: `
 # foo`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"# foo"},
-				Value:    nil,
+				Comments: []*Comment{
+					{
+						ASTNode:    ASTNode{},
+						SingleLine: []string{"# foo"},
+					},
+				},
+			},
+		},
+
+		{
+			name: "Two double-slash",
+			input: `
+// foo
+// bar
+		`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode: ASTNode{},
+						SingleLine: []string{
+							"// foo",
+							"// bar",
+						},
+					},
+				},
 			},
 		},
 		{
 			name: "Two hashtags",
 			input: `
 # foo
-# bar`[1:],
+# bar
+		`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"# foo\n", "# bar"},
-				Value:    nil,
+				Comments: []*Comment{
+					{
+						ASTNode: ASTNode{},
+						SingleLine: []string{
+							"# foo",
+							"# bar",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Double-slash hashtags mix",
+			input: `
+// foo
+# bar
+		`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode: ASTNode{},
+						SingleLine: []string{
+							"// foo",
+							"# bar",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Two separated double-slash",
+			input: `
+// foo
+
+// bar
+		`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode: ASTNode{},
+						SingleLine: []string{
+							"// foo",
+						},
+					},
+					{
+						ASTNode: ASTNode{},
+						SingleLine: []string{
+							"// bar",
+						},
+					},
+				},
+			},
+		},
+
+		{
+			name: "One double-slash before value",
+			input: `
+// foo
+1`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode:    ASTNode{},
+						SingleLine: []string{"// foo"},
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+			},
+		},
+		{
+			name: "Two double-slash before value",
+			input: `
+// foo
+// bar
+1`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode:    ASTNode{},
+						SingleLine: []string{"// foo", "// bar"},
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
 
@@ -101,29 +187,12 @@ func TestCommentNode_Parsing(t *testing.T) {
 /* foo */`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo */"},
-				Value:    nil,
-			},
-		},
-		{
-			name: "Two multilines - one line",
-			input: `
-/* foo */ /* bar */`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Comments: []string{"/* foo */", "/* bar */"},
-				Value:    nil,
-			},
-		},
-		{
-			name: "Two multilines - two line",
-			input: `
-/* foo */
-/* bar */`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Comments: []string{"/* foo */", "/* bar */"},
-				Value:    nil,
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo */",
+					},
+				},
 			},
 		},
 		{
@@ -133,52 +202,115 @@ func TestCommentNode_Parsing(t *testing.T) {
    bar */`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo\n   bar */"},
-				Value:    nil,
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo\n   bar */",
+					},
+				},
 			},
 		},
 		{
-			name: "One multiline - one line - with value on same line",
+			name: "Two multilines - one line",
+			input: `
+/* foo */ /* bar */`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo */",
+					},
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* bar */",
+					},
+				},
+			},
+		},
+		{
+			name: "Two multilines - two line",
+			input: `
+/* foo */
+/* bar */
+`[1:],
+			wantErr: false,
+			want: &TestStruct{
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo */\n",
+					},
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* bar */\n",
+					},
+				},
+			},
+		},
+
+		{
+			name: "One multiline - one line - with expr on same line",
 			input: `
 /* foo */ 1`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo */"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo */",
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
 		{
-			name: "One multiline - two lines - with value on same line",
+			name: "One multiline - two lines - with expr on same line",
 			input: `
 /* foo
    bar */ 1`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo\n   bar */"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo\n   bar */",
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
 		{
-			name: "One multiline - one line - with value on new line",
+			name: "One multiline - one line - with expr on new line",
 			input: `
 /* foo */
 1`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo */"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo */\n",
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
 		{
-			name: "One multiline - two lines - with value on new line",
+			name: "One multiline - two lines - with expr on new line",
 			input: `
 /* foo
    bar */
 1`[1:],
 			wantErr: false,
 			want: &TestStruct{
-				Comments: []string{"/* foo\n   bar */"},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Comments: []*Comment{
+					{
+						ASTNode:   ASTNode{},
+						Multiline: "/* foo\n   bar */\n",
+					},
+				},
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
 			},
 		},
 	}
@@ -186,6 +318,145 @@ func TestCommentNode_Parsing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			testParser(t, tt.input, tt.want, tt.wantErr, false)
+		})
+	}
+}
+
+func TestComment_Clone(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Comment
+		want  *Comment
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &Comment{},
+			want:  &Comment{},
+		},
+		{
+			name: "ASTNode",
+			input: &Comment{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Comment{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "SingleLine",
+			input: &Comment{
+				SingleLine: []string{"foo"},
+			},
+			want: &Comment{
+				SingleLine: []string{"foo"},
+			},
+		},
+		{
+			name: "Multiline",
+			input: &Comment{
+				Multiline: "foo",
+			},
+			want: &Comment{
+				Multiline: "foo",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*Comment](t, tt.want, tt.input.Clone())
+		})
+	}
+}
+
+func TestComment_Children(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input *Comment
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: &Comment{},
+			want:  nil,
+		},
+		{
+			name: "SingleLine",
+			input: &Comment{
+				SingleLine: []string{"foo"},
+			},
+			want: nil,
+		},
+		{
+			name: "Multiline",
+			input: &Comment{
+				Multiline: "foo",
+			},
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestComment_String(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		input     *Comment
+		wantPanic bool
+		want      string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name:  "Empty",
+			input: &Comment{},
+			want:  "",
+		},
+		{
+			name: "One SingleLine",
+			input: &Comment{
+				SingleLine: []string{"// foo"},
+			},
+			want: "// foo\n",
+		},
+		{
+			name: "Two SingleLine",
+			input: &Comment{
+				SingleLine: []string{"// foo", "# bar"},
+			},
+			want: "// foo\n# bar\n",
+		},
+		{
+			name: "One MultiLine",
+			input: &Comment{
+				Multiline: "/* foo */",
+			},
+			want: "/* foo */",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
 		})
 	}
 }

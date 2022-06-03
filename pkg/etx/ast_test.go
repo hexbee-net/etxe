@@ -352,22 +352,6 @@ func TestRootItem_Parsing(t *testing.T) {
 		want    *RootItem
 	}{
 		{
-			name:    "Attribute",
-			input:   "foo = 1",
-			wantErr: false,
-			want: &RootItem{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Attribute: &Attribute{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Key:     "foo",
-					Value: testBuildExprTree[*Expr](t, &Value{
-						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-						Number:  &ValueNumber{big.NewFloat(1), "1"},
-					}),
-				},
-			},
-		},
-		{
 			name:    "Decl",
 			input:   "val foo",
 			wantErr: false,
@@ -419,6 +403,44 @@ func TestRootItem_Parsing(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "Attribute",
+			input:   "foo = 1",
+			wantErr: false,
+			want: &RootItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Attribute: &Attribute{
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Key:     "foo",
+					Value: testBuildExprTree[*Expr](t, &Value{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+						Number:  &ValueNumber{big.NewFloat(1), "1"},
+					}),
+				},
+			},
+		},
+		{
+			name:    "Single-line Comment",
+			input:   "// foo",
+			wantErr: false,
+			want: &RootItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+			},
+		},
+		{
+			name: "EmptyLine",
+			input: `
+`,
+			wantErr: false,
+			want: &RootItem{
+				ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				EmptyLine: "\n",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -456,24 +478,6 @@ func TestRootItem_Clone(t *testing.T) {
 			},
 		},
 		{
-			name: "Comments",
-			input: &RootItem{
-				Comments: []string{"foo"},
-			},
-			want: &RootItem{
-				Comments: []string{"foo"},
-			},
-		},
-		{
-			name: "Attribute",
-			input: &RootItem{
-				Attribute: &Attribute{},
-			},
-			want: &RootItem{
-				Attribute: &Attribute{},
-			},
-		},
-		{
 			name: "Decl",
 			input: &RootItem{
 				Decl: &Decl{},
@@ -509,6 +513,39 @@ func TestRootItem_Clone(t *testing.T) {
 				Block: &Block{},
 			},
 		},
+		{
+			name: "Attribute",
+			input: &RootItem{
+				Attribute: &Attribute{},
+			},
+			want: &RootItem{
+				Attribute: &Attribute{},
+			},
+		},
+		{
+			name: "Comment",
+			input: &RootItem{
+				Comment: &Comment{
+					ASTNode:   ASTNode{},
+					Multiline: "foo",
+				},
+			},
+			want: &RootItem{
+				Comment: &Comment{
+					ASTNode:   ASTNode{},
+					Multiline: "foo",
+				},
+			},
+		},
+		{
+			name: "EmptyLine",
+			input: &RootItem{
+				EmptyLine: "\n",
+			},
+			want: &RootItem{
+				EmptyLine: "\n",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -530,15 +567,6 @@ func TestRootItem_Children(t *testing.T) {
 			name:  "Empty",
 			input: &RootItem{},
 			want:  nil,
-		},
-		{
-			name: "Attribute",
-			input: &RootItem{
-				Attribute: &Attribute{},
-			},
-			want: []Node{
-				&Attribute{},
-			},
 		},
 		{
 			name: "Decl",
@@ -576,6 +604,31 @@ func TestRootItem_Children(t *testing.T) {
 				&Block{},
 			},
 		},
+		{
+			name: "Attribute",
+			input: &RootItem{
+				Attribute: &Attribute{},
+			},
+			want: []Node{
+				&Attribute{},
+			},
+		},
+		{
+			name: "Comment",
+			input: &RootItem{
+				Comment: &Comment{},
+			},
+			want: []Node{
+				&Comment{},
+			},
+		},
+		{
+			name: "EmptyLine",
+			input: &RootItem{
+				EmptyLine: "\n",
+			},
+			want: nil,
+		},
 	}
 
 	for _, tt := range tests {
@@ -603,16 +656,6 @@ func TestRootItem_String(t *testing.T) {
 			name:      "Empty",
 			input:     &RootItem{},
 			wantPanic: true,
-		},
-		{
-			name: "Attribute",
-			input: &RootItem{
-				Attribute: &Attribute{
-					Key:   "foo",
-					Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
-				},
-			},
-			want: "foo: 1",
 		},
 		{
 			name: "Decl",
@@ -651,6 +694,30 @@ func TestRootItem_String(t *testing.T) {
 				},
 			},
 			want: "foo {}",
+		},
+		{
+			name: "Attribute",
+			input: &RootItem{
+				Attribute: &Attribute{
+					Key:   "foo",
+					Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				},
+			},
+			want: "foo: 1",
+		},
+		{
+			name: "Comment",
+			input: &RootItem{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: "// foo\n",
+		},
+		{
+			name: "EmptyLine",
+			input: &RootItem{
+				EmptyLine: "\n",
+			},
+			want: "\n",
 		},
 	}
 

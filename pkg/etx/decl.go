@@ -11,7 +11,7 @@ import (
 type Decl struct {
 	ASTNode
 
-	Comments []string       `parser:"(@Comment [ NewLine ])*"         json:"comments,omitempty"`
+	Comment  *Comment       `parser:"[ @@ ]"                          json:"comment,omitempty"`
 	DeclType string         `parser:"@(Input | Output | Const | Val)" json:"decl_type"`
 	Label    string         `parser:"@Ident"                          json:"label"`
 	Type     *ParameterType `parser:"[':' @@]"                        json:"type,omitempty"`
@@ -25,7 +25,7 @@ func (n *Decl) Clone() *Decl {
 
 	return &Decl{
 		ASTNode:  n.ASTNode.Clone(),
-		Comments: cloneStrings(n.Comments),
+		Comment:  n.Comment.Clone(),
 		DeclType: n.DeclType,
 		Label:    n.Label,
 		Type:     n.Type.Clone(),
@@ -34,6 +34,10 @@ func (n *Decl) Clone() *Decl {
 }
 
 func (n *Decl) Children() (children []Node) {
+	if n.Comment != nil {
+		children = append(children, n.Comment)
+	}
+
 	if n.Type != nil {
 		children = append(children, n.Type)
 	}
@@ -48,8 +52,12 @@ func (n *Decl) Children() (children []Node) {
 func (n Decl) String() string {
 	var sb strings.Builder
 
+	if n.Comment != nil {
+		sb.WriteString(n.Comment.String())
+	}
+
 	if n.Label == "" {
-		return ""
+		return sb.String()
 	}
 
 	mustFprintf(&sb, "%v %v", n.DeclType, n.Label)

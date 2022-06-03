@@ -133,6 +133,45 @@ foo bar {
 				},
 			},
 		},
+
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+bar { }`[1:],
+			wantErr: false,
+			want: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				Name: "bar",
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+bar { }`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */
+bar { }`[1:],
+			wantErr: false,
+			want: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				Name: "bar",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -170,21 +209,12 @@ func TestBlock_Clone(t *testing.T) {
 			},
 		},
 		{
-			name: "Comments",
+			name: "Comment",
 			input: &Block{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Block{
-				Comments: []string{"foo"},
-			},
-		},
-		{
-			name: "TrailingComments",
-			input: &Block{
-				TrailingComments: []string{"foo"},
-			},
-			want: &Block{
-				TrailingComments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -239,6 +269,15 @@ func TestBlock_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Block{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &Block{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Name",
@@ -322,6 +361,16 @@ func TestBlock_String(t *testing.T) {
 resource {
 	foo
 }`[1:],
+		},
+		{
+			name: "Comment",
+			input: &Block{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+				Name:    "resource",
+			},
+			want: `
+// foo
+resource {}`[1:],
 		},
 	}
 
@@ -450,6 +499,19 @@ func TestBlockItem_Parsing(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			name:    "Comment",
+			input:   "// foo",
+			wantErr: false,
+			want: &BlockItem{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -484,6 +546,15 @@ func TestBlockItem_Clone(t *testing.T) {
 			},
 			want: &BlockItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Comment",
+			input: &BlockItem{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: &BlockItem{
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -525,6 +596,15 @@ func TestBlockItem_Children(t *testing.T) {
 			name:  "Empty",
 			input: &BlockItem{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &BlockItem{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Attribute",
@@ -585,6 +665,13 @@ func TestBlockItem_String(t *testing.T) {
 				Block: &Block{Name: "resource"},
 			},
 			want: Block{Name: "resource"}.String(),
+		},
+		{
+			name: "Comment",
+			input: &BlockItem{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+			},
+			want: "// foo\n",
 		},
 	}
 

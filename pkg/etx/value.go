@@ -19,15 +19,15 @@ var (
 type Value struct {
 	ASTNode
 
-	Comments []string     `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
-	Null     bool         `parser:"(  @'null'"               json:"null,omitempty"`
-	Bool     *ValueBool   `parser:" | @('true' | 'false')"   json:"bool,omitempty"`
-	Number   *ValueNumber `parser:" | @Number"               json:"number,omitempty"`
-	Str      *ValueString `parser:" | @@"                    json:"str,omitempty"`
-	Ident    *Ident       `parser:" | @@"                    json:"ident,omitempty"`
-	Heredoc  *Heredoc     `parser:" | @@"                    json:"heredoc,omitempty"`
-	List     *ValueList   `parser:" | @@"                    json:"list,omitempty"`
-	Map      *ValueMap    `parser:" | @@ )"                  json:"map,omitempty"`
+	Comment *Comment     `parser:"[ @@ ]"                 json:"comment,omitempty"`
+	Null    bool         `parser:"(  @'null'"             json:"null,omitempty"`
+	Bool    *ValueBool   `parser:" | @('true' | 'false')" json:"bool,omitempty"`
+	Number  *ValueNumber `parser:" | @Number"             json:"number,omitempty"`
+	Str     *ValueString `parser:" | @@"                  json:"str,omitempty"`
+	Ident   *Ident       `parser:" | @@"                  json:"ident,omitempty"`
+	Heredoc *Heredoc     `parser:" | @@"                  json:"heredoc,omitempty"`
+	List    *ValueList   `parser:" | @@"                  json:"list,omitempty"`
+	Map     *ValueMap    `parser:" | @@ )"                json:"map,omitempty"`
 }
 
 func (v *Value) Clone() *Value {
@@ -36,16 +36,16 @@ func (v *Value) Clone() *Value {
 	}
 
 	out := Value{
-		ASTNode:  v.ASTNode.Clone(),
-		Comments: cloneStrings(v.Comments),
-		Null:     v.Null,
-		Bool:     v.Bool.Clone(),
-		Number:   v.Number.Clone(),
-		Str:      v.Str.Clone(),
-		Ident:    v.Ident.Clone(),
-		Heredoc:  v.Heredoc.Clone(),
-		List:     v.List.Clone(),
-		Map:      v.Map.Clone(),
+		ASTNode: v.ASTNode.Clone(),
+		Comment: v.Comment.Clone(),
+		Null:    v.Null,
+		Bool:    v.Bool.Clone(),
+		Number:  v.Number.Clone(),
+		Str:     v.Str.Clone(),
+		Ident:   v.Ident.Clone(),
+		Heredoc: v.Heredoc.Clone(),
+		List:    v.List.Clone(),
+		Map:     v.Map.Clone(),
 	}
 
 	if v.Heredoc != nil {
@@ -57,6 +57,10 @@ func (v *Value) Clone() *Value {
 }
 
 func (v *Value) Children() (children []Node) {
+	if v.Comment != nil {
+		children = append(children, v.Comment)
+	}
+
 	if v.Bool != nil {
 		children = append(children, v.Bool)
 	}
@@ -89,34 +93,42 @@ func (v *Value) Children() (children []Node) {
 }
 
 func (v Value) String() string {
+	var sb strings.Builder
+
+	if v.Comment != nil {
+		sb.WriteString(v.Comment.String())
+	}
+
 	switch {
 	case v.Null == true:
-		return "null"
+		sb.WriteString("null")
 
 	case v.Bool != nil:
-		return fmt.Sprintf("%v", *v.Bool)
+		mustFprintf(&sb, "%v", *v.Bool)
 
 	case v.Number != nil:
-		return v.Number.String()
+		sb.WriteString(v.Number.String())
 
 	case v.Str != nil:
-		return v.Str.String()
+		sb.WriteString(v.Str.String())
 
 	case v.Ident != nil:
-		return v.Ident.String()
+		sb.WriteString(v.Ident.String())
 
 	case v.Heredoc != nil:
-		return v.Heredoc.String()
+		sb.WriteString(v.Heredoc.String())
 
 	case v.List != nil:
-		return v.List.String()
+		sb.WriteString(v.List.String())
 
 	case v.Map != nil:
-		return v.Map.String()
+		sb.WriteString(v.Map.String())
 
 	default:
 		panic(repr.String(v, repr.Hide(lexer.Position{})))
 	}
+
+	return sb.String()
 }
 
 // /////////////////////////////////////
@@ -428,7 +440,7 @@ func (f StringFragment) String() string {
 type ValueList struct {
 	ASTNode
 
-	Items []*Expr `parser:"'[' NewLine? [ @@ ( NewLine? ',' NewLine? @@? )* ','? ] NewLine? ']'"   json:"items,omitempty"`
+	Items []*Expr `parser:"'[' [ NewLine+ ] [ @@ ( [ NewLine+ ] ',' [ NewLine+ ] @@? )* ','? ] [ NewLine+ ] ']'"   json:"items,omitempty"`
 }
 
 func (v *ValueList) Clone() *ValueList {
@@ -473,7 +485,7 @@ func (v ValueList) String() string {
 type ValueMap struct {
 	ASTNode
 
-	Entries []*MapEntry `parser:"'{' NewLine? [ @@ ( NewLine? ',' NewLine? @@? )* ','? ] NewLine? '}'" json:"entries,omitempty"`
+	Entries []*MapEntry `parser:"'{' [ NewLine+ ] [ @@ ( [ NewLine+ ] ',' [ NewLine+ ] @@? )* ','? ] [ NewLine+ ] '}'" json:"entries,omitempty"`
 }
 
 func (v *ValueMap) Clone() *ValueMap {
@@ -517,9 +529,9 @@ func (v ValueMap) String() string {
 type MapEntry struct {
 	ASTNode
 
-	Comments []string `parser:"(@Comment [ NewLine ])*" json:"comments,omitempty"`
-	Key      Value    `parser:"@@ '='"    json:"key"`
-	Value    Expr     `parser:"@@"        json:"value"`
+	Comment *Comment `parser:"[ @@ ]"    json:"comment,omitempty"`
+	Key     Value    `parser:"@@ '='"    json:"key"`
+	Value   Expr     `parser:"@@"        json:"value"`
 }
 
 func (v *MapEntry) Clone() *MapEntry {
@@ -528,14 +540,18 @@ func (v *MapEntry) Clone() *MapEntry {
 	}
 
 	return &MapEntry{
-		ASTNode:  v.ASTNode.Clone(),
-		Comments: cloneStrings(v.Comments),
-		Key:      *v.Key.Clone(),
-		Value:    *v.Value.Clone(),
+		ASTNode: v.ASTNode.Clone(),
+		Comment: v.Comment.Clone(),
+		Key:     *v.Key.Clone(),
+		Value:   *v.Value.Clone(),
 	}
 }
 
 func (v *MapEntry) Children() (children []Node) {
+	if v.Comment != nil {
+		children = append(children, v.Comment)
+	}
+
 	children = append(children, &v.Key)
 	children = append(children, &v.Value)
 
@@ -543,5 +559,13 @@ func (v *MapEntry) Children() (children []Node) {
 }
 
 func (v MapEntry) String() string {
-	return fmt.Sprintf("%v: %v", v.Key, v.Value)
+	var sb strings.Builder
+
+	if v.Comment != nil {
+		sb.WriteString(v.Comment.String())
+	}
+
+	mustFprintf(&sb, "%v = %v", v.Key, v.Value)
+
+	return sb.String()
 }

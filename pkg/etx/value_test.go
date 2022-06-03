@@ -227,6 +227,44 @@ FOO`[1:],
 				},
 			},
 		},
+		{
+			name: "Single-line comment",
+			input: `
+// foo
+null`[1:],
+			wantErr: false,
+			want: &Value{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					SingleLine: []string{"// foo"},
+				},
+				Null: true,
+			},
+		},
+		{
+			name: "Single-line comment - separated",
+			input: `
+// foo
+
+null`[1:],
+			wantErr: true,
+		},
+		{
+			name: "Multi-line comment",
+			input: `
+/* foo */
+null`[1:],
+			wantErr: false,
+			want: &Value{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Comment: &Comment{
+					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Multiline: "/* foo */\n",
+				},
+				Null: true,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -257,10 +295,10 @@ func TestValue_Clone(t *testing.T) {
 		{
 			name: "Comments",
 			input: &Value{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Value{
-				Comments: []string{"foo"},
+				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -393,6 +431,15 @@ func TestValue_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Value{},
 			want:  nil,
+		},
+		{
+			name: "Comment",
+			input: &Value{
+				Comment: &Comment{Multiline: "foo"},
+			},
+			want: []Node{
+				&Comment{Multiline: "foo"},
+			},
 		},
 		{
 			name: "Bool Value",
@@ -600,6 +647,17 @@ FOO`[1:],
 				},
 			},
 			want: "{}",
+		},
+
+		{
+			name: "Comment",
+			input: &Value{
+				Comment: &Comment{SingleLine: []string{"// foo"}},
+				Null:    true,
+			},
+			want: `
+// foo
+null`[1:],
 		},
 	}
 
