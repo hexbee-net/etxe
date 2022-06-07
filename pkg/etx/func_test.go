@@ -271,7 +271,7 @@ def foo() {
 				Body: []*FuncStatement{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
@@ -306,7 +306,7 @@ def foo() {
 									Parts:   []string{"number"},
 								},
 							},
-							Value: testBuildExprTree[*Expr](t, &Value{
+							Value: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
@@ -344,7 +344,7 @@ def foo() {
 									Parts:   []string{"number"},
 								},
 							},
-							Value: testBuildExprTree[*Expr](t, &Value{
+							Value: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
@@ -356,7 +356,7 @@ def foo() {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
@@ -368,42 +368,12 @@ def foo() {
 			},
 		},
 		{
-			name: "Single-line comment",
-			input: `
-// foo
-def foo() {}`[1:],
-			wantErr: false,
-			want: &Func{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SingleLine: []string{"// foo"},
-				},
-				Label: "foo",
-			},
-		},
-		{
 			name: "Single-line comment - separated",
 			input: `
 // foo
 
 def foo() {}`[1:],
 			wantErr: true,
-		},
-		{
-			name: "Multi-line comment",
-			input: `
-/* foo */
-def foo() {}`[1:],
-			wantErr: false,
-			want: &Func{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Multiline: "/* foo */\n",
-				},
-				Label: "foo",
-			},
 		},
 	}
 
@@ -442,15 +412,6 @@ func TestFunc_Clone(t *testing.T) {
 			},
 		},
 		{
-			name: "Comments",
-			input: &Func{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: &Func{
-				Comment: &Comment{Multiline: "foo"},
-			},
-		},
-		{
 			name: "Label",
 			input: &Func{
 				Label: "foo",
@@ -489,12 +450,12 @@ func TestFunc_Clone(t *testing.T) {
 			name: "Body",
 			input: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 		},
@@ -519,15 +480,6 @@ func TestFunc_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Func{},
 			want:  nil,
-		},
-		{
-			name: "Comment",
-			input: &Func{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: []Node{
-				&Comment{Multiline: "foo"},
-			},
 		},
 		{
 			name: "Label",
@@ -562,12 +514,12 @@ func TestFunc_Children(t *testing.T) {
 			name: "Body",
 			input: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: []Node{
 				&FuncStatement{
-					Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
@@ -653,22 +605,13 @@ func TestFunc_String(t *testing.T) {
 			input: &Func{
 				Label: "foo",
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: `
 def foo() {
 	1
 }`[1:],
-		},
-		{
-			name: "Comment",
-			input: &Func{
-				Comment: &Comment{SingleLine: []string{"// foo"}},
-			},
-			want: `
-// foo
-def () {}`[1:],
 		},
 	}
 
@@ -889,7 +832,7 @@ func TestFuncStatement_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &FuncStatement{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Expr: testBuildExprTree[*Expr](t, &Value{
+				Expr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -974,24 +917,24 @@ func TestFuncStatement_Clone(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: &FuncStatement{
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -1040,24 +983,24 @@ func TestFuncStatement_Children(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: []Node{
 				&FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1101,7 +1044,7 @@ func TestFuncStatement_String(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+					Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: "val foo = 1",
@@ -1109,7 +1052,7 @@ func TestFuncStatement_String(t *testing.T) {
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "1",
 		},
@@ -1191,7 +1134,7 @@ func TestFuncDecl_Parsing(t *testing.T) {
 				ASTNode:  ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				DeclType: "val",
 				Label:    "foo",
-				Value: testBuildExprTree[*Expr](t, &Value{
+				Value: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
@@ -1216,7 +1159,7 @@ func TestFuncDecl_Parsing(t *testing.T) {
 						Parts:   []string{"number"},
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{
+				Value: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
@@ -1292,10 +1235,10 @@ func TestFuncDecl_Clone(t *testing.T) {
 		{
 			name: "Value",
 			Input: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1346,10 +1289,10 @@ func TestFuncDecl_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1402,7 +1345,7 @@ func TestFuncDecl_String(t *testing.T) {
 			input: &FuncDecl{
 				DeclType: "val",
 				Label:    "foo",
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo = 1",
 		},
@@ -1412,7 +1355,7 @@ func TestFuncDecl_String(t *testing.T) {
 				DeclType: "val",
 				Label:    "foo",
 				Type:     &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value:    BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo: number = 1",
 		},

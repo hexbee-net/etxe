@@ -170,7 +170,7 @@ FOO`[1:],
 				List: &ValueList{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Items: []*Expr{
-						testBuildExprTree[*Expr](t, &Value{
+						BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -178,7 +178,7 @@ FOO`[1:],
 								Source:  "1",
 							},
 						}),
-						testBuildExprTree[*Expr](t, &Value{
+						BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -219,7 +219,7 @@ FOO`[1:],
 									Parts:   []string{"foo"},
 								},
 							},
-							Value: *testBuildExprTree[*Expr](t, &Value{
+							Value: *BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -236,7 +236,7 @@ FOO`[1:],
 									Parts:   []string{"baz"},
 								},
 							},
-							Value: *testBuildExprTree[*Expr](t, &Value{
+							Value: *BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},

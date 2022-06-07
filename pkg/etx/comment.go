@@ -6,7 +6,7 @@ import "strings"
 type Comment struct {
 	ASTNode
 
-	SingleLine []string `parser:"(   (@SingleLineComment [ NewLine ])+"   json:"single_line,omitempty"`
+	SingleLine []string `parser:"(   (@SingleLineComment [ NewLine ])+" json:"single_line,omitempty"`
 	Multiline  string   `parser:"  | @(MultilineComment [ NewLine ])   )" json:"multiline,omitempty"`
 }
 

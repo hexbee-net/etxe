@@ -92,6 +92,69 @@ foo {
 			},
 		},
 		{
+			name: "no labels - body - two attributes",
+			input: `
+foo {
+	bar
+	baz
+}`[1:],
+			wantErr: false,
+			want: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Name:    "foo",
+				Body: []*BlockItem{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 2}},
+						Attribute: &Attribute{
+							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 2}},
+							Key:     "bar",
+						},
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 3, Column: 2}},
+						Attribute: &Attribute{
+							ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 3, Column: 2}},
+							Key:     "baz",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "no labels - two separated attributes",
+			input: `
+foo {
+	bar
+
+	baz
+}`[1:],
+			wantErr: false,
+			want: &Block{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+				Name:    "foo",
+				Body: []*BlockItem{
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 2}},
+						Attribute: &Attribute{
+							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 2}},
+							Key:     "bar",
+						},
+					},
+					{
+						ASTNode:   ASTNode{Pos: Position{Offset: 11, Line: 3, Column: 1}},
+						EmptyLine: "\n",
+					},
+					{
+						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 4, Column: 2}},
+						Attribute: &Attribute{
+							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 4, Column: 2}},
+							Key:     "baz",
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "no labels - body - close on same line",
 			input: `
 foo {
@@ -133,45 +196,6 @@ foo bar {
 				},
 			},
 		},
-
-		{
-			name: "Single-line comment",
-			input: `
-// foo
-bar { }`[1:],
-			wantErr: false,
-			want: &Block{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SingleLine: []string{"// foo"},
-				},
-				Name: "bar",
-			},
-		},
-		{
-			name: "Single-line comment - separated",
-			input: `
-// foo
-
-bar { }`[1:],
-			wantErr: true,
-		},
-		{
-			name: "Multi-line comment",
-			input: `
-/* foo */
-bar { }`[1:],
-			wantErr: false,
-			want: &Block{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Multiline: "/* foo */\n",
-				},
-				Name: "bar",
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -206,15 +230,6 @@ func TestBlock_Clone(t *testing.T) {
 			},
 			want: &Block{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
-			},
-		},
-		{
-			name: "Comment",
-			input: &Block{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: &Block{
-				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -269,15 +284,6 @@ func TestBlock_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Block{},
 			want:  nil,
-		},
-		{
-			name: "Comment",
-			input: &Block{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: []Node{
-				&Comment{Multiline: "foo"},
-			},
 		},
 		{
 			name: "Name",
@@ -362,16 +368,6 @@ resource {
 	foo
 }`[1:],
 		},
-		{
-			name: "Comment",
-			input: &Block{
-				Comment: &Comment{SingleLine: []string{"// foo"}},
-				Name:    "resource",
-			},
-			want: `
-// foo
-resource {}`[1:],
-		},
 	}
 
 	for _, tt := range tests {
@@ -425,7 +421,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 				Attribute: &Attribute{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Key:     "foo",
-					Value: testBuildExprTree[*Expr](t, &Value{
+					Value: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
@@ -445,12 +441,12 @@ func TestBlockItem_Parsing(t *testing.T) {
 				Attribute: &Attribute{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Key:     "foo",
-					Value: testBuildExprTree[*Expr](t, &Value{
+					Value: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						List: &ValueList{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 							Items: []*Expr{
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -458,7 +454,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 										Source:  "1",
 									},
 								}),
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
@@ -481,7 +477,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 				Attribute: &Attribute{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Key:     "foo",
-					Value: testBuildExprTree[*Expr](t, &Value{
+					Value: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						Map: &ValueMap{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
@@ -500,7 +496,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 											},
 										},
 									},
-									Value: *testBuildExprTree[*Expr](t, &Value{
+									Value: *BuildTestExprTree[*Expr](t, &Value{
 										ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 										Number: &ValueNumber{
 											ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},

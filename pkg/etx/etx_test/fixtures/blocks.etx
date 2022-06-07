@@ -1,0 +1,70 @@
+block_name {}
+
+block_name "label-1" "label-2" {}
+
+# block comment
+block_name {}
+
+// block comment
+block_name {}
+
+/* block comment */
+block_name {}
+
+# block comment
+# on two lines
+block_name {}
+
+// block comment
+// on two lines
+block_name {}
+
+/* block comment */
+/* on two lines  */
+block_name {}
+
+/* block comment
+   on two lines   */
+block_name {}
+
+block_attributes {
+  attr1
+
+  attr2
+
+  attr  = null
+
+  attr  = true
+  attr  = false
+
+  attr  = 1
+
+  attr  = "string"
+  attr  = "${expr}-string"
+
+  attr  = ident
+
+  attr  = <<EOF
+heredoc
+EOF
+
+  attr  = <<-EOF
+heredoc leading tabs
+EOF
+
+  attr  = [ 1, 2 ]
+  attr  = [
+    1,
+    2,
+  ]
+
+  attr = { a = 1, "b" = 2 }
+  attr = {
+    a   = 1,
+    "b" = 2,
+  }
+}
+
+block_sub_block {
+    sub_block {}
+}

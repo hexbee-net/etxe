@@ -23,7 +23,7 @@ func TestLambda_Parsing(t *testing.T) {
 			want: &Lambda{
 				ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Parameters: nil,
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
@@ -45,7 +45,7 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "x",
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -71,7 +71,7 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "y",
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
@@ -100,7 +100,7 @@ func TestLambda_Parsing(t *testing.T) {
 						},
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
@@ -140,7 +140,7 @@ func TestLambda_Parsing(t *testing.T) {
 						},
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 26, Line: 1, Column: 27}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 26, Line: 1, Column: 27}},
@@ -173,7 +173,7 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "y",
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
@@ -206,7 +206,7 @@ func TestLambda_Parsing(t *testing.T) {
 						},
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
@@ -235,10 +235,10 @@ func TestLambda_Parsing(t *testing.T) {
 						},
 					},
 				},
-				Expr: *testBuildExprTree[*Expr](t,
+				Expr: *BuildTestExprTree[*Expr](t,
 					&ExprAdditive{
 						ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-						Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+						Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
@@ -246,7 +246,7 @@ func TestLambda_Parsing(t *testing.T) {
 							},
 						}),
 						Op: OpPlus,
-						Right: testBuildExprTree[*ExprAdditive](t, &Value{
+						Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 1, Column: 20}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 1, Column: 20}},
@@ -271,7 +271,7 @@ func TestLambda_Parsing(t *testing.T) {
 					SingleLine: []string{"// foo"},
 				},
 				Parameters: nil,
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 7}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 7}},
@@ -302,7 +302,7 @@ func TestLambda_Parsing(t *testing.T) {
 					Multiline: "/* foo */\n",
 				},
 				Parameters: nil,
-				Expr: *testBuildExprTree[*Expr](t, &Value{
+				Expr: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 7}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 7}},
@@ -369,10 +369,10 @@ func TestLambda_Clone(t *testing.T) {
 		{
 			name: "Expr",
 			Input: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -422,10 +422,10 @@ func TestLambda_Children(t *testing.T) {
 		{
 			name: "Expr",
 			input: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -460,7 +460,7 @@ func TestLambda_String(t *testing.T) {
 			name: "No Parameters",
 			input: &Lambda{
 				Parameters: nil,
-				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr:       *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "() => 1",
 		},
@@ -470,7 +470,7 @@ func TestLambda_String(t *testing.T) {
 				Parameters: []*LambdaParameter{
 					{Label: "foo"},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "(foo) => 1",
 		},
@@ -481,7 +481,7 @@ func TestLambda_String(t *testing.T) {
 					{Label: "foo"},
 					{Label: "bar"},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "(foo, bar) => 1",
 		},
@@ -490,7 +490,7 @@ func TestLambda_String(t *testing.T) {
 			input: &Lambda{
 				Comment:    &Comment{SingleLine: []string{"// foo"}},
 				Parameters: nil,
-				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr:       *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: `
 // foo

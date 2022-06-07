@@ -32,48 +32,10 @@ func TestAttribute_Parsing(t *testing.T) {
 			want: &Attribute{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Key:     "foo",
-				Value: testBuildExprTree[*Expr](t, &Value{
+				Value: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 					Number:  &ValueNumber{ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}}, big.NewFloat(1), "1"},
 				}),
-			},
-		},
-		{
-			name: "Single-line comment",
-			input: `
-// foo
-bar`[1:],
-			wantErr: false,
-			want: &Attribute{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SingleLine: []string{"// foo"},
-				},
-				Key: "bar",
-			},
-		},
-		{
-			name: "Single-line comment - separated",
-			input: `
-// foo
-
-bar`[1:],
-			wantErr: true,
-		},
-		{
-			name: "Multi-line comment",
-			input: `
-/* foo */
-bar`[1:],
-			wantErr: false,
-			want: &Attribute{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Multiline: "/* foo */\n",
-				},
-				Key: "bar",
 			},
 		},
 	}
@@ -113,15 +75,6 @@ func TestAttribute_Clone(t *testing.T) {
 			},
 		},
 		{
-			name: "Comment",
-			input: &Attribute{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: &Attribute{
-				Comment: &Comment{Multiline: "foo"},
-			},
-		},
-		{
 			name: "Key",
 			input: &Attribute{
 				Key: "foo",
@@ -133,10 +86,10 @@ func TestAttribute_Clone(t *testing.T) {
 		{
 			name: "Value",
 			input: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -162,15 +115,6 @@ func TestAttribute_Children(t *testing.T) {
 			want:  nil,
 		},
 		{
-			name: "Comment",
-			input: &Attribute{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: []Node{
-				&Comment{Multiline: "foo"},
-			},
-		},
-		{
 			name: "Key",
 			input: &Attribute{
 				Key: "foo",
@@ -180,10 +124,10 @@ func TestAttribute_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -225,19 +169,9 @@ func TestAttribute_String(t *testing.T) {
 			name: "Key and value",
 			input: &Attribute{
 				Key:   "foo",
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "foo: 1",
-		},
-		{
-			name: "Comment",
-			input: &Attribute{
-				Comment: &Comment{SingleLine: []string{"// foo"}},
-				Key:     "bar",
-			},
-			want: `
-// foo
-bar`[1:],
 		},
 	}
 

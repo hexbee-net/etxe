@@ -8,11 +8,10 @@ import (
 type Func struct {
 	ASTNode
 
-	Comment    *Comment         `parser:"[ @@ ]"                                                  json:"comment,omitempty"`
 	Label      string           `parser:"Func @Ident "                                            json:"label"`
 	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                                json:"parameters,omitempty"`
 	Return     []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?"                        json:"return,omitempty"`
-	Body       []*FuncStatement `parser:"[ NewLine+ ] '{' ( [ NewLine+ ] @@ [ NewLine+ ] )* '}' " json:"body,omitempty"`
+	Body       []*FuncStatement `parser:"[ NewLine+ ] '{' [ NewLine+ ] @@ * '}' " json:"body,omitempty"`
 }
 
 func (n *Func) Clone() *Func {
@@ -22,7 +21,6 @@ func (n *Func) Clone() *Func {
 
 	return &Func{
 		ASTNode:    n.ASTNode.Clone(),
-		Comment:    n.Comment.Clone(),
 		Label:      n.Label,
 		Parameters: cloneCollection(n.Parameters),
 		Return:     cloneCollection(n.Return),
@@ -31,10 +29,6 @@ func (n *Func) Clone() *Func {
 }
 
 func (n *Func) Children() (children []Node) {
-	if n.Comment != nil {
-		children = append(children, n.Comment)
-	}
-
 	for _, item := range n.Parameters {
 		children = append(children, item)
 	}
@@ -52,10 +46,6 @@ func (n *Func) Children() (children []Node) {
 
 func (n Func) String() string {
 	var sb strings.Builder
-
-	if n.Comment != nil {
-		sb.WriteString(n.Comment.String())
-	}
 
 	params := make([]string, 0, len(n.Parameters))
 	for _, p := range n.Parameters {
@@ -134,10 +124,10 @@ func (n FuncParameter) String() string {
 type FuncStatement struct {
 	ASTNode
 
-	Comment   *Comment  `parser:"(   @@  "        json:"comment,omitempty"`
-	Decl      *FuncDecl `parser:"  | @@  "        json:"decl,omitempty"`
-	Expr      *Expr     `parser:"  | @@  "        json:"expr,omitempty"`
-	EmptyLine string    `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
+	EmptyLine string    `parser:"(   @NewLine+     " json:"empty_line,omitempty"`
+	Comment   *Comment  `parser:"  | @@            "        json:"comment,omitempty"`
+	Decl      *FuncDecl `parser:"  | @@ [NewLine]  "        json:"decl,omitempty"`
+	Expr      *Expr     `parser:"  | @@ [NewLine] )"        json:"expr,omitempty"`
 }
 
 func (n *FuncStatement) Clone() *FuncStatement {

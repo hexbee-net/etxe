@@ -39,7 +39,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -67,7 +67,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -98,7 +98,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
@@ -126,7 +126,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -144,7 +144,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"b"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
@@ -176,7 +176,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
@@ -194,7 +194,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"b"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
@@ -226,7 +226,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
@@ -244,7 +244,7 @@ func TestMap_Parsing(t *testing.T) {
 								Parts:   []string{"b"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
@@ -364,7 +364,7 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 						}),
 					},
@@ -385,7 +385,7 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"a"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 						}),
 					},
@@ -395,7 +395,7 @@ func TestMap_String(t *testing.T) {
 								Parts: []string{"b"},
 							},
 						},
-						Value: *testBuildExprTree[*Expr](t, &Value{
+						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `2`},
 						}),
 					},
@@ -447,11 +447,11 @@ func TestMapEntry_Clone(t *testing.T) {
 			name: "Values",
 			input: &MapEntry{
 				Key:   Value{},
-				Value: *testBuildExprTree[*Expr](t, &Value{}),
+				Value: *BuildTestExprTree[*Expr](t, &Value{}),
 			},
 			want: &MapEntry{
 				Key:   Value{},
-				Value: *testBuildExprTree[*Expr](t, &Value{}),
+				Value: *BuildTestExprTree[*Expr](t, &Value{}),
 			},
 		},
 	}
@@ -505,13 +505,13 @@ func TestMapEntry_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: MapEntry{
-				Value: *testBuildExprTree[*Expr](t, &Value{
+				Value: *BuildTestExprTree[*Expr](t, &Value{
 					Ident: &Ident{Parts: []string{"a"}},
 				}),
 			},
 			want: []Node{
 				&Value{},
-				testBuildExprTree[*Expr](t, &Value{
+				BuildTestExprTree[*Expr](t, &Value{
 					Ident: &Ident{Parts: []string{"a"}},
 				}),
 			},
@@ -545,7 +545,7 @@ func TestMapEntry_String(t *testing.T) {
 						Parts: []string{"a"},
 					},
 				},
-				Value: *testBuildExprTree[*Expr](t, &Value{
+				Value: *BuildTestExprTree[*Expr](t, &Value{
 					Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 				}),
 			},
@@ -560,7 +560,7 @@ func TestMapEntry_String(t *testing.T) {
 						Parts: []string{"a"},
 					},
 				},
-				Value: *testBuildExprTree[*Expr](t, &Value{
+				Value: *BuildTestExprTree[*Expr](t, &Value{
 					Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 				}),
 			},

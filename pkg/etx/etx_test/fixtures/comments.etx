@@ -1,0 +1,17 @@
+// One line double-dashed
+
+// Two lines
+// double-dashed
+
+# One line hashtag
+
+# Two lines
+# double-dashed
+
+#  Two lines
+// mixed
+
+/* One multiline on one line */
+
+/* One multiline on
+   two line */

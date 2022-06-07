@@ -11,7 +11,7 @@ func TestComment_Parsing(t *testing.T) {
 	t.Parallel()
 
 	type TestStruct struct {
-		Comments []*Comment `parser:"(@@ [NewLine+])*" json:"comments,omitempty"`
+		Comments []*Comment `parser:"(@@)*" json:"comments,omitempty"`
 		Value    *Expr      `parser:"[ @@ ]"`
 	}
 	tests := []struct {
@@ -128,23 +128,7 @@ func TestComment_Parsing(t *testing.T) {
 
 // bar
 		`[1:],
-			wantErr: false,
-			want: &TestStruct{
-				Comments: []*Comment{
-					{
-						ASTNode: ASTNode{},
-						SingleLine: []string{
-							"// foo",
-						},
-					},
-					{
-						ASTNode: ASTNode{},
-						SingleLine: []string{
-							"// bar",
-						},
-					},
-				},
-			},
+			wantErr: true,
 		},
 
 		{
@@ -160,7 +144,7 @@ func TestComment_Parsing(t *testing.T) {
 						SingleLine: []string{"// foo"},
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -177,7 +161,7 @@ func TestComment_Parsing(t *testing.T) {
 						SingleLine: []string{"// foo", "// bar"},
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 
@@ -261,7 +245,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo */",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -277,7 +261,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo\n   bar */",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -293,7 +277,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo */\n",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -310,7 +294,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo\n   bar */\n",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}

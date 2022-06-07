@@ -40,12 +40,12 @@ type foo enum {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Label:   "foo",
 				Enum: &TypeEnum{
-					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 2, Column: 3}},
 					Items: []*TypeEnumItem{
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 2, Column: 3}},
 							Label:   "bar",
-							Value: *testBuildExprTree[*Expr](t, &Value{
+							Value: *BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 23, Line: 2, Column: 8}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 23, Line: 2, Column: 8}},
@@ -85,7 +85,7 @@ type foo object {
 				Label:   "foo",
 				Enum:    nil,
 				Object: &TypeObject{
-					ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+					ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 2}},
 					Items: []*TypeObjectItem{
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 2}},
@@ -105,50 +105,12 @@ type foo object {
 			},
 		},
 		{
-			name: "Single-line comment",
-			input: `
-// foo
-type foo enum {}`[1:],
-			wantErr: false,
-			want: &Type{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SingleLine: []string{"// foo"},
-				},
-				Label: "foo",
-				Enum: &TypeEnum{
-					ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 2, Column: 16}},
-				},
-				Object: nil,
-			},
-		},
-		{
 			name: "Single-line comment - separated",
 			input: `
 // foo
 
 type foo enum {}`[1:],
 			wantErr: true,
-		},
-		{
-			name: "Single-line comment",
-			input: `
-/* foo */
-type foo enum {}`[1:],
-			wantErr: false,
-			want: &Type{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Multiline: "/* foo */\n",
-				},
-				Label: "foo",
-				Enum: &TypeEnum{
-					ASTNode: ASTNode{Pos: Position{Offset: 25, Line: 2, Column: 16}},
-				},
-				Object: nil,
-			},
 		},
 	}
 
@@ -184,15 +146,6 @@ func TestType_Clone(t *testing.T) {
 			},
 			want: &Type{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
-			},
-		},
-		{
-			name: "Comments",
-			Input: &Type{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: &Type{
-				Comment: &Comment{Multiline: "foo"},
 			},
 		},
 		{
@@ -243,15 +196,6 @@ func TestType_Children(t *testing.T) {
 			name:  "Empty",
 			input: &Type{},
 			want:  nil,
-		},
-		{
-			name: "Comment",
-			input: &Type{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: []Node{
-				&Comment{Multiline: "foo"},
-			},
 		},
 		{
 			name: "Label",
@@ -314,7 +258,7 @@ func TestType_String(t *testing.T) {
 					Items: []*TypeEnumItem{
 						{
 							Label: "bar",
-							Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+							Value: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 						},
 					},
 				},
@@ -340,26 +284,6 @@ type foo enum {
 			want: `
 type foo object {
 	bar: number
-}`[1:],
-		},
-		{
-			name: "Comment",
-			input: &Type{
-				Comment: &Comment{SingleLine: []string{"// foo"}},
-				Label:   "bar",
-				Enum: &TypeEnum{
-					Items: []*TypeEnumItem{
-						{
-							Label: "baz",
-							Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
-						},
-					},
-				},
-			},
-			want: `
-// foo
-type bar enum {
-	baz: 1
 }`[1:],
 		},
 	}
@@ -392,20 +316,19 @@ func TestTypeEnum_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name: "One value",
-			input: `
-foo: 1`,
+			name:    "One value",
+			input:   `foo: 1`,
 			wantErr: false,
 			want: &TypeEnum{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Items: []*TypeEnumItem{
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Label:   "foo",
-						Value: *testBuildExprTree[*Expr](t, &Value{
-							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+						Value: *BuildTestExprTree[*Expr](t, &Value{
+							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
-								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 								Value:   big.NewFloat(1),
 								Source:  "1",
 							},
@@ -418,30 +341,30 @@ foo: 1`,
 			name: "Two values",
 			input: `
 foo: 1
-bar: 2`,
+bar: 2`[1:],
 			wantErr: false,
 			want: &TypeEnum{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Items: []*TypeEnumItem{
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Label:   "foo",
-						Value: *testBuildExprTree[*Expr](t, &Value{
-							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+						Value: *BuildTestExprTree[*Expr](t, &Value{
+							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Number: &ValueNumber{
-								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 								Value:   big.NewFloat(1),
 								Source:  "1",
 							},
 						}),
 					},
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 3, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 2, Column: 1}},
 						Label:   "bar",
-						Value: *testBuildExprTree[*Expr](t, &Value{
-							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 6}},
+						Value: *BuildTestExprTree[*Expr](t, &Value{
+							ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 2, Column: 6}},
 							Number: &ValueNumber{
-								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 2, Column: 6}},
 								Value:   big.NewFloat(2),
 								Source:  "2",
 							},
@@ -560,7 +483,7 @@ func TestTypeEnum_String(t *testing.T) {
 				Items: []*TypeEnumItem{
 					{
 						Label: "foo",
-						Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+						Value: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 					},
 				},
 			},
@@ -573,11 +496,11 @@ foo: 1`,
 				Items: []*TypeEnumItem{
 					{
 						Label: "foo",
-						Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+						Value: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 					},
 					{
 						Label: "bar",
-						Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "2"}}),
+						Value: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "2"}}),
 					},
 				},
 			},
@@ -612,7 +535,7 @@ func TestTypeEnumItem_Parsing(t *testing.T) {
 			want: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Label:   "foo",
-				Value: *testBuildExprTree[*Expr](t, &Value{
+				Value: *BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -714,10 +637,10 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		{
 			name: "Value",
 			Input: &TypeEnumItem{
-				Value: *testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				Value: *BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 			},
 			want: &TypeEnumItem{
-				Value: *testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				Value: *BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 			},
 		},
 	}
@@ -766,12 +689,12 @@ func TestTypeEnumItem_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &TypeEnumItem{
-				Value: *testBuildExprTree[*Expr](t, &Value{
+				Value: *BuildTestExprTree[*Expr](t, &Value{
 					Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 				}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{
+				BuildTestExprTree[*Expr](t, &Value{
 					Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 				}),
 			},
@@ -808,7 +731,7 @@ func TestTypeEnumItem_String(t *testing.T) {
 			name: "Value",
 			input: &TypeEnumItem{
 				Label: "foo",
-				Value: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Value: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "foo: 1",
 		},
@@ -851,18 +774,18 @@ func TestTypeObject_Parsing(t *testing.T) {
 		{
 			name: "One declaration",
 			input: `
-foo: number`,
+foo: number`[1:],
 			wantErr: false,
 			want: &TypeObject{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Items: []*TypeObjectItem{
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Label:   "foo",
 						Type: ParameterType{
-							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 								Parts: []string{
 									"number",
 								},
@@ -876,18 +799,18 @@ foo: number`,
 			name: "Two declarations",
 			input: `
 foo: number
-bar: bool`,
+bar: bool`[1:],
 			wantErr: false,
 			want: &TypeObject{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Items: []*TypeObjectItem{
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Label:   "foo",
 						Type: ParameterType{
-							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 								Parts: []string{
 									"number",
 								},
@@ -895,12 +818,12 @@ bar: bool`,
 						},
 					},
 					{
-						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 1}},
+						ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 2, Column: 1}},
 						Label:   "bar",
 						Type: ParameterType{
-							ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 3, Column: 6}},
+							ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 2, Column: 6}},
 							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 3, Column: 6}},
+								ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 2, Column: 6}},
 								Parts: []string{
 									"bool",
 								},

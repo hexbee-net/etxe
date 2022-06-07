@@ -22,7 +22,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -40,7 +40,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -49,14 +49,14 @@ func TestExpr_Parsing(t *testing.T) {
 					Monads: []*ExprInvocationParams{{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Values: []*Expr{
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 									Parts:   []string{"bar"},
 								},
 							}),
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
@@ -74,7 +74,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -87,14 +87,14 @@ func TestExpr_Parsing(t *testing.T) {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 							Values: []*Expr{
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 									Ident: &Ident{
 										ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 										Parts:   []string{"baz"},
 									},
 								}),
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
 									Ident: &Ident{
 										ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
@@ -113,7 +113,7 @@ func TestExpr_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -123,7 +123,7 @@ func TestExpr_Parsing(t *testing.T) {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 							Values: []*Expr{
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 									Ident: &Ident{
 										ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -135,7 +135,7 @@ func TestExpr_Parsing(t *testing.T) {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 							Values: []*Expr{
-								testBuildExprTree[*Expr](t, &Value{
+								BuildTestExprTree[*Expr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 									Ident: &Ident{
 										ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
@@ -153,7 +153,7 @@ func TestExpr_Parsing(t *testing.T) {
 			input: `foo().bar`,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -164,7 +164,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Monads: []*ExprInvocationParams{
 						{ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}}},
 					},
-					Postfix: testBuildExprTree[*ExprPostfix](t, &Value{
+					Postfix: BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
@@ -179,7 +179,7 @@ func TestExpr_Parsing(t *testing.T) {
 			input: `foo().bar()`,
 			want: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &ExprInvocation{
+				Left: BuildTestExprTree[*ExprConditional](t, &ExprInvocation{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident: Ident{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -190,7 +190,7 @@ func TestExpr_Parsing(t *testing.T) {
 					Monads: []*ExprInvocationParams{
 						{ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}}},
 					},
-					Postfix: testBuildExprTree[*ExprPostfix](t, &ExprInvocation{
+					Postfix: BuildTestExprTree[*ExprPostfix](t, &ExprInvocation{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						Ident: Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
@@ -214,7 +214,7 @@ func TestExpr_Parsing(t *testing.T) {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				If: &ExprIf{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -234,14 +234,14 @@ func TestExpr_Parsing(t *testing.T) {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				If: &ExprIf{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 							Parts:   []string{"foo"},
 						},
 					}),
-					Left: testBuildExprTree[*Expr](t, &Value{
+					Left: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
@@ -261,14 +261,14 @@ func TestExpr_Parsing(t *testing.T) {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				If: &ExprIf{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 							Parts:   []string{"foo"},
 						},
 					}),
-					Left: testBuildExprTree[*Expr](t, &Value{
+					Left: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
@@ -276,7 +276,7 @@ func TestExpr_Parsing(t *testing.T) {
 							Source:  "1",
 						},
 					}),
-					Right: testBuildExprTree[*Expr](t, &Value{
+					Right: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
@@ -297,7 +297,7 @@ switch foo {}`[1:],
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -319,7 +319,7 @@ switch foo {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -330,7 +330,7 @@ switch foo {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 2}},
 							Conditions: []*ExprLogicalOr{
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
@@ -339,7 +339,7 @@ switch foo {
 									},
 								}),
 							},
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
@@ -363,7 +363,7 @@ switch foo {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -374,7 +374,7 @@ switch foo {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 2}},
 							Conditions: []*ExprLogicalOr{
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
@@ -382,7 +382,7 @@ switch foo {
 										Source:  "1",
 									},
 								}),
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 2, Column: 10}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 2, Column: 10}},
@@ -391,7 +391,7 @@ switch foo {
 									},
 								}),
 							},
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 27, Line: 2, Column: 15}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 27, Line: 2, Column: 15}},
@@ -416,7 +416,7 @@ switch foo {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -427,7 +427,7 @@ switch foo {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 2}},
 							Conditions: []*ExprLogicalOr{
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
@@ -436,7 +436,7 @@ switch foo {
 									},
 								}),
 							},
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
@@ -448,7 +448,7 @@ switch foo {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 3, Column: 2}},
 							Conditions: []*ExprLogicalOr{
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 34, Line: 3, Column: 7}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 34, Line: 3, Column: 7}},
@@ -457,7 +457,7 @@ switch foo {
 									},
 								}),
 							},
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 39, Line: 3, Column: 12}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 39, Line: 3, Column: 12}},
@@ -481,7 +481,7 @@ switch foo {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -493,7 +493,7 @@ switch foo {
 							ASTNode:    ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 2}},
 							Conditions: nil,
 							Default:    true,
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 25, Line: 2, Column: 13}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 25, Line: 2, Column: 13}},
@@ -518,7 +518,7 @@ switch foo {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 						Ident: &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -529,7 +529,7 @@ switch foo {
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 2, Column: 2}},
 							Conditions: []*ExprLogicalOr{
-								testBuildExprTree[*ExprLogicalOr](t, &Value{
+								BuildTestExprTree[*ExprLogicalOr](t, &Value{
 									ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
 									Number: &ValueNumber{
 										ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 2, Column: 7}},
@@ -538,7 +538,7 @@ switch foo {
 									},
 								}),
 							},
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 2, Column: 12}},
@@ -551,7 +551,7 @@ switch foo {
 							ASTNode:    ASTNode{Pos: Position{Offset: 29, Line: 3, Column: 2}},
 							Conditions: nil,
 							Default:    true,
-							Expr: testBuildExprTree[*Expr](t, &Value{
+							Expr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 40, Line: 3, Column: 13}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 40, Line: 3, Column: 13}},
@@ -569,10 +569,10 @@ switch foo {
 			name:    "Ternary",
 			input:   "1 ? 2 : 3",
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprConditional{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -581,7 +581,7 @@ switch foo {
 						},
 					}),
 					ConditionOp: true,
-					TrueExpr: testBuildExprTree[*Expr](t, &Value{
+					TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -589,7 +589,7 @@ switch foo {
 							Source:  "2",
 						},
 					}),
-					FalseExpr: testBuildExprTree[*Expr](t, &Value{
+					FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -604,10 +604,10 @@ switch foo {
 			name:    "Nested Ternary - Left",
 			input:   "1 ? 2 ? 3 : 4 : 5",
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprConditional{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -616,10 +616,10 @@ switch foo {
 						},
 					}),
 					ConditionOp: true,
-					TrueExpr: testBuildExprTree[*Expr](t,
+					TrueExpr: BuildTestExprTree[*Expr](t,
 						&ExprConditional{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-							Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+							Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -628,7 +628,7 @@ switch foo {
 								},
 							}),
 							ConditionOp: true,
-							TrueExpr: testBuildExprTree[*Expr](t, &Value{
+							TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -636,7 +636,7 @@ switch foo {
 									Source:  "3",
 								},
 							}),
-							FalseExpr: testBuildExprTree[*Expr](t, &Value{
+							FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
@@ -646,7 +646,7 @@ switch foo {
 							}),
 						},
 					),
-					FalseExpr: testBuildExprTree[*Expr](t, &Value{
+					FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
@@ -661,10 +661,10 @@ switch foo {
 			name:    "Nested Ternary - Right",
 			input:   "1 ? 2 : 3 ? 4 : 5",
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprConditional{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -673,7 +673,7 @@ switch foo {
 						},
 					}),
 					ConditionOp: true,
-					TrueExpr: testBuildExprTree[*Expr](t, &Value{
+					TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -681,10 +681,10 @@ switch foo {
 							Source:  "2",
 						},
 					}),
-					FalseExpr: testBuildExprTree[*Expr](t,
+					FalseExpr: BuildTestExprTree[*Expr](t,
 						&ExprConditional{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
-							Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+							Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -693,7 +693,7 @@ switch foo {
 								},
 							}),
 							ConditionOp: true,
-							TrueExpr: testBuildExprTree[*Expr](t, &Value{
+							TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
@@ -701,7 +701,7 @@ switch foo {
 									Source:  "4",
 								},
 							}),
-							FalseExpr: testBuildExprTree[*Expr](t, &Value{
+							FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 1, Column: 17}},
@@ -719,10 +719,10 @@ switch foo {
 			name:    "Logical OR - no spaces",
 			input:   `1||2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprLogicalOr{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprLogicalAnd](t, &Value{
+					Left: *BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -731,7 +731,7 @@ switch foo {
 						},
 					}),
 					Op: OpLogicalOr,
-					Right: testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Right: BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -746,10 +746,10 @@ switch foo {
 			name:    "Logical OR - spaces",
 			input:   `1 || 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprLogicalOr{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprLogicalAnd](t, &Value{
+					Left: *BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -758,7 +758,7 @@ switch foo {
 						},
 					}),
 					Op: OpLogicalOr,
-					Right: testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Right: BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -774,10 +774,10 @@ switch foo {
 			name:    "Logical AND - no spaces",
 			input:   `1&&2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprLogicalAnd{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseOr](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -786,7 +786,7 @@ switch foo {
 						},
 					}),
 					Op: OpLogicalAnd,
-					Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{
+					Right: BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -801,10 +801,10 @@ switch foo {
 			name:    "Logical AND - spaces",
 			input:   `1 && 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprLogicalAnd{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseOr](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -813,7 +813,7 @@ switch foo {
 						},
 					}),
 					Op: OpLogicalAnd,
-					Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{
+					Right: BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -829,10 +829,10 @@ switch foo {
 			name:    "Bitwise OR - no spaces",
 			input:   `1|2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseOr{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseXor](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -841,7 +841,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseOr,
-					Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -856,10 +856,10 @@ switch foo {
 			name:    "Bitwise OR - spaces",
 			input:   `1 | 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseOr{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseXor](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -868,7 +868,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseOr,
-					Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -884,10 +884,10 @@ switch foo {
 			name:    "Bitwise XOR - no spaces",
 			input:   `1^2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseXor{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -896,7 +896,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseXOr,
-					Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -911,10 +911,10 @@ switch foo {
 			name:    "Bitwise XOR - spaces",
 			input:   `1 ^ 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseXor{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+					Left: *BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -923,7 +923,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseXOr,
-					Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -939,10 +939,10 @@ switch foo {
 			name:    "Bitwise AND - no spaces",
 			input:   `1&2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseAnd{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprEquality](t, &Value{
+					Left: *BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -951,7 +951,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseAnd,
-					Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -966,10 +966,10 @@ switch foo {
 			name:    "Bitwise AND - spaces",
 			input:   `1 & 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprBitwiseAnd{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprEquality](t, &Value{
+					Left: *BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -978,7 +978,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseAnd,
-					Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+					Right: BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -994,10 +994,10 @@ switch foo {
 			name:    "Equality - Equal - no spaces",
 			input:   `1==2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprEquality{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprRelational](t, &Value{
+					Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1006,7 +1006,7 @@ switch foo {
 						},
 					}),
 					Op: OpEqual,
-					Right: testBuildExprTree[*ExprEquality](t, &Value{
+					Right: BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1021,10 +1021,10 @@ switch foo {
 			name:    "Equality - Equal - spaces",
 			input:   `1 == 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprEquality{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprRelational](t, &Value{
+					Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1033,7 +1033,7 @@ switch foo {
 						},
 					}),
 					Op: OpEqual,
-					Right: testBuildExprTree[*ExprEquality](t, &Value{
+					Right: BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1048,10 +1048,10 @@ switch foo {
 			name:    "Equality - Not Equal - no spaces",
 			input:   `1!=2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprEquality{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprRelational](t, &Value{
+					Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1060,7 +1060,7 @@ switch foo {
 						},
 					}),
 					Op: OpNotEqual,
-					Right: testBuildExprTree[*ExprEquality](t, &Value{
+					Right: BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1075,10 +1075,10 @@ switch foo {
 			name:    "Equality - Not Equal - spaces",
 			input:   `1 != 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprEquality{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprRelational](t, &Value{
+					Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1087,7 +1087,7 @@ switch foo {
 						},
 					}),
 					Op: OpNotEqual,
-					Right: testBuildExprTree[*ExprEquality](t, &Value{
+					Right: BuildTestExprTree[*ExprEquality](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1103,10 +1103,10 @@ switch foo {
 			name:    "Relational - More - no spaces",
 			input:   `1>2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1115,7 +1115,7 @@ switch foo {
 						},
 					}),
 					Op: OpMore,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1130,10 +1130,10 @@ switch foo {
 			name:    "Relational - More - spaces",
 			input:   `1 > 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1142,7 +1142,7 @@ switch foo {
 						},
 					}),
 					Op: OpMore,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1157,10 +1157,10 @@ switch foo {
 			name:    "Relational - Less - no spaces",
 			input:   `1<2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1169,7 +1169,7 @@ switch foo {
 						},
 					}),
 					Op: OpLess,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1184,10 +1184,10 @@ switch foo {
 			name:    "Relational - Less - spaces",
 			input:   `1 < 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1196,7 +1196,7 @@ switch foo {
 						},
 					}),
 					Op: OpLess,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1211,10 +1211,10 @@ switch foo {
 			name:    "Relational - More Or Equal - no spaces",
 			input:   `1>=2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1223,7 +1223,7 @@ switch foo {
 						},
 					}),
 					Op: OpMoreOrEqual,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1238,10 +1238,10 @@ switch foo {
 			name:    "Relational - More Or Equal - spaces",
 			input:   `1 >= 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1250,7 +1250,7 @@ switch foo {
 						},
 					}),
 					Op: OpMoreOrEqual,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1265,10 +1265,10 @@ switch foo {
 			name:    "Relational - Less Or Equal - no spaces",
 			input:   `1<=2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1277,7 +1277,7 @@ switch foo {
 						},
 					}),
 					Op: OpLessOrEqual,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1292,10 +1292,10 @@ switch foo {
 			name:    "Relational - Less Or Equal - spaces",
 			input:   `1 <= 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprRelational{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprShift](t, &Value{
+					Left: *BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1304,7 +1304,7 @@ switch foo {
 						},
 					}),
 					Op: OpLessOrEqual,
-					Right: testBuildExprTree[*ExprRelational](t, &Value{
+					Right: BuildTestExprTree[*ExprRelational](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1320,10 +1320,10 @@ switch foo {
 			name:    "Shift - Left - no spaces",
 			input:   `1<<2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprShift{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+					Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1332,7 +1332,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseShiftLeft,
-					Right: testBuildExprTree[*ExprShift](t, &Value{
+					Right: BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1347,10 +1347,10 @@ switch foo {
 			name:    "Shift - Left - spaces",
 			input:   `1 << 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprShift{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+					Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1359,7 +1359,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseShiftLeft,
-					Right: testBuildExprTree[*ExprShift](t, &Value{
+					Right: BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1374,10 +1374,10 @@ switch foo {
 			name:    "Shift - Right - no spaces",
 			input:   `1>>2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprShift{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+					Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1386,7 +1386,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseShiftRight,
-					Right: testBuildExprTree[*ExprShift](t, &Value{
+					Right: BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
@@ -1401,10 +1401,10 @@ switch foo {
 			name:    "Shift - Right - spaces",
 			input:   `1 >> 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprShift{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+					Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1413,7 +1413,7 @@ switch foo {
 						},
 					}),
 					Op: OpBitwiseShiftRight,
-					Right: testBuildExprTree[*ExprShift](t, &Value{
+					Right: BuildTestExprTree[*ExprShift](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
@@ -1429,10 +1429,10 @@ switch foo {
 			name:    "Additive - Plus - no spaces",
 			input:   `1+2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1441,7 +1441,7 @@ switch foo {
 						},
 					}),
 					Op: OpPlus,
-					Right: testBuildExprTree[*ExprAdditive](t, &Value{
+					Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1456,10 +1456,10 @@ switch foo {
 			name:    "Additive - Plus - spaces",
 			input:   `1 + 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1468,7 +1468,7 @@ switch foo {
 						},
 					}),
 					Op: OpPlus,
-					Right: testBuildExprTree[*ExprAdditive](t, &Value{
+					Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1483,10 +1483,10 @@ switch foo {
 			name:    "Additive - Minus - no spaces",
 			input:   `1-2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1495,7 +1495,7 @@ switch foo {
 						},
 					}),
 					Op: OpMinus,
-					Right: testBuildExprTree[*ExprAdditive](t, &Value{
+					Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1510,10 +1510,10 @@ switch foo {
 			name:    "Additive - Minus - spaces",
 			input:   `1 - 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1522,7 +1522,7 @@ switch foo {
 						},
 					}),
 					Op: OpMinus,
-					Right: testBuildExprTree[*ExprAdditive](t, &Value{
+					Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1538,10 +1538,10 @@ switch foo {
 			name:    "Multiplicative - Division - no spaces",
 			input:   `1/2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1550,7 +1550,7 @@ switch foo {
 						},
 					}),
 					Op: OpDivision,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1565,10 +1565,10 @@ switch foo {
 			name:    "Multiplicative - Division - spaces",
 			input:   `1 / 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1577,7 +1577,7 @@ switch foo {
 						},
 					}),
 					Op: OpDivision,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1592,10 +1592,10 @@ switch foo {
 			name:    "Multiplicative - Multiplication - no spaces",
 			input:   `1*2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1604,7 +1604,7 @@ switch foo {
 						},
 					}),
 					Op: OpMultiplication,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1619,10 +1619,10 @@ switch foo {
 			name:    "Multiplicative - Multiplication - spaces",
 			input:   `1 * 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1631,7 +1631,7 @@ switch foo {
 						},
 					}),
 					Op: OpMultiplication,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1646,10 +1646,10 @@ switch foo {
 			name:    "Multiplicative - Modulo - no spaces",
 			input:   `1%2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1658,7 +1658,7 @@ switch foo {
 						},
 					}),
 					Op: OpModulo,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1673,10 +1673,10 @@ switch foo {
 			name:    "Multiplicative - Modulo - spaces",
 			input:   `1 % 2`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprMultiplicative{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprUnary](t, &Value{
+					Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1685,7 +1685,7 @@ switch foo {
 						},
 					}),
 					Op: OpModulo,
-					Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1701,11 +1701,11 @@ switch foo {
 			name:    "Unary - Bitwise NOT - no spaces",
 			input:   `~1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpBitwiseNot,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
@@ -1720,11 +1720,11 @@ switch foo {
 			name:    "Unary - Bitwise NOT - spaces",
 			input:   `~ 1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpBitwiseNot,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1739,11 +1739,11 @@ switch foo {
 			name:    "Unary - Logical NOT - no spaces",
 			input:   `!1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpLogicalNot,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
@@ -1758,11 +1758,11 @@ switch foo {
 			name:    "Unary - Logical NOT - spaces",
 			input:   `! 1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpLogicalNot,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1777,11 +1777,11 @@ switch foo {
 			name:    "Unary - Minus - no spaces",
 			input:   `-1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpMinus,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
@@ -1796,11 +1796,11 @@ switch foo {
 			name:    "Unary - Minus - spaces",
 			input:   `- 1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpMinus,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1815,11 +1815,11 @@ switch foo {
 			name:    "Unary - Plus - no spaces",
 			input:   `+1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpPlus,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
@@ -1834,11 +1834,11 @@ switch foo {
 			name:    "Unary - Plus - spaces",
 			input:   `+ 1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprUnary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Op:      OpPlus,
-					Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+					Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1854,10 +1854,10 @@ switch foo {
 			name:    "Postfix - no spaces",
 			input:   `1[2]`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprPostfix{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprPrimary](t, &Value{
+					Left: *BuildTestExprTree[*ExprPrimary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1865,7 +1865,7 @@ switch foo {
 							Source:  "1",
 						},
 					}),
-					Right: testBuildExprTree[*Expr](t, &Value{
+					Right: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1880,10 +1880,10 @@ switch foo {
 			name:    "Postfix - spaces",
 			input:   `1 [ 2 ]`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprPostfix{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprPrimary](t, &Value{
+					Left: *BuildTestExprTree[*ExprPrimary](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1891,7 +1891,7 @@ switch foo {
 							Source:  "1",
 						},
 					}),
-					Right: testBuildExprTree[*Expr](t, &Value{
+					Right: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1907,10 +1907,10 @@ switch foo {
 			name:    "Primary - Value",
 			input:   `1`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprPrimary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Value: testBuildExprTree[*Value](t, &Value{
+					Value: BuildTestExprTree[*Value](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1925,10 +1925,10 @@ switch foo {
 			name:    "Primary - Sub - no spaces",
 			input:   `(1)`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprPrimary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SubExpression: testBuildExprTree[*Expr](t, &Value{
+					SubExpression: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
@@ -1943,10 +1943,10 @@ switch foo {
 			name:    "Primary - Sub - spaces",
 			input:   `( 1 )`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprPrimary{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SubExpression: testBuildExprTree[*Expr](t, &Value{
+					SubExpression: BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -1962,10 +1962,10 @@ switch foo {
 			name:    "Add 3",
 			input:   `1 + 2 + 3`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -1976,7 +1976,7 @@ switch foo {
 					Op: "+",
 					Right: &ExprAdditive{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-						Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+						Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -1985,7 +1985,7 @@ switch foo {
 							},
 						}),
 						Op: "+",
-						Right: testBuildExprTree[*ExprAdditive](t, &Value{
+						Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -2001,10 +2001,10 @@ switch foo {
 			name:    "Add and Multiply",
 			input:   `1 + 2 * 3`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+					Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -2013,9 +2013,9 @@ switch foo {
 						},
 					}),
 					Op: "+",
-					Right: testBuildExprTree[*ExprAdditive](t, &ExprMultiplicative{
+					Right: BuildTestExprTree[*ExprAdditive](t, &ExprMultiplicative{
 						ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-						Left: *testBuildExprTree[*ExprUnary](t, &Value{
+						Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -2024,7 +2024,7 @@ switch foo {
 							},
 						}),
 						Op: "*",
-						Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+						Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -2040,12 +2040,12 @@ switch foo {
 			name:    "Multiply and Add",
 			input:   `1 * 2 + 3`,
 			wantErr: false,
-			want: testBuildExprTree[*Expr](t,
+			want: BuildTestExprTree[*Expr](t,
 				&ExprAdditive{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Left: ExprMultiplicative{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Left: *testBuildExprTree[*ExprUnary](t, &Value{
+						Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -2054,7 +2054,7 @@ switch foo {
 							},
 						}),
 						Op: "*",
-						Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+						Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
@@ -2064,7 +2064,7 @@ switch foo {
 						}),
 					},
 					Op: "+",
-					Right: testBuildExprTree[*ExprAdditive](t, &Value{
+					Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -3112,7 +3112,7 @@ func TestInvocationParams_Clone(t *testing.T) {
 			name: "Values",
 			Input: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{
+					BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -3124,7 +3124,7 @@ func TestInvocationParams_Clone(t *testing.T) {
 			},
 			want: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{
+					BuildTestExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4182,7 +4182,7 @@ func TestExpr_String(t *testing.T) {
 			description: "",
 			input: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Left: testBuildExprTree[*ExprConditional](t, &Value{
+				Left: BuildTestExprTree[*ExprConditional](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4199,7 +4199,7 @@ func TestExpr_String(t *testing.T) {
 			input: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				If: &ExprIf{
-					Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Ident:   &Ident{Parts: []string{"foo"}},
 					}),
@@ -4215,7 +4215,7 @@ func TestExpr_String(t *testing.T) {
 			input: &Expr{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Switch: &ExprSwitch{
-					Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+					Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Ident:   &Ident{Parts: []string{"foo"}},
 					}),
@@ -4257,7 +4257,7 @@ func TestIf_String(t *testing.T) {
 		{
 			name: "If with empty body",
 			input: &ExprIf{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -4269,11 +4269,11 @@ func TestIf_String(t *testing.T) {
 		{
 			name: "If",
 			input: &ExprIf{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
-				Left: testBuildExprTree[*Expr](t, &Value{
+				Left: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4291,11 +4291,11 @@ if foo {
 		{
 			name: "If/Else",
 			input: &ExprIf{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
-				Left: testBuildExprTree[*Expr](t, &Value{
+				Left: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4303,7 +4303,7 @@ if foo {
 						Source:  "1",
 					},
 				}),
-				Right: testBuildExprTree[*Expr](t, &Value{
+				Right: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4351,7 +4351,7 @@ func TestSwitch_String(t *testing.T) {
 		{
 			name: "Only Selector",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -4362,14 +4362,14 @@ func TestSwitch_String(t *testing.T) {
 		{
 			name: "One single case, no default",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
 				Cases: []*ExprCase{
 					{
 						Conditions: []*ExprLogicalOr{
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4378,7 +4378,7 @@ func TestSwitch_String(t *testing.T) {
 								},
 							}),
 						},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4399,14 +4399,14 @@ switch foo {
 		{
 			name: "One multiple case, no default",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
 				Cases: []*ExprCase{
 					{
 						Conditions: []*ExprLogicalOr{
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4414,7 +4414,7 @@ switch foo {
 									Source:  "1",
 								},
 							}),
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4423,7 +4423,7 @@ switch foo {
 								},
 							}),
 						},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4444,14 +4444,14 @@ switch foo {
 		{
 			name: "Two single case, no default",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
 				Cases: []*ExprCase{
 					{
 						Conditions: []*ExprLogicalOr{
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4460,7 +4460,7 @@ switch foo {
 								},
 							}),
 						},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4471,7 +4471,7 @@ switch foo {
 					},
 					{
 						Conditions: []*ExprLogicalOr{
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4480,7 +4480,7 @@ switch foo {
 								},
 							}),
 						},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4504,7 +4504,7 @@ switch foo {
 		{
 			name: "Only default",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -4512,7 +4512,7 @@ switch foo {
 					{
 						Conditions: nil,
 						Default:    true,
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4533,14 +4533,14 @@ switch foo {
 		{
 			name: "One single case, default",
 			input: &ExprSwitch{
-				Selector: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Selector: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
 				Cases: []*ExprCase{
 					{
 						Conditions: []*ExprLogicalOr{
-							testBuildExprTree[*ExprLogicalOr](t, &Value{
+							BuildTestExprTree[*ExprLogicalOr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4549,7 +4549,7 @@ switch foo {
 								},
 							}),
 						},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4561,7 +4561,7 @@ switch foo {
 					{
 						Conditions: nil,
 						Default:    true,
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4617,7 +4617,7 @@ func TestCase_String(t *testing.T) {
 			name: "One condition",
 			input: &ExprCase{
 				Conditions: []*ExprLogicalOr{
-					testBuildExprTree[*ExprLogicalOr](t, &Value{
+					BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4627,7 +4627,7 @@ func TestCase_String(t *testing.T) {
 					}),
 				},
 				Default: false,
-				Expr: testBuildExprTree[*Expr](t, &Value{
+				Expr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4645,7 +4645,7 @@ case 1: {
 			name: "Several condition",
 			input: &ExprCase{
 				Conditions: []*ExprLogicalOr{
-					testBuildExprTree[*ExprLogicalOr](t, &Value{
+					BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4653,7 +4653,7 @@ case 1: {
 							Source:  "1",
 						},
 					}),
-					testBuildExprTree[*ExprLogicalOr](t, &Value{
+					BuildTestExprTree[*ExprLogicalOr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 						Number: &ValueNumber{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4663,7 +4663,7 @@ case 1: {
 					}),
 				},
 				Default: false,
-				Expr: testBuildExprTree[*Expr](t, &Value{
+				Expr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4682,7 +4682,7 @@ case 1, 2: {
 			input: &ExprCase{
 				Conditions: nil,
 				Default:    true,
-				Expr: testBuildExprTree[*Expr](t, &Value{
+				Expr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4723,7 +4723,7 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "Only Condition",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4737,7 +4737,7 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "All expressions but not operators",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4745,7 +4745,7 @@ func TestConditional_String(t *testing.T) {
 						Source:  "1",
 					},
 				}),
-				TrueExpr: testBuildExprTree[*Expr](t, &Value{
+				TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4753,7 +4753,7 @@ func TestConditional_String(t *testing.T) {
 						Source:  "2",
 					},
 				}),
-				FalseExpr: testBuildExprTree[*Expr](t, &Value{
+				FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4767,7 +4767,7 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "Operator with neither True nor False",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4782,7 +4782,7 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "Only True expression",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4791,7 +4791,7 @@ func TestConditional_String(t *testing.T) {
 					},
 				}),
 				ConditionOp: true,
-				TrueExpr: testBuildExprTree[*Expr](t, &Value{
+				TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4805,7 +4805,7 @@ func TestConditional_String(t *testing.T) {
 		{
 			name: "Only False expression",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4814,7 +4814,7 @@ func TestConditional_String(t *testing.T) {
 					},
 				}),
 				ConditionOp: true,
-				FalseExpr: testBuildExprTree[*Expr](t, &Value{
+				FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4829,7 +4829,7 @@ func TestConditional_String(t *testing.T) {
 			name:        "All parts",
 			description: "Both sides of the condition must be present.",
 			input: &ExprConditional{
-				Condition: *testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Condition: *BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4838,7 +4838,7 @@ func TestConditional_String(t *testing.T) {
 					},
 				}),
 				ConditionOp: true,
-				TrueExpr: testBuildExprTree[*Expr](t, &Value{
+				TrueExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4846,7 +4846,7 @@ func TestConditional_String(t *testing.T) {
 						Source:  "2",
 					},
 				}),
-				FalseExpr: testBuildExprTree[*Expr](t, &Value{
+				FalseExpr: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4889,7 +4889,7 @@ func TestLogicalOr_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprLogicalOr{
-				Left: *testBuildExprTree[*ExprLogicalAnd](t, &Value{
+				Left: *BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4913,7 +4913,7 @@ func TestLogicalOr_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprLogicalOr{
-				Left: *testBuildExprTree[*ExprLogicalAnd](t, &Value{
+				Left: *BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4922,7 +4922,7 @@ func TestLogicalOr_String(t *testing.T) {
 					},
 				}),
 				Op: OpLogicalOr,
-				Right: testBuildExprTree[*ExprLogicalOr](t, &Value{
+				Right: BuildTestExprTree[*ExprLogicalOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4965,7 +4965,7 @@ func TestLogicalAnd_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprLogicalAnd{
-				Left: *testBuildExprTree[*ExprBitwiseOr](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4989,7 +4989,7 @@ func TestLogicalAnd_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprLogicalAnd{
-				Left: *testBuildExprTree[*ExprBitwiseOr](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -4998,7 +4998,7 @@ func TestLogicalAnd_String(t *testing.T) {
 					},
 				}),
 				Op: OpLogicalAnd,
-				Right: testBuildExprTree[*ExprLogicalAnd](t, &Value{
+				Right: BuildTestExprTree[*ExprLogicalAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5041,7 +5041,7 @@ func TestBitwiseOr_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprBitwiseOr{
-				Left: *testBuildExprTree[*ExprBitwiseXor](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5065,7 +5065,7 @@ func TestBitwiseOr_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprBitwiseOr{
-				Left: *testBuildExprTree[*ExprBitwiseXor](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5074,7 +5074,7 @@ func TestBitwiseOr_String(t *testing.T) {
 					},
 				}),
 				Op: OpBitwiseOr,
-				Right: testBuildExprTree[*ExprBitwiseOr](t, &Value{
+				Right: BuildTestExprTree[*ExprBitwiseOr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5117,7 +5117,7 @@ func TestBitwiseXor_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprBitwiseXor{
-				Left: *testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5141,7 +5141,7 @@ func TestBitwiseXor_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprBitwiseXor{
-				Left: *testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+				Left: *BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5150,7 +5150,7 @@ func TestBitwiseXor_String(t *testing.T) {
 					},
 				}),
 				Op: OpBitwiseXOr,
-				Right: testBuildExprTree[*ExprBitwiseXor](t, &Value{
+				Right: BuildTestExprTree[*ExprBitwiseXor](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5193,7 +5193,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprBitwiseAnd{
-				Left: *testBuildExprTree[*ExprEquality](t, &Value{
+				Left: *BuildTestExprTree[*ExprEquality](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5217,7 +5217,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprBitwiseAnd{
-				Left: *testBuildExprTree[*ExprEquality](t, &Value{
+				Left: *BuildTestExprTree[*ExprEquality](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5226,7 +5226,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 					},
 				}),
 				Op: OpBitwiseAnd,
-				Right: testBuildExprTree[*ExprBitwiseAnd](t, &Value{
+				Right: BuildTestExprTree[*ExprBitwiseAnd](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5269,7 +5269,7 @@ func TestEquality_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprEquality{
-				Left: *testBuildExprTree[*ExprRelational](t, &Value{
+				Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5293,7 +5293,7 @@ func TestEquality_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprEquality{
-				Left: *testBuildExprTree[*ExprRelational](t, &Value{
+				Left: *BuildTestExprTree[*ExprRelational](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5302,7 +5302,7 @@ func TestEquality_String(t *testing.T) {
 					},
 				}),
 				Op: OpEqual,
-				Right: testBuildExprTree[*ExprEquality](t, &Value{
+				Right: BuildTestExprTree[*ExprEquality](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5346,7 +5346,7 @@ func TestRelational_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprRelational{
-				Left: *testBuildExprTree[*ExprShift](t, &Value{
+				Left: *BuildTestExprTree[*ExprShift](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5370,7 +5370,7 @@ func TestRelational_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprRelational{
-				Left: *testBuildExprTree[*ExprShift](t, &Value{
+				Left: *BuildTestExprTree[*ExprShift](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5379,7 +5379,7 @@ func TestRelational_String(t *testing.T) {
 					},
 				}),
 				Op: OpMoreOrEqual,
-				Right: testBuildExprTree[*ExprRelational](t, &Value{
+				Right: BuildTestExprTree[*ExprRelational](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5422,7 +5422,7 @@ func TestShift_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprShift{
-				Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+				Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5446,7 +5446,7 @@ func TestShift_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprShift{
-				Left: *testBuildExprTree[*ExprAdditive](t, &Value{
+				Left: *BuildTestExprTree[*ExprAdditive](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5455,7 +5455,7 @@ func TestShift_String(t *testing.T) {
 					},
 				}),
 				Op: OpBitwiseShiftRight,
-				Right: testBuildExprTree[*ExprShift](t, &Value{
+				Right: BuildTestExprTree[*ExprShift](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5498,7 +5498,7 @@ func TestAdditive_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprAdditive{
-				Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+				Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5522,7 +5522,7 @@ func TestAdditive_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprAdditive{
-				Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
+				Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5531,7 +5531,7 @@ func TestAdditive_String(t *testing.T) {
 					},
 				}),
 				Op: OpPlus,
-				Right: testBuildExprTree[*ExprAdditive](t, &Value{
+				Right: BuildTestExprTree[*ExprAdditive](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5574,7 +5574,7 @@ func TestMultiplicative_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprMultiplicative{
-				Left: *testBuildExprTree[*ExprUnary](t, &Value{
+				Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5589,7 +5589,7 @@ func TestMultiplicative_String(t *testing.T) {
 			name:        "Operator without right side",
 			description: "Right side can't be nil when an operator is present",
 			input: &ExprMultiplicative{
-				Left: *testBuildExprTree[*ExprUnary](t, &Value{
+				Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -5601,7 +5601,7 @@ func TestMultiplicative_String(t *testing.T) {
 		{
 			name: "Both sides",
 			input: &ExprMultiplicative{
-				Left: *testBuildExprTree[*ExprUnary](t, &Value{
+				Left: *BuildTestExprTree[*ExprUnary](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5610,7 +5610,7 @@ func TestMultiplicative_String(t *testing.T) {
 					},
 				}),
 				Op: OpMultiplication,
-				Right: testBuildExprTree[*ExprMultiplicative](t, &Value{
+				Right: BuildTestExprTree[*ExprMultiplicative](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5653,7 +5653,7 @@ func TestUnary_String(t *testing.T) {
 		{
 			name: "Right",
 			input: &ExprUnary{
-				Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+				Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -5664,7 +5664,7 @@ func TestUnary_String(t *testing.T) {
 			name: "Operator",
 			input: &ExprUnary{
 				Op: OpBitwiseNot,
-				Right: *testBuildExprTree[*ExprPostfix](t, &Value{
+				Right: *BuildTestExprTree[*ExprPostfix](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -5703,7 +5703,7 @@ func TestPostfix_String(t *testing.T) {
 		{
 			name: "Left",
 			input: &ExprPostfix{
-				Left: *testBuildExprTree[*ExprPrimary](t, &Value{
+				Left: *BuildTestExprTree[*ExprPrimary](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
@@ -5713,11 +5713,11 @@ func TestPostfix_String(t *testing.T) {
 		{
 			name: "Both",
 			input: &ExprPostfix{
-				Left: *testBuildExprTree[*ExprPrimary](t, &Value{
+				Left: *BuildTestExprTree[*ExprPrimary](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"foo"}},
 				}),
-				Right: testBuildExprTree[*Expr](t, &Value{
+				Right: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5760,7 +5760,7 @@ func TestPrimary_String(t *testing.T) {
 		{
 			name: "Sub Expression",
 			input: &ExprPrimary{
-				SubExpression: testBuildExprTree[*Expr](t, &Value{
+				SubExpression: BuildTestExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Number: &ValueNumber{
 						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5800,11 +5800,11 @@ func TestPrimary_String(t *testing.T) {
 					},
 					Monads: []*ExprInvocationParams{{
 						Values: []*Expr{
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Ident:   &Ident{Parts: []string{"bar"}},
 							}),
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Ident:   &Ident{Parts: []string{"baz"}},
 							}),
@@ -5864,7 +5864,7 @@ func TestInvocation_String(t *testing.T) {
 				},
 				Monads: []*ExprInvocationParams{{
 					Values: []*Expr{
-						testBuildExprTree[*Expr](t, &Value{
+						BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5887,7 +5887,7 @@ func TestInvocation_String(t *testing.T) {
 				},
 				Monads: []*ExprInvocationParams{{
 					Values: []*Expr{
-						testBuildExprTree[*Expr](t, &Value{
+						BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5895,7 +5895,7 @@ func TestInvocation_String(t *testing.T) {
 								Source:  "1",
 							},
 						}),
-						testBuildExprTree[*Expr](t, &Value{
+						BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5919,7 +5919,7 @@ func TestInvocation_String(t *testing.T) {
 				Monads: []*ExprInvocationParams{
 					{
 						Values: []*Expr{
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5931,7 +5931,7 @@ func TestInvocation_String(t *testing.T) {
 					},
 					{
 						Values: []*Expr{
-							testBuildExprTree[*Expr](t, &Value{
+							BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 								Number: &ValueNumber{
 									ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
@@ -5953,7 +5953,7 @@ func TestInvocation_String(t *testing.T) {
 						"foo",
 					},
 				},
-				Postfix: testBuildExprTree[*ExprPostfix](t, &Value{
+				Postfix: BuildTestExprTree[*ExprPostfix](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 					Ident:   &Ident{Parts: []string{"bar"}},
 				}),
@@ -5992,7 +5992,7 @@ func TestInvocationParams_String(t *testing.T) {
 			name: "One value",
 			input: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+					BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
 				},
 			},
 			want: "foo",
@@ -6001,8 +6001,8 @@ func TestInvocationParams_String(t *testing.T) {
 			name: "Two values",
 			input: &ExprInvocationParams{
 				Values: []*Expr{
-					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
-					testBuildExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
+					BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+					BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"bar"}}}),
 				},
 			},
 			want: "foo, bar",

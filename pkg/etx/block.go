@@ -8,10 +8,9 @@ import (
 type Block struct {
 	ASTNode
 
-	Comment *Comment     `parser:"[ @@ ]"                                    json:"comment,omitempty"`
-	Name    string       `parser:"@Ident"                                    json:"name"`
-	Labels  []string     `parser:"((String @Char StringEnd) | @Ident)* '{'"  json:"labels,omitempty"`
-	Body    []*BlockItem `parser:"(NewLine+ @@)* [ NewLine ] '}'"            json:"body"`
+	Name   string       `parser:"@Ident"                                    json:"name"`
+	Labels []string     `parser:"((String @Char StringEnd) | @Ident)* '{' [NewLine] "  json:"labels,omitempty"`
+	Body   []*BlockItem `parser:"@@* '}'"            json:"body"`
 }
 
 func (n *Block) Clone() *Block {
@@ -21,7 +20,6 @@ func (n *Block) Clone() *Block {
 
 	return &Block{
 		ASTNode: n.ASTNode.Clone(),
-		Comment: n.Comment.Clone(),
 		Name:    n.Name,
 		Labels:  cloneStrings(n.Labels),
 		Body:    cloneCollection(n.Body),
@@ -29,10 +27,6 @@ func (n *Block) Clone() *Block {
 }
 
 func (n *Block) Children() (children []Node) {
-	if n.Comment != nil {
-		children = append(children, n.Comment)
-	}
-
 	for _, item := range n.Body {
 		children = append(children, item)
 	}
@@ -46,10 +40,6 @@ func (n Block) String() string {
 	}
 
 	var sb strings.Builder
-
-	if n.Comment != nil {
-		sb.WriteString(n.Comment.String())
-	}
 
 	sb.WriteString(n.Name)
 
@@ -78,10 +68,10 @@ func (n Block) String() string {
 type BlockItem struct {
 	ASTNode
 
-	Block     *Block     `parser:"(   @@  "        json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@  "        json:"attribute,omitempty"`
-	Comment   *Comment   `parser:"  | @@  "        json:"comment,omitempty"`
-	EmptyLine string     `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
+	EmptyLine string     `parser:"(   @NewLine+  " json:"empty_line,omitempty"`
+	Block     *Block     `parser:"  | (@@ [NewLine])         " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | (@@ [NewLine])         " json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@        )" json:"comment,omitempty"`
 }
 
 func (n *BlockItem) Clone() *BlockItem {

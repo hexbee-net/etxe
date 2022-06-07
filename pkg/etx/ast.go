@@ -40,7 +40,7 @@ func (n *ASTNode) Node() *ASTNode {
 
 // AST for ETX files.
 type AST struct {
-	Items []*RootItem `parser:"(@@ (NewLine+ @@)* )*" json:"items,omitempty"`
+	Items []*RootItem `parser:"@@*" json:"items,omitempty"`
 }
 
 func (n *AST) Clone() *AST {
@@ -89,13 +89,13 @@ func (n *AST) UpdateParentRefs() {
 type RootItem struct {
 	ASTNode
 
-	Decl      *Decl      `parser:"(   @@  "        json:"decl,omitempty"`
-	Func      *Func      `parser:"  | @@  "        json:"func,omitempty"`
-	Type      *Type      `parser:"  | @@  "        json:"type,omitempty"`
-	Block     *Block     `parser:"  | @@  "        json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@  "        json:"attribute,omitempty"`
-	Comment   *Comment   `parser:"  | @@  "        json:"comment,omitempty"`
-	EmptyLine string     `parser:"  | @NewLine+ )" json:"empty_line,omitempty"`
+	EmptyLine string     `parser:"(   @NewLine+     " json:"empty_line,omitempty"`
+	Decl      *Decl      `parser:"  | @@ [NewLine]  " json:"decl,omitempty"`
+	Func      *Func      `parser:"  | @@ [NewLine]  " json:"func,omitempty"`
+	Type      *Type      `parser:"  | @@ [NewLine]  " json:"type,omitempty"`
+	Block     *Block     `parser:"  | @@ [NewLine]  " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@ [NewLine]  " json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@           )" json:"comment,omitempty"`
 }
 
 func (n *RootItem) Clone() *RootItem {

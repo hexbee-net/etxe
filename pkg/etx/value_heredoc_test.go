@@ -157,7 +157,7 @@ EOF`[1:],
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 2, Column: 5}},
-						Expr: testBuildExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
@@ -194,7 +194,7 @@ EOF`[1:],
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 2, Column: 5}},
-						Directive: testBuildExprTree[*Expr](t, &Value{
+						Directive: BuildTestExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
 							Number: &ValueNumber{
 								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 8}},
@@ -493,19 +493,19 @@ func TestHeredocFragment_Clone(t *testing.T) {
 		{
 			name: "Expr",
 			input: &HeredocFragment{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &HeredocFragment{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
 			name: "Directive",
 			input: &HeredocFragment{
-				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Directive: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &HeredocFragment{
-				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Directive: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -543,19 +543,19 @@ func TestHeredocFragment_Children(t *testing.T) {
 		{
 			name: "Expr",
 			input: &HeredocFragment{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
 			name: "Directive",
 			input: &HeredocFragment{
-				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Directive: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -598,14 +598,14 @@ func TestHeredocFragment_String(t *testing.T) {
 		{
 			name: "Expr",
 			input: &HeredocFragment{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Expr: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "${ 1 }",
 		},
 		{
 			name: "Directive",
 			input: &HeredocFragment{
-				Directive: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
+				Directive: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "%{ 1 }",
 		},
