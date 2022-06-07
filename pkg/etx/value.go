@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/alecthomas/participle/lexer"
@@ -134,10 +135,14 @@ func (v Value) String() string {
 // /////////////////////////////////////
 
 // ValueBool represents a parsed boolean value.
-type ValueBool bool
+type ValueBool struct {
+	ASTNode
+
+	Value bool
+}
 
 func (v *ValueBool) Capture(values []string) error {
-	*v = values[0] == "true"
+	v.Value = values[0] == "true"
 
 	return nil
 }
@@ -147,19 +152,28 @@ func (v *ValueBool) Clone() *ValueBool {
 		return nil
 	}
 
-	out := *v
+	out := &ValueBool{
+		ASTNode: v.ASTNode.Clone(),
+		Value:   v.Value,
+	}
 
-	return &out
+	return out
 }
 
 func (v *ValueBool) Children() (children []Node) {
 	return
 }
 
+func (v ValueBool) String() string {
+	return strconv.FormatBool(v.Value)
+}
+
 // /////////////////////////////////////
 
 // ValueNumber of arbitrary precision.
 type ValueNumber struct {
+	ASTNode
+
 	Value  *big.Float
 	Source string
 }
@@ -188,7 +202,8 @@ func (v *ValueNumber) Clone() *ValueNumber {
 	}
 
 	out := &ValueNumber{
-		Source: v.Source,
+		ASTNode: v.ASTNode.Clone(),
+		Source:  v.Source,
 	}
 
 	if v.Value != nil {

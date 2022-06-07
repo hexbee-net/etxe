@@ -35,7 +35,8 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+							Parts:   []string{"a"},
 						},
 					}),
 				},
@@ -51,7 +52,8 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+							Parts:   []string{"a"},
 						},
 					}),
 				},
@@ -70,7 +72,8 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+							Parts:   []string{"a"},
 						},
 					}),
 				},
@@ -86,13 +89,15 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+							Parts:   []string{"a"},
 						},
 					}),
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
 						Ident: &Ident{
-							Parts: []string{"b"},
+							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+							Parts:   []string{"b"},
 						},
 					}),
 				},
@@ -112,13 +117,15 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+							Parts:   []string{"a"},
 						},
 					}),
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 5}},
 						Ident: &Ident{
-							Parts: []string{"b"},
+							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 5}},
+							Parts:   []string{"b"},
 						},
 					}),
 				},
@@ -138,13 +145,15 @@ func TestList_Parsing(t *testing.T) {
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 						Ident: &Ident{
-							Parts: []string{"a"},
+							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+							Parts:   []string{"a"},
 						},
 					}),
 					testBuildExprTree[*Expr](t, &Value{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 5}},
 						Ident: &Ident{
-							Parts: []string{"b"},
+							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 3, Column: 5}},
+							Parts:   []string{"b"},
 						},
 					}),
 				},
@@ -162,12 +171,20 @@ func TestList_Parsing(t *testing.T) {
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-								Number:  &ValueNumber{big.NewFloat(1), "1"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+									Value:   big.NewFloat(1),
+									Source:  "1",
+								},
 							}),
 							Op: OpPlus,
 							Right: testBuildExprTree[*ExprAdditive](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-								Number:  &ValueNumber{big.NewFloat(2), "2"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+									Value:   big.NewFloat(2),
+									Source:  "2",
+								},
 							}),
 						},
 					),
@@ -186,12 +203,20 @@ func TestList_Parsing(t *testing.T) {
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-								Number:  &ValueNumber{big.NewFloat(1), "1"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+									Value:   big.NewFloat(1),
+									Source:  "1",
+								},
 							}),
 							Op: OpPlus,
 							Right: testBuildExprTree[*ExprAdditive](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-								Number:  &ValueNumber{big.NewFloat(2), "2"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+									Value:   big.NewFloat(2),
+									Source:  "2",
+								},
 							}),
 						},
 					),
@@ -200,12 +225,20 @@ func TestList_Parsing(t *testing.T) {
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
 							Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-								Number:  &ValueNumber{big.NewFloat(3), "3"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+									Value:   big.NewFloat(3),
+									Source:  "3",
+								},
 							}),
 							Op: OpMinus,
 							Right: testBuildExprTree[*ExprAdditive](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
-								Number:  &ValueNumber{big.NewFloat(4), "4"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
+									Value:   big.NewFloat(4),
+									Source:  "4",
+								},
 							}),
 						},
 					),

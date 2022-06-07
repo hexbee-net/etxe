@@ -1,7 +1,7 @@
 package etx
 
 import (
-	"math/big"
+	big "math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,11 @@ func TestLambda_Parsing(t *testing.T) {
 				Parameters: nil,
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -43,7 +47,11 @@ func TestLambda_Parsing(t *testing.T) {
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -65,7 +73,11 @@ func TestLambda_Parsing(t *testing.T) {
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -81,13 +93,20 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "x",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-							Ident:   &Ident{Parts: []string{"number"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+								Parts:   []string{"number"},
+							},
 						},
 					},
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -103,7 +122,10 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "x",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-							Ident:   &Ident{Parts: []string{"number"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+								Parts:   []string{"number"},
+							},
 						},
 					},
 					{
@@ -111,13 +133,20 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "y",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-							Ident:   &Ident{Parts: []string{"string"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+								Parts:   []string{"string"},
+							},
 						},
 					},
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 26, Line: 1, Column: 27}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 26, Line: 1, Column: 27}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -133,7 +162,10 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "x",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-							Ident:   &Ident{Parts: []string{"number"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+								Parts:   []string{"number"},
+							},
 						},
 					},
 					{
@@ -143,7 +175,11 @@ func TestLambda_Parsing(t *testing.T) {
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -163,13 +199,20 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "y",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-							Ident:   &Ident{Parts: []string{"string"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+								Parts:   []string{"string"},
+							},
 						},
 					},
 				},
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -185,7 +228,10 @@ func TestLambda_Parsing(t *testing.T) {
 						Label:   "x",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
-							Ident:   &Ident{Parts: []string{"number"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 4, Line: 1, Column: 5}},
+								Parts:   []string{"number"},
+							},
 						},
 					},
 				},
@@ -194,12 +240,19 @@ func TestLambda_Parsing(t *testing.T) {
 						ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 						Left: *testBuildExprTree[*ExprMultiplicative](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-							Ident:   &Ident{Parts: []string{"x"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
+								Parts:   []string{"x"},
+							},
 						}),
 						Op: OpPlus,
 						Right: testBuildExprTree[*ExprAdditive](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 1, Column: 20}},
-							Number:  &ValueNumber{big.NewFloat(1), "1"},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 1, Column: 20}},
+								Value:   big.NewFloat(1),
+								Source:  "1",
+							},
 						}),
 					},
 				),
@@ -220,7 +273,11 @@ func TestLambda_Parsing(t *testing.T) {
 				Parameters: nil,
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 7}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 7}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -247,7 +304,11 @@ func TestLambda_Parsing(t *testing.T) {
 				Parameters: nil,
 				Expr: *testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 7}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 2, Column: 7}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -308,10 +369,10 @@ func TestLambda_Clone(t *testing.T) {
 		{
 			name: "Expr",
 			Input: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -361,10 +422,10 @@ func TestLambda_Children(t *testing.T) {
 		{
 			name: "Expr",
 			input: &Lambda{
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -399,7 +460,7 @@ func TestLambda_String(t *testing.T) {
 			name: "No Parameters",
 			input: &Lambda{
 				Parameters: nil,
-				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "() => 1",
 		},
@@ -409,7 +470,7 @@ func TestLambda_String(t *testing.T) {
 				Parameters: []*LambdaParameter{
 					{Label: "foo"},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "(foo) => 1",
 		},
@@ -420,7 +481,7 @@ func TestLambda_String(t *testing.T) {
 					{Label: "foo"},
 					{Label: "bar"},
 				},
-				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "(foo, bar) => 1",
 		},
@@ -429,7 +490,7 @@ func TestLambda_String(t *testing.T) {
 			input: &Lambda{
 				Comment:    &Comment{SingleLine: []string{"// foo"}},
 				Parameters: nil,
-				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr:       *testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: `
 // foo
@@ -473,7 +534,10 @@ func TestLambdaParameter_Parsing(t *testing.T) {
 				Label:   "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},

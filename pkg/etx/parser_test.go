@@ -32,17 +32,22 @@ func TestParse(t *testing.T) {
 		{
 			name:   "Valid file",
 			reader: strings.NewReader(`foo`),
-			want: &AST{
-				Items: []*RootItem{
-					{
-						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Attribute: &Attribute{
+			want: func() *AST {
+				res := &AST{
+					Items: []*RootItem{
+						{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-							Key:     "foo",
+							Attribute: &Attribute{
+								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+								Key:     "foo",
+							},
 						},
 					},
-				},
-			},
+				}
+				res.UpdateParentRefs()
+
+				return res
+			}(),
 			wantErr: false,
 		},
 	}
@@ -75,17 +80,22 @@ func TestParseString(t *testing.T) {
 		{
 			name:  "Valid string",
 			input: "foo",
-			want: &AST{
-				Items: []*RootItem{
-					{
-						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Attribute: &Attribute{
+			want: func() *AST {
+				res := &AST{
+					Items: []*RootItem{
+						{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-							Key:     "foo",
+							Attribute: &Attribute{
+								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+								Key:     "foo",
+							},
 						},
 					},
-				},
-			},
+				}
+				res.UpdateParentRefs()
+
+				return res
+			}(),
 			wantErr: false,
 		},
 		{
@@ -123,17 +133,21 @@ func TestParseBytes(t *testing.T) {
 		{
 			name:  "Valid string",
 			input: []byte("foo"),
-			want: &AST{
-				Items: []*RootItem{
-					{
-						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-						Attribute: &Attribute{
+			want: func() *AST {
+				res := &AST{
+					Items: []*RootItem{
+						{
 							ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-							Key:     "foo",
+							Attribute: &Attribute{
+								ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+								Key:     "foo",
+							},
 						},
 					},
-				},
-			},
+				}
+				res.UpdateParentRefs()
+				return res
+			}(),
 			wantErr: false,
 		},
 		{

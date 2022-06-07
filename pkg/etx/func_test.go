@@ -38,7 +38,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Label:   "bar",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
-							Ident:   &Ident{Parts: []string{"bool"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
+								Parts:   []string{"bool"},
+							},
 						},
 					},
 				},
@@ -57,7 +60,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Label:   "bar",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
-							Ident:   &Ident{Parts: []string{"bool"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
+								Parts:   []string{"bool"},
+							},
 						},
 					},
 					{
@@ -65,7 +71,10 @@ func TestFunc_Parsing(t *testing.T) {
 						Label:   "baz",
 						Type: &ParameterType{
 							ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 1, Column: 25}},
-							Ident:   &Ident{Parts: []string{"number"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 24, Line: 1, Column: 25}},
+								Parts:   []string{"number"},
+							},
 						},
 					},
 				},
@@ -81,7 +90,10 @@ func TestFunc_Parsing(t *testing.T) {
 				Return: []*ParameterType{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-						Ident:   &Ident{Parts: []string{"bool"}},
+						Ident: &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+							Parts:   []string{"bool"},
+						},
 					},
 				},
 			},
@@ -96,11 +108,17 @@ func TestFunc_Parsing(t *testing.T) {
 				Return: []*ParameterType{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
-						Ident:   &Ident{Parts: []string{"bool"}},
+						Ident: &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+							Parts:   []string{"bool"},
+						},
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
-						Ident:   &Ident{Parts: []string{"number"}},
+						Ident: &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 17, Line: 1, Column: 18}},
+							Parts:   []string{"number"},
+						},
 					},
 				},
 			},
@@ -124,12 +142,18 @@ func TestFunc_Parsing(t *testing.T) {
 								Parameters: []*ParameterType{
 									{
 										ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
-										Ident:   &Ident{Parts: []string{"int"}},
+										Ident: &Ident{
+											ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
+											Parts:   []string{"int"},
+										},
 									},
 								},
 								Return: ParameterType{
 									ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 1, Column: 23}},
-									Ident:   &Ident{Parts: []string{"bool"}},
+									Ident: &Ident{
+										ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 1, Column: 23}},
+										Parts:   []string{"bool"},
+									},
 								},
 							},
 						},
@@ -155,12 +179,18 @@ func TestFunc_Parsing(t *testing.T) {
 								Parameters: []*ParameterType{
 									{
 										ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
-										Ident:   &Ident{Parts: []string{"int"}},
+										Ident: &Ident{
+											ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
+											Parts:   []string{"int"},
+										},
 									},
 								},
 								Return: ParameterType{
 									ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 1, Column: 23}},
-									Ident:   &Ident{Parts: []string{"bool"}},
+									Ident: &Ident{
+										ASTNode: ASTNode{Pos: Position{Offset: 22, Line: 1, Column: 23}},
+										Parts:   []string{"bool"},
+									},
 								},
 							},
 						},
@@ -175,12 +205,18 @@ func TestFunc_Parsing(t *testing.T) {
 								Parameters: []*ParameterType{
 									{
 										ASTNode: ASTNode{Pos: Position{Offset: 34, Line: 1, Column: 35}},
-										Ident:   &Ident{Parts: []string{"bool"}},
+										Ident: &Ident{
+											ASTNode: ASTNode{Pos: Position{Offset: 34, Line: 1, Column: 35}},
+											Parts:   []string{"bool"},
+										},
 									},
 								},
 								Return: ParameterType{
 									ASTNode: ASTNode{Pos: Position{Offset: 43, Line: 1, Column: 44}},
-									Ident:   &Ident{Parts: []string{"int"}},
+									Ident: &Ident{
+										ASTNode: ASTNode{Pos: Position{Offset: 43, Line: 1, Column: 44}},
+										Parts:   []string{"int"},
+									},
 								},
 							},
 						},
@@ -203,12 +239,18 @@ func TestFunc_Parsing(t *testing.T) {
 							Parameters: []*ParameterType{
 								{
 									ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
-									Ident:   &Ident{Parts: []string{"int"}},
+									Ident: &Ident{
+										ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
+										Parts:   []string{"int"},
+									},
 								},
 							},
 							Return: ParameterType{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
-								Ident:   &Ident{Parts: []string{"bool"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
+									Parts:   []string{"bool"},
+								},
 							},
 						},
 					},
@@ -231,7 +273,10 @@ def foo() {
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
 						Expr: testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
-							Ident:   &Ident{Parts: []string{"a"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
+								Parts:   []string{"a"},
+							},
 						}),
 					},
 				},
@@ -256,11 +301,18 @@ def foo() {
 							Label:    "a",
 							Type: &ParameterType{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 2, Column: 9}},
-								Ident:   &Ident{Parts: []string{"number"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 2, Column: 9}},
+									Parts:   []string{"number"},
+								},
 							},
 							Value: testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
-								Number:  &ValueNumber{big.NewFloat(1), "1"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
+									Value:   big.NewFloat(1),
+									Source:  "1",
+								},
 							}),
 						},
 					},
@@ -287,11 +339,18 @@ def foo() {
 							Label:    "a",
 							Type: &ParameterType{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 2, Column: 9}},
-								Ident:   &Ident{Parts: []string{"number"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 2, Column: 9}},
+									Parts:   []string{"number"},
+								},
 							},
 							Value: testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
-								Number:  &ValueNumber{big.NewFloat(1), "1"},
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 29, Line: 2, Column: 18}},
+									Value:   big.NewFloat(1),
+									Source:  "1",
+								},
 							}),
 						},
 					},
@@ -299,7 +358,10 @@ def foo() {
 						ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
 						Expr: testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
-							Ident:   &Ident{Parts: []string{"a"}},
+							Ident: &Ident{
+								ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
+								Parts:   []string{"a"},
+							},
 						}),
 					},
 				},
@@ -427,12 +489,12 @@ func TestFunc_Clone(t *testing.T) {
 			name: "Body",
 			input: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 		},
@@ -500,12 +562,12 @@ func TestFunc_Children(t *testing.T) {
 			name: "Body",
 			input: &Func{
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: []Node{
 				&FuncStatement{
-					Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
@@ -591,7 +653,7 @@ func TestFunc_String(t *testing.T) {
 			input: &Func{
 				Label: "foo",
 				Body: []*FuncStatement{
-					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}})},
+					{Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
 				},
 			},
 			want: `
@@ -646,7 +708,10 @@ func TestFuncParameter_Parsing(t *testing.T) {
 				Label:   "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},
@@ -826,7 +891,11 @@ func TestFuncStatement_Parsing(t *testing.T) {
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Expr: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -905,24 +974,24 @@ func TestFuncStatement_Clone(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: &FuncStatement{
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -971,24 +1040,24 @@ func TestFuncStatement_Children(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: []Node{
 				&FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 		},
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1032,7 +1101,7 @@ func TestFuncStatement_String(t *testing.T) {
 				Decl: &FuncDecl{
 					DeclType: "val",
 					Label:    "foo",
-					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+					Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 				},
 			},
 			want: "val foo = 1",
@@ -1040,7 +1109,7 @@ func TestFuncStatement_String(t *testing.T) {
 		{
 			name: "Expr",
 			input: &FuncStatement{
-				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Expr: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "1",
 		},
@@ -1107,7 +1176,10 @@ func TestFuncDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},
@@ -1121,7 +1193,11 @@ func TestFuncDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Value: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -1135,11 +1211,18 @@ func TestFuncDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+						Parts:   []string{"number"},
+					},
 				},
 				Value: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode: ASTNode{Pos: Position{Offset: 18, Line: 1, Column: 19}},
+						Value:   big.NewFloat(1),
+						Source:  "1",
+					},
 				}),
 			},
 		},
@@ -1209,10 +1292,10 @@ func TestFuncDecl_Clone(t *testing.T) {
 		{
 			name: "Value",
 			Input: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1263,10 +1346,10 @@ func TestFuncDecl_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &FuncDecl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -1319,7 +1402,7 @@ func TestFuncDecl_String(t *testing.T) {
 			input: &FuncDecl{
 				DeclType: "val",
 				Label:    "foo",
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo = 1",
 		},
@@ -1329,7 +1412,7 @@ func TestFuncDecl_String(t *testing.T) {
 				DeclType: "val",
 				Label:    "foo",
 				Type:     &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo: number = 1",
 		},

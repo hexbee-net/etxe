@@ -21,13 +21,13 @@ func TestBool_Clone(t *testing.T) {
 		},
 		{
 			name:  "True",
-			input: testValPtr[ValueBool](t, true),
-			want:  testValPtr[ValueBool](t, true),
+			input: &ValueBool{Value: true},
+			want:  &ValueBool{Value: true},
 		},
 		{
 			name:  "False",
-			input: testValPtr[ValueBool](t, false),
-			want:  testValPtr[ValueBool](t, false),
+			input: &ValueBool{Value: false},
+			want:  &ValueBool{Value: false},
 		},
 	}
 
@@ -53,12 +53,12 @@ func TestBool_Children(t *testing.T) {
 		},
 		{
 			name:  "True",
-			input: testValPtr[ValueBool](t, true),
+			input: &ValueBool{Value: true},
 			want:  nil,
 		},
 		{
 			name:  "False",
-			input: testValPtr[ValueBool](t, false),
+			input: &ValueBool{Value: false},
 			want:  nil,
 		},
 	}

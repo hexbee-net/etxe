@@ -34,7 +34,7 @@ func TestAttribute_Parsing(t *testing.T) {
 				Key:     "foo",
 				Value: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number:  &ValueNumber{ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}}, big.NewFloat(1), "1"},
 				}),
 			},
 		},
@@ -133,10 +133,10 @@ func TestAttribute_Clone(t *testing.T) {
 		{
 			name: "Value",
 			input: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -180,10 +180,10 @@ func TestAttribute_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &Attribute{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -225,7 +225,7 @@ func TestAttribute_String(t *testing.T) {
 			name: "Key and value",
 			input: &Attribute{
 				Key:   "foo",
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "foo: 1",
 		},

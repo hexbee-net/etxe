@@ -13,10 +13,12 @@ type Position = lexer.Position
 // Node is the interface implemented by all AST nodes.
 type Node interface {
 	Children() (children []Node)
+	Node() *ASTNode
 }
 
 // /////////////////////////////////////
 
+// ASTNode is a node in the AST.
 type ASTNode struct {
 	Pos    Position `parser:"" json:"-"`
 	Parent Node     `parser:"" json:"-"`
@@ -28,6 +30,10 @@ func (n ASTNode) Clone() ASTNode {
 	}
 
 	return out
+}
+
+func (n *ASTNode) Node() *ASTNode {
+	return n
 }
 
 // /////////////////////////////////////
@@ -68,6 +74,13 @@ func (n AST) String() string {
 	}
 
 	return strings.Join(items, "\n\n") + "\n"
+}
+
+// UpdateParentRefs recursively updates the AST nodes parent references.
+func (n *AST) UpdateParentRefs() {
+	for _, c := range n.Children() {
+		updateParentRefs(nil, c)
+	}
 }
 
 // /////////////////////////////////////

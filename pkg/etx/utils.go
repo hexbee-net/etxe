@@ -36,13 +36,6 @@ func cloneStrings(strings []string) []string {
 	return out
 }
 
-// AddParentRefs recursively updates an AST parent references.
-//
-// This is called automatically during Parse*(), but can be called on a manually constructed AST.
-func AddParentRefs(node Node) error {
-	return nil
-}
-
 // indent inserts prefix at the beginning of each non-empty line of s.
 func indent(s, prefix string) string {
 	return string(indentBytes([]byte(s), []byte(prefix)))

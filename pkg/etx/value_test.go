@@ -31,7 +31,7 @@ func TestValue_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Value{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Bool:    func() *ValueBool { v := true; return (*ValueBool)(&v) }(),
+				Bool:    &ValueBool{Value: true},
 			},
 		},
 		{
@@ -40,7 +40,7 @@ func TestValue_Parsing(t *testing.T) {
 			wantErr: false,
 			want: &Value{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Bool:    func() *ValueBool { v := false; return (*ValueBool)(&v) }(),
+				Bool:    &ValueBool{Value: false},
 			},
 		},
 		{
@@ -79,7 +79,8 @@ func TestValue_Parsing(t *testing.T) {
 			want: &Value{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Ident: &Ident{
-					Parts: []string{"var"},
+					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+					Parts:   []string{"var"},
 				},
 			},
 		},
@@ -171,11 +172,19 @@ FOO`[1:],
 					Items: []*Expr{
 						testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-							Number:  &ValueNumber{big.NewFloat(1), "1"},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+								Value:   big.NewFloat(1),
+								Source:  "1",
+							},
 						}),
 						testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-							Number:  &ValueNumber{big.NewFloat(2), "2"},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+								Value:   big.NewFloat(2),
+								Source:  "2",
+							},
 						}),
 					},
 				},
@@ -205,22 +214,34 @@ FOO`[1:],
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Key: Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-								Ident:   &Ident{Parts: []string{"foo"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+									Parts:   []string{"foo"},
+								},
 							},
 							Value: *testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
-								Ident:   &Ident{Parts: []string{"bar"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+									Parts:   []string{"bar"},
+								},
 							}),
 						},
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 							Key: Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
-								Ident:   &Ident{Parts: []string{"baz"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
+									Parts:   []string{"baz"},
+								},
 							},
 							Value: *testBuildExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
-								Ident:   &Ident{Parts: []string{"qux"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
+									Parts:   []string{"qux"},
+								},
 							}),
 						},
 					},
@@ -313,19 +334,19 @@ func TestValue_Clone(t *testing.T) {
 		{
 			name: "Bool Value",
 			input: &Value{
-				Bool: testValPtr[ValueBool](t, true),
+				Bool: &ValueBool{Value: true},
 			},
 			want: &Value{
-				Bool: testValPtr[ValueBool](t, true),
+				Bool: &ValueBool{Value: true},
 			},
 		},
 		{
 			name: "Number Value",
 			input: &Value{
-				Number: &ValueNumber{big.NewFloat(1), "1"},
+				Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 			},
 			want: &Value{
-				Number: &ValueNumber{big.NewFloat(1), "1"},
+				Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 			},
 		},
 		{
@@ -444,19 +465,19 @@ func TestValue_Children(t *testing.T) {
 		{
 			name: "Bool Value",
 			input: &Value{
-				Bool: testValPtr[ValueBool](t, true),
+				Bool: &ValueBool{Value: true},
 			},
 			want: []Node{
-				func() Node { v := ValueBool(true); return &v }(),
+				&ValueBool{Value: true},
 			},
 		},
 		{
 			name: "Number Value",
 			input: &Value{
-				Number: &ValueNumber{big.NewFloat(1), "1"},
+				Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 			},
 			want: []Node{
-				&ValueNumber{big.NewFloat(1), "1"},
+				&ValueNumber{Value: big.NewFloat(1), Source: "1"},
 			},
 		},
 		{
@@ -581,14 +602,14 @@ func TestValue_String(t *testing.T) {
 		{
 			name: "Bool Value",
 			input: &Value{
-				Bool: testValPtr[ValueBool](t, true),
+				Bool: &ValueBool{Value: true},
 			},
 			want: "true",
 		},
 		{
 			name: "Number Value",
 			input: &Value{
-				Number: &ValueNumber{big.NewFloat(1), "1"},
+				Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"},
 			},
 			want: "1",
 		},

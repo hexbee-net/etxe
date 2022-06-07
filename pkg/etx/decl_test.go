@@ -36,7 +36,10 @@ func TestDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},
@@ -50,7 +53,10 @@ func TestDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},
@@ -64,7 +70,10 @@ func TestDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 12, Line: 1, Column: 13}},
+						Parts:   []string{"number"},
+					},
 				},
 			},
 		},
@@ -78,11 +87,18 @@ func TestDecl_Parsing(t *testing.T) {
 				Label:    "foo",
 				Type: &ParameterType{
 					ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
-					Ident:   &Ident{Parts: []string{"number"}},
+					Ident: &Ident{
+						ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+						Parts:   []string{"number"},
+					},
 				},
 				Value: testBuildExprTree[*Expr](t, &Value{
 					ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
-					Number:  &ValueNumber{big.NewFloat(1), "1"},
+					Number: &ValueNumber{
+						ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
+						big.NewFloat(1),
+						"1",
+					},
 				}),
 			},
 		},
@@ -201,10 +217,10 @@ func TestDecl_Clone(t *testing.T) {
 		{
 			name: "Value",
 			input: &Decl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Decl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -264,10 +280,10 @@ func TestDecl_Children(t *testing.T) {
 		{
 			name: "Value",
 			input: &Decl{
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: []Node{
-				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
@@ -320,7 +336,7 @@ func TestDecl_String(t *testing.T) {
 			input: &Decl{
 				DeclType: "val",
 				Label:    "foo",
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo = 1",
 		},
@@ -330,7 +346,7 @@ func TestDecl_String(t *testing.T) {
 				DeclType: "val",
 				Label:    "foo",
 				Type:     &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
-				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value:    testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: "val foo: number = 1",
 		},

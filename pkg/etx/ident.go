@@ -5,6 +5,8 @@ import (
 )
 
 type Ident struct {
+	ASTNode
+
 	Parts []string `parser:"@Ident [('.' @Ident)*]" json:"parts"`
 }
 

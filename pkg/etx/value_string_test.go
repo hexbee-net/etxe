@@ -197,7 +197,10 @@ func TestString_Parsing(t *testing.T) {
 						Expr: testBuildExprTree[*Expr](t,
 							&Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
-								Ident:   &Ident{Parts: []string{"foo"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
+									Parts:   []string{"foo"},
+								},
 							}),
 					},
 				},
@@ -219,7 +222,10 @@ func TestString_Parsing(t *testing.T) {
 						Expr: testBuildExprTree[*Expr](t,
 							&Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-								Ident:   &Ident{Parts: []string{"foo"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+									Parts:   []string{"foo"},
+								},
 							}),
 					},
 					{
@@ -268,7 +274,10 @@ func TestString_Parsing(t *testing.T) {
 						Directive: testBuildExprTree[*Expr](t,
 							&Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-								Ident:   &Ident{Parts: []string{"foo"}},
+								Ident: &Ident{
+									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+									Parts:   []string{"foo"},
+								},
 							}),
 					},
 					{

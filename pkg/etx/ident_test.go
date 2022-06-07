@@ -20,6 +20,7 @@ func TestIdent_Parsing(t *testing.T) {
 			input:   "foo",
 			wantErr: false,
 			want: &Ident{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Parts: []string{
 					"foo",
 				},
@@ -30,6 +31,7 @@ func TestIdent_Parsing(t *testing.T) {
 			input:   "foo.bar.baz",
 			wantErr: false,
 			want: &Ident{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Parts: []string{
 					"foo",
 					"bar",

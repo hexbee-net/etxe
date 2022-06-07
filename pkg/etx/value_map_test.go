@@ -35,12 +35,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 				},
@@ -58,12 +63,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 				},
@@ -84,12 +94,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 				},
@@ -107,12 +122,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 					{
@@ -120,12 +140,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 							Ident: &Ident{
-								Parts: []string{"b"},
+								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
+								Parts:   []string{"b"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
-							Number:  &ValueNumber{big.NewFloat(2), `2`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 11, Line: 1, Column: 12}},
+								Value:   big.NewFloat(2),
+								Source:  `2`,
+							},
 						}),
 					},
 				},
@@ -147,12 +172,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 					{
@@ -160,12 +190,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
 							Ident: &Ident{
-								Parts: []string{"b"},
+								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
+								Parts:   []string{"b"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
-							Number:  &ValueNumber{big.NewFloat(2), `2`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
+								Value:   big.NewFloat(2),
+								Source:  `2`,
+							},
 						}),
 					},
 				},
@@ -187,12 +222,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
-								Parts: []string{"a"},
+								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
+								Parts:   []string{"a"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
-							Number:  &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 2, Column: 8}},
+								Value:   big.NewFloat(1),
+								Source:  `1`,
+							},
 						}),
 					},
 					{
@@ -200,12 +240,17 @@ func TestMap_Parsing(t *testing.T) {
 						Key: Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
 							Ident: &Ident{
-								Parts: []string{"b"},
+								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
+								Parts:   []string{"b"},
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
 							ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
-							Number:  &ValueNumber{big.NewFloat(2), `2`},
+							Number: &ValueNumber{
+								ASTNode: ASTNode{Pos: Position{Offset: 19, Line: 3, Column: 8}},
+								Value:   big.NewFloat(2),
+								Source:  `2`,
+							},
 						}),
 					},
 				},
@@ -320,7 +365,7 @@ func TestMap_String(t *testing.T) {
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
-							Number: &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 						}),
 					},
 				},
@@ -341,7 +386,7 @@ func TestMap_String(t *testing.T) {
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
-							Number: &ValueNumber{big.NewFloat(1), `1`},
+							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 						}),
 					},
 					{
@@ -351,7 +396,7 @@ func TestMap_String(t *testing.T) {
 							},
 						},
 						Value: *testBuildExprTree[*Expr](t, &Value{
-							Number: &ValueNumber{big.NewFloat(1), `2`},
+							Number: &ValueNumber{Value: big.NewFloat(1), Source: `2`},
 						}),
 					},
 				},
@@ -501,7 +546,7 @@ func TestMapEntry_String(t *testing.T) {
 					},
 				},
 				Value: *testBuildExprTree[*Expr](t, &Value{
-					Number: &ValueNumber{big.NewFloat(1), `1`},
+					Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 				}),
 			},
 			want: `a = 1`,
@@ -516,7 +561,7 @@ func TestMapEntry_String(t *testing.T) {
 					},
 				},
 				Value: *testBuildExprTree[*Expr](t, &Value{
-					Number: &ValueNumber{big.NewFloat(1), `1`},
+					Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 				}),
 			},
 			want: `

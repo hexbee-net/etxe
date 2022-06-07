@@ -160,7 +160,7 @@ func TestComment_Parsing(t *testing.T) {
 						SingleLine: []string{"// foo"},
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -177,7 +177,7 @@ func TestComment_Parsing(t *testing.T) {
 						SingleLine: []string{"// foo", "// bar"},
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 
@@ -261,7 +261,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo */",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -277,7 +277,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo\n   bar */",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -293,7 +293,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo */\n",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 		{
@@ -310,7 +310,7 @@ func TestComment_Parsing(t *testing.T) {
 						Multiline: "/* foo\n   bar */\n",
 					},
 				},
-				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{big.NewFloat(1), "1"}}),
+				Value: testBuildExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 		},
 	}
