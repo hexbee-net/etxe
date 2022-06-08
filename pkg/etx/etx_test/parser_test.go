@@ -306,22 +306,22 @@ func TestParse(t *testing.T) {
 										Key: "attr",
 										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 											Map: &etx.ValueMap{
-												Entries: []*etx.MapEntry{
+												Items: []*etx.MapItem{
 													{
-														Key: etx.MapKey{
+														Key: &etx.MapKey{
 															Ident: &etx.Ident{Parts: []string{"a"}},
 														},
-														Value: *etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
+														Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 															Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: `1`},
 														}),
 													},
 													{
-														Key: etx.MapKey{
+														Key: &etx.MapKey{
 															Str: &etx.ValueString{
 																Fragment: []*etx.StringFragment{{Text: "b"}},
 															},
 														},
-														Value: *etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
+														Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 															Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: `2`},
 														}),
 													},
@@ -333,24 +333,24 @@ func TestParse(t *testing.T) {
 										Key: "attr",
 										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 											Map: &etx.ValueMap{
-												Entries: []*etx.MapEntry{
+												Items: []*etx.MapItem{
 													{
-														Key: etx.MapKey{
+														Key: &etx.MapKey{
 															Ident: &etx.Ident{
 																Parts: []string{"a"},
 															},
 														},
-														Value: *etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
+														Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 															Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: `1`},
 														}),
 													},
 													{
-														Key: etx.MapKey{
+														Key: &etx.MapKey{
 															Str: &etx.ValueString{
 																Fragment: []*etx.StringFragment{{Text: "b"}},
 															},
 														},
-														Value: *etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
+														Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 															Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: `2`},
 														}),
 													},

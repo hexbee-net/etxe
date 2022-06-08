@@ -487,10 +487,10 @@ func TestBlockItem_Parsing(t *testing.T) {
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						Map: &ValueMap{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-							Entries: []*MapEntry{
+							Items: []*MapItem{
 								{
 									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-									Key: MapKey{
+									Key: &MapKey{
 										ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 										Str: &ValueString{
 											ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
@@ -502,7 +502,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 											},
 										},
 									},
-									Value: *BuildTestExprTree[*Expr](t, &Value{
+									Value: BuildTestExprTree[*Expr](t, &Value{
 										ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
 										Number: &ValueNumber{
 											ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},

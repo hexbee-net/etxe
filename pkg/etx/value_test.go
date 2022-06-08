@@ -203,31 +203,31 @@ FOO`[1:],
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				Map: &ValueMap{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Entries: []*MapEntry{
+					Items: []*MapItem{
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-							Key: MapKey{
+							Key: &MapKey{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 									Parts:   []string{"foo"},
 								},
 							},
-							Value: *BuildTestExprTree[*Expr](t, &Ident{
+							Value: BuildTestExprTree[*Expr](t, &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 								Parts:   []string{"bar"},
 							}),
 						},
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
-							Key: MapKey{
+							Key: &MapKey{
 								ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 									Parts:   []string{"baz"},
 								},
 							},
-							Value: *BuildTestExprTree[*Expr](t, &Ident{
+							Value: BuildTestExprTree[*Expr](t, &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
 								Parts:   []string{"qux"},
 							}),
@@ -349,12 +349,12 @@ func TestValue_Clone(t *testing.T) {
 			name: "Map Value",
 			input: &Value{
 				Map: &ValueMap{
-					Entries: []*MapEntry{},
+					Items: []*MapItem{},
 				},
 			},
 			want: &Value{
 				Map: &ValueMap{
-					Entries: []*MapEntry{},
+					Items: []*MapItem{},
 				},
 			},
 		},
@@ -458,12 +458,12 @@ func TestValue_Children(t *testing.T) {
 			name: "Map Value",
 			input: &Value{
 				Map: &ValueMap{
-					Entries: []*MapEntry{},
+					Items: []*MapItem{},
 				},
 			},
 			want: []Node{
 				&ValueMap{
-					Entries: []*MapEntry{},
+					Items: []*MapItem{},
 				},
 			},
 		},
@@ -561,7 +561,7 @@ FOO`[1:],
 			name: "Map Value",
 			input: &Value{
 				Map: &ValueMap{
-					Entries: []*MapEntry{},
+					Items: []*MapItem{},
 				},
 			},
 			want: "{}",

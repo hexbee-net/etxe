@@ -526,7 +526,7 @@ func (v ListItem) FormattedString() string {
 type ValueMap struct {
 	ASTNode
 
-	Entries []*MapEntry `parser:"'{' [ LF+ ] [ @@ ( [ (LF+ | ',') ] [ LF+ ] @@? )* ','? ] [ LF+ ] '}'" json:"entries,omitempty"`
+	Items []*MapItem `parser:"'{' [ LF+ ] @@* '}'" json:"items,omitempty"`
 }
 
 func (v *ValueMap) Clone() *ValueMap {
@@ -536,12 +536,12 @@ func (v *ValueMap) Clone() *ValueMap {
 
 	return &ValueMap{
 		ASTNode: v.ASTNode.Clone(),
-		Entries: cloneCollection(v.Entries),
+		Items:   cloneCollection(v.Items),
 	}
 }
 
 func (v *ValueMap) Children() (children []Node) {
-	for _, item := range v.Entries {
+	for _, item := range v.Items {
 		children = append(children, item)
 	}
 
@@ -549,14 +549,14 @@ func (v *ValueMap) Children() (children []Node) {
 }
 
 func (v ValueMap) FormattedString() string {
-	if len(v.Entries) == 0 {
+	if len(v.Items) == 0 {
 		return "{}"
 	}
 
 	var sb strings.Builder
 	sb.WriteString("{\n")
 
-	for _, e := range v.Entries {
+	for _, e := range v.Items {
 		sb.WriteString(indent(fmt.Sprintf("%s: %s", e.Key.FormattedString(), e.Value.FormattedString()), indentationChar))
 		sb.WriteString(",\n")
 	}
@@ -566,52 +566,60 @@ func (v ValueMap) FormattedString() string {
 	return sb.String()
 }
 
-// MapEntry represents a key+value in a map.
-type MapEntry struct {
+// MapItem represents a key+value in a map.
+type MapItem struct {
 	ASTNode
 
-	Comment *Comment `parser:"[ @@ ]"    json:"comment,omitempty"`
-	Key     MapKey   `parser:"@@ '='"    json:"key"`
-	Value   Expr     `parser:"@@"        json:"value"`
+	EmptyLine string   `parser:"(   @LF+             " json:"empty_line,omitempty"`
+	Key       *MapKey  `parser:"  | ( @@ '='         " json:"key"`
+	Value     *Expr    `parser:"      @@ ','? LF? )  " json:"value"`
+	Comment   *Comment `parser:"  | @@              )" json:"comment,omitempty"`
 }
 
-func (v *MapEntry) Clone() *MapEntry {
+func (v *MapItem) Clone() *MapItem {
 	if v == nil {
 		return nil
 	}
 
-	return &MapEntry{
-		ASTNode: v.ASTNode.Clone(),
-		Comment: v.Comment.Clone(),
-		Key:     *v.Key.Clone(),
-		Value:   *v.Value.Clone(),
+	return &MapItem{
+		ASTNode:   v.ASTNode.Clone(),
+		EmptyLine: v.EmptyLine,
+		Key:       v.Key.Clone(),
+		Value:     v.Value.Clone(),
+		Comment:   v.Comment.Clone(),
 	}
 }
 
-func (v *MapEntry) Children() (children []Node) {
+func (v *MapItem) Children() (children []Node) {
+	if v.Key != nil {
+		children = append(children, v.Key)
+	}
+
+	if v.Value != nil {
+		children = append(children, v.Value)
+	}
+
 	if v.Comment != nil {
 		children = append(children, v.Comment)
 	}
 
-	children = append(children, &v.Key)
-	children = append(children, &v.Value)
-
 	return
 }
 
-func (v MapEntry) FormattedString() string {
-	var sb strings.Builder
-
-	if v.Comment != nil {
-		sb.WriteString(v.Comment.FormattedString())
+func (v MapItem) FormattedString() string {
+	switch {
+	case v.EmptyLine != "":
+		return v.EmptyLine
+	case v.Comment != nil:
+		return v.Comment.FormattedString()
+	case v.Key != nil && v.Value != nil:
+		return fmt.Sprintf("%s = %s", v.Key.FormattedString(), v.Value.FormattedString())
+	default:
+		panic("item not set")
 	}
-
-	mustFprintf(&sb, "%s = %s", v.Key.FormattedString(), v.Value.FormattedString())
-
-	return sb.String()
 }
 
-// MapKey represent a key in a MapEntry.
+// MapKey represent a key in a MapItem.
 type MapKey struct {
 	ASTNode
 
