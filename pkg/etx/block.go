@@ -8,9 +8,9 @@ import (
 type Block struct {
 	ASTNode
 
-	Name   string       `parser:"@Ident"                                    json:"name"`
-	Labels []string     `parser:"((String @Char StringEnd) | @Ident)* '{' [NewLine] "  json:"labels,omitempty"`
-	Body   []*BlockItem `parser:"@@* '}'"            json:"body"`
+	Name   string       `parser:"@Ident"                                         json:"name"`
+	Labels []string     `parser:"((String @Char StringEnd) | @Ident)* '{' LF? "  json:"labels,omitempty"`
+	Body   []*BlockItem `parser:"@@* '}'"                                        json:"body"`
 }
 
 func (n *Block) Clone() *Block {
@@ -68,10 +68,10 @@ func (n Block) FormattedString() string {
 type BlockItem struct {
 	ASTNode
 
-	EmptyLine string     `parser:"(   @NewLine+       " json:"empty_line,omitempty"`
-	Block     *Block     `parser:"  | (@@ [NewLine])  " json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | (@@ [NewLine])  " json:"attribute,omitempty"`
-	Comment   *Comment   `parser:"  | @@             )" json:"comment,omitempty"`
+	EmptyLine string     `parser:"(   @LF+      " json:"empty_line,omitempty"`
+	Block     *Block     `parser:"  | (@@ LF?)  " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | (@@ LF?)  " json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@       )" json:"comment,omitempty"`
 }
 
 func (n *BlockItem) Clone() *BlockItem {

@@ -58,9 +58,9 @@ func (e Expr) FormattedString() string {
 type ExprIf struct {
 	ASTNode
 
-	Condition ExprLogicalOr `parser:"If @@ [ NewLine+ ] '{' [ NewLine+ ]"           json:"condition"`
-	Left      *Expr         `parser:"@@? [ NewLine+ ] '}' [ NewLine+ ]"             json:"left,omitempty"`
-	Right     *Expr         `parser:"[ Else '{' [ NewLine+ ] @@ [ NewLine+ ] '}' ]" json:"right,omitempty"`
+	Condition ExprLogicalOr `parser:"If @@ [ LF+ ] '{' [ LF+ ]"           json:"condition"`
+	Left      *Expr         `parser:"@@? [ LF+ ] '}' [ LF+ ]"             json:"left,omitempty"`
+	Right     *Expr         `parser:"[ Else '{' [ LF+ ] @@ [ LF+ ] '}' ]" json:"right,omitempty"`
 }
 
 func (e *ExprIf) Clone() *ExprIf {
@@ -107,8 +107,8 @@ func (e ExprIf) FormattedString() string {
 type ExprSwitch struct {
 	ASTNode
 
-	Selector ExprLogicalOr `parser:"Switch @@ [ NewLine+ ] '{' [ NewLine+ ]" json:"selector"`
-	Cases    []*ExprCase   `parser:"(@@ [ NewLine+ ])* '}'"                  json:"cases,omitempty"`
+	Selector ExprLogicalOr `parser:"Switch @@ [ LF+ ] '{' [ LF+ ]" json:"selector"`
+	Cases    []*ExprCase   `parser:"(@@ [ LF+ ])* '}'"             json:"cases,omitempty"`
 }
 
 func (e *ExprSwitch) Clone() *ExprSwitch {
@@ -154,9 +154,9 @@ func (e ExprSwitch) FormattedString() string {
 type ExprCase struct {
 	ASTNode
 
-	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "                     json:"conditions"`
-	Default    bool             `parser:"  | @'default'          ':' )"                     json:"default"`
-	Expr       *Expr            `parser:"[ NewLine+ ] '{' [ NewLine+ ] @@ [ NewLine+ ] '}'" json:"expr,omitempty"`
+	Conditions []*ExprLogicalOr `parser:"(   Case @@ ( ',' @@ )* ':'  "      json:"conditions"`
+	Default    bool             `parser:"  | @'default'          ':' )"      json:"default"`
+	Expr       *Expr            `parser:"[ LF+ ] '{' [ LF+ ] @@ [ LF+ ] '}'" json:"expr,omitempty"`
 }
 
 func (e *ExprCase) Clone() *ExprCase {

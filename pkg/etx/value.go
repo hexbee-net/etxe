@@ -436,7 +436,7 @@ func (f StringFragment) FormattedString() string {
 type ValueList struct {
 	ASTNode
 
-	Items []*ListItem `parser:"'[' [ NewLine+ ] @@*  ']'"   json:"items,omitempty"`
+	Items []*ListItem `parser:"'[' [ LF+ ] @@*  ']'"   json:"items,omitempty"`
 }
 
 func (v *ValueList) Clone() *ValueList {
@@ -478,9 +478,9 @@ func (v ValueList) FormattedString() string {
 type ListItem struct {
 	ASTNode
 
-	EmptyLine string   `parser:"(   @NewLine+                " json:"empty_line,omitempty"`
-	Value     *Expr    `parser:"  | ( @@ ','? NewLine? )  " json:"value,omitempty"`
-	Comment   *Comment `parser:"  | @@                      )" json:"comment,omitempty"`
+	EmptyLine string   `parser:"(   @LF+             " json:"empty_line,omitempty"`
+	Value     *Expr    `parser:"  | ( @@ ','? LF? )  " json:"value,omitempty"`
+	Comment   *Comment `parser:"  | @@              )" json:"comment,omitempty"`
 }
 
 func (v *ListItem) Clone() *ListItem {
@@ -526,7 +526,7 @@ func (v ListItem) FormattedString() string {
 type ValueMap struct {
 	ASTNode
 
-	Entries []*MapEntry `parser:"'{' [ NewLine+ ] [ @@ ( [ (NewLine+ | ',') ] [ NewLine+ ] @@? )* ','? ] [ NewLine+ ] '}'" json:"entries,omitempty"`
+	Entries []*MapEntry `parser:"'{' [ LF+ ] [ @@ ( [ (LF+ | ',') ] [ LF+ ] @@? )* ','? ] [ LF+ ] '}'" json:"entries,omitempty"`
 }
 
 func (v *ValueMap) Clone() *ValueMap {

@@ -11,8 +11,8 @@ type Type struct {
 	ASTNode
 
 	Label  string      `parser:"'type' @Ident"                        json:"label"`
-	Enum   *TypeEnum   `parser:"(   Enum   '{' [ NewLine+ ] @@ "      json:"enum,omitempty"`
-	Object *TypeObject `parser:"  | Object '{' [ NewLine+ ] @@ ) '}'" json:"object,omitempty"`
+	Enum   *TypeEnum   `parser:"(   Enum   '{' [ LF+ ] @@ "      json:"enum,omitempty"`
+	Object *TypeObject `parser:"  | Object '{' [ LF+ ] @@ ) '}'" json:"object,omitempty"`
 }
 
 func (n *Type) Clone() *Type {
@@ -109,10 +109,10 @@ func (n TypeEnum) FormattedString() string {
 type TypeEnumItem struct {
 	ASTNode
 
-	EmptyLine string   `parser:"(   @NewLine+         " json:"empty_line,omitempty"`
+	EmptyLine string   `parser:"(   @LF+         " json:"empty_line,omitempty"`
 	Comment   *Comment `parser:"  | @@                " json:"comment,omitempty"`
 	Label     string   `parser:"  | ( @Ident ':'      " json:"label"`
-	Value     Expr     `parser:"      @@ [NewLine] ) )" json:"value"`
+	Value     Expr     `parser:"      @@ [LF] ) )" json:"value"`
 }
 
 func (n *TypeEnumItem) Clone() *TypeEnumItem {
@@ -202,10 +202,10 @@ func (n TypeObject) FormattedString() string {
 type TypeObjectItem struct {
 	ASTNode
 
-	EmptyLine string        `parser:"(   @NewLine+         " json:"empty_line,omitempty"`
-	Comment   *Comment      `parser:"  | @@                " json:"comment,omitempty"`
-	Label     string        `parser:"  | ( @Ident ':'      " json:"label"`
-	Type      ParameterType `parser:"      @@ [NewLine] ) )" json:"type"`
+	EmptyLine string        `parser:"(   @LF+            " json:"empty_line,omitempty"`
+	Comment   *Comment      `parser:"  | @@              " json:"comment,omitempty"`
+	Label     string        `parser:"  | ( @Ident ':'    " json:"label"`
+	Type      ParameterType `parser:"      @@ LF?     ) )" json:"type"`
 }
 
 func (n *TypeObjectItem) Clone() *TypeObjectItem {

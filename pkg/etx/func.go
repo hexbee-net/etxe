@@ -8,10 +8,10 @@ import (
 type Func struct {
 	ASTNode
 
-	Label      string           `parser:"Func @Ident "                                            json:"label"`
-	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"                                json:"parameters,omitempty"`
-	Return     []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?"                        json:"return,omitempty"`
-	Body       []*FuncStatement `parser:"[ NewLine+ ] '{' [ NewLine+ ] @@ * '}' " json:"body,omitempty"`
+	Label      string           `parser:"Func @Ident "                     json:"label"`
+	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"         json:"parameters,omitempty"`
+	Return     []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?" json:"return,omitempty"`
+	Body       []*FuncStatement `parser:"[ LF+ ] '{' [ LF+ ] @@ * '}' "    json:"body,omitempty"`
 }
 
 func (n *Func) Clone() *Func {
@@ -124,10 +124,10 @@ func (n FuncParameter) FormattedString() string {
 type FuncStatement struct {
 	ASTNode
 
-	EmptyLine string    `parser:"(   @NewLine+     " json:"empty_line,omitempty"`
-	Comment   *Comment  `parser:"  | @@            "        json:"comment,omitempty"`
-	Decl      *FuncDecl `parser:"  | @@ [NewLine]  "        json:"decl,omitempty"`
-	Expr      *Expr     `parser:"  | @@ [NewLine] )"        json:"expr,omitempty"`
+	EmptyLine string    `parser:"(   @LF+    " json:"empty_line,omitempty"`
+	Comment   *Comment  `parser:"  | @@      " json:"comment,omitempty"`
+	Decl      *FuncDecl `parser:"  | @@ LF?  " json:"decl,omitempty"`
+	Expr      *Expr     `parser:"  | @@ LF? )" json:"expr,omitempty"`
 }
 
 func (n *FuncStatement) Clone() *FuncStatement {

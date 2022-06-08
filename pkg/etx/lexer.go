@@ -122,7 +122,7 @@ func lexRules() lexer.Rules {
 
 			{Name: "String", Pattern: `(["'])`, Action: lexer.Push(lexerString)},
 			{Name: "Dot", Pattern: regexp.QuoteMeta(OpDot)},
-			{Name: "NewLine", Pattern: `[\r\n]`},
+			{Name: "LF", Pattern: `[\r\n]`},
 			{Name: TokenWhitespace, Pattern: `[\t ]+`},
 		},
 

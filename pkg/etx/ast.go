@@ -89,13 +89,13 @@ func (n *AST) UpdateParentRefs() {
 type RootItem struct {
 	ASTNode
 
-	EmptyLine string     `parser:"(   @NewLine+     " json:"empty_line,omitempty"`
-	Decl      *Decl      `parser:"  | @@ [NewLine]  " json:"decl,omitempty"`
-	Func      *Func      `parser:"  | @@ [NewLine]  " json:"func,omitempty"`
-	Type      *Type      `parser:"  | @@ [NewLine]  " json:"type,omitempty"`
-	Block     *Block     `parser:"  | @@ [NewLine]  " json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | @@ [NewLine]  " json:"attribute,omitempty"`
-	Comment   *Comment   `parser:"  | @@           )" json:"comment,omitempty"`
+	EmptyLine string     `parser:"(   @LF+    " json:"empty_line,omitempty"`
+	Decl      *Decl      `parser:"  | @@ LF?  " json:"decl,omitempty"`
+	Func      *Func      `parser:"  | @@ LF?  " json:"func,omitempty"`
+	Type      *Type      `parser:"  | @@ LF?  " json:"type,omitempty"`
+	Block     *Block     `parser:"  | @@ LF?  " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | @@ LF?  " json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@     )" json:"comment,omitempty"`
 }
 
 func (n *RootItem) Clone() *RootItem {
