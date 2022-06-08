@@ -445,23 +445,29 @@ func TestBlockItem_Parsing(t *testing.T) {
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
 						List: &ValueList{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 1, Column: 7}},
-							Items: []*Expr{
-								BuildTestExprTree[*Expr](t, &Value{
+							Items: []*ListItem{
+								{
 									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-									Number: &ValueNumber{
+									Value: BuildTestExprTree[*Expr](t, &Value{
 										ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-										Value:   big.NewFloat(1),
-										Source:  "1",
-									},
-								}),
-								BuildTestExprTree[*Expr](t, &Value{
+										Number: &ValueNumber{
+											ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
+											Value:   big.NewFloat(1),
+											Source:  "1",
+										},
+									}),
+								},
+								{
 									ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-									Number: &ValueNumber{
+									Value: BuildTestExprTree[*Expr](t, &Value{
 										ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
-										Value:   big.NewFloat(2),
-										Source:  "2",
-									},
-								}),
+										Number: &ValueNumber{
+											ASTNode: ASTNode{Pos: Position{Offset: 10, Line: 1, Column: 11}},
+											Value:   big.NewFloat(2),
+											Source:  "2",
+										},
+									}),
+								},
 							},
 						},
 					}),

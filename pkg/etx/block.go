@@ -68,10 +68,10 @@ func (n Block) String() string {
 type BlockItem struct {
 	ASTNode
 
-	EmptyLine string     `parser:"(   @NewLine+  " json:"empty_line,omitempty"`
-	Block     *Block     `parser:"  | (@@ [NewLine])         " json:"block,omitempty"`
-	Attribute *Attribute `parser:"  | (@@ [NewLine])         " json:"attribute,omitempty"`
-	Comment   *Comment   `parser:"  | @@        )" json:"comment,omitempty"`
+	EmptyLine string     `parser:"(   @NewLine+       " json:"empty_line,omitempty"`
+	Block     *Block     `parser:"  | (@@ [NewLine])  " json:"block,omitempty"`
+	Attribute *Attribute `parser:"  | (@@ [NewLine])  " json:"attribute,omitempty"`
+	Comment   *Comment   `parser:"  | @@             )" json:"comment,omitempty"`
 }
 
 func (n *BlockItem) Clone() *BlockItem {

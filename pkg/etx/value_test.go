@@ -157,23 +157,29 @@ FOO`[1:],
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 				List: &ValueList{
 					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Items: []*Expr{
-						BuildTestExprTree[*Expr](t, &Value{
+					Items: []*ListItem{
+						{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-							Number: &ValueNumber{
+							Value: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-								Value:   big.NewFloat(1),
-								Source:  "1",
-							},
-						}),
-						BuildTestExprTree[*Expr](t, &Value{
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
+									Value:   big.NewFloat(1),
+									Source:  "1",
+								},
+							}),
+						},
+						{
 							ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-							Number: &ValueNumber{
+							Value: BuildTestExprTree[*Expr](t, &Value{
 								ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
-								Value:   big.NewFloat(2),
-								Source:  "2",
-							},
-						}),
+								Number: &ValueNumber{
+									ASTNode: ASTNode{Pos: Position{Offset: 5, Line: 1, Column: 6}},
+									Value:   big.NewFloat(2),
+									Source:  "2",
+								},
+							}),
+						},
 					},
 				},
 			},
@@ -330,12 +336,12 @@ func TestValue_Clone(t *testing.T) {
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Expr{},
+					Items: []*ListItem{},
 				},
 			},
 			want: &Value{
 				List: &ValueList{
-					Items: []*Expr{},
+					Items: []*ListItem{},
 				},
 			},
 		},
@@ -439,12 +445,12 @@ func TestValue_Children(t *testing.T) {
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Expr{},
+					Items: []*ListItem{},
 				},
 			},
 			want: []Node{
 				&ValueList{
-					Items: []*Expr{},
+					Items: []*ListItem{},
 				},
 			},
 		},
@@ -546,7 +552,7 @@ FOO`[1:],
 			name: "List Value",
 			input: &Value{
 				List: &ValueList{
-					Items: []*Expr{},
+					Items: []*ListItem{},
 				},
 			},
 			want: "[]",

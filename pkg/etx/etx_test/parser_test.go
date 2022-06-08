@@ -282,9 +282,9 @@ func TestParse(t *testing.T) {
 										Key: "attr",
 										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 											List: &etx.ValueList{
-												Items: []*etx.Expr{
-													etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
-													etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: "2"}}),
+												Items: []*etx.ListItem{
+													{Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+													{Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: "2"}})},
 												},
 											},
 										}),
@@ -293,9 +293,9 @@ func TestParse(t *testing.T) {
 										Key: "attr",
 										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 											List: &etx.ValueList{
-												Items: []*etx.Expr{
-													etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
-													etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: "2"}}),
+												Items: []*etx.ListItem{
+													{Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: "1"}})},
+													{Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Number: &etx.ValueNumber{Value: big.NewFloat(2), Source: "2"}})},
 												},
 											},
 										}),

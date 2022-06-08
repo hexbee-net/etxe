@@ -436,7 +436,7 @@ func (f StringFragment) String() string {
 type ValueList struct {
 	ASTNode
 
-	Items []*Expr `parser:"'[' [ NewLine+ ] [ @@ ( [ NewLine+ ] ',' [ NewLine+ ] @@? )* ','? ] [ NewLine+ ] ']'"   json:"items,omitempty"`
+	Items []*ListItem `parser:"'[' [ NewLine+ ] @@*  ']'"   json:"items,omitempty"`
 }
 
 func (v *ValueList) Clone() *ValueList {
@@ -468,12 +468,57 @@ func (v ValueList) String() string {
 
 	for _, e := range v.Items {
 		sb.WriteString(indent(e.String(), indentationChar))
-		sb.WriteString(",\n")
 	}
 
 	sb.WriteString("]")
 
 	return sb.String()
+}
+
+type ListItem struct {
+	ASTNode
+
+	EmptyLine string   `parser:"(   @NewLine+                " json:"empty_line,omitempty"`
+	Value     *Expr    `parser:"  | ( @@ ','? NewLine? )  " json:"value,omitempty"`
+	Comment   *Comment `parser:"  | @@                      )" json:"comment,omitempty"`
+}
+
+func (v *ListItem) Clone() *ListItem {
+	if v == nil {
+		return nil
+	}
+
+	return &ListItem{
+		ASTNode:   v.ASTNode.Clone(),
+		EmptyLine: v.EmptyLine,
+		Value:     v.Value.Clone(),
+		Comment:   v.Comment.Clone(),
+	}
+}
+
+func (v *ListItem) Children() (children []Node) {
+	if v.Value != nil {
+		children = append(children, v.Value)
+	}
+
+	if v.Comment != nil {
+		children = append(children, v.Comment)
+	}
+
+	return
+}
+
+func (v ListItem) String() string {
+	switch {
+	case v.EmptyLine != "":
+		return v.EmptyLine
+	case v.Comment != nil:
+		return v.Comment.String()
+	case v.Value != nil:
+		return fmt.Sprintf("%v,\n", v.Value.String())
+	default:
+		panic("item not set")
+	}
 }
 
 // /////////////////////////////////////
