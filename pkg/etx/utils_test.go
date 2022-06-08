@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testRefFields[T any](t *testing.T, testFunc func(assert.TestingT, interface{}, interface{}, ...interface{}) bool, expected, actual T) {
+func testRefFields[T any](t *testing.T, testFunc func(assert.TestingT, any, any, ...any) bool, expected, actual T) {
 	t.Helper()
 
 	et := reflect.ValueOf(expected)
@@ -83,7 +83,7 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 	}
 }
 
-func testStringer(t *testing.T, wantPanic bool, want string, input FormattedStringer, msgAndArgs ...interface{}) {
+func testStringer(t *testing.T, wantPanic bool, want string, input FormattedStringer, msgAndArgs ...any) {
 	t.Helper()
 
 	if wantPanic {

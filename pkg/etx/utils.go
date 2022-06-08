@@ -68,11 +68,11 @@ func mustFprintf(w io.Writer, format string, a ...any) {
 	}
 }
 
-func BuildTestExprTree[E any](t *testing.T, value interface{}) E {
+func BuildTestExprTree[E any](t *testing.T, value any) E {
 	t.Helper()
 
-	var build func(interface{}, reflect.Type) interface{}
-	build = func(value interface{}, stop reflect.Type) interface{} {
+	var build func(any, reflect.Type) any
+	build = func(value any, stop reflect.Type) any {
 		if (stop != nil && reflect.TypeOf(value) == stop) || (reflect.TypeOf(value) == reflect.TypeOf(&Expr{})) {
 			return value
 		}
