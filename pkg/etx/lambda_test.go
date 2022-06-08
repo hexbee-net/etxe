@@ -1,7 +1,7 @@
 package etx
 
 import (
-	big "math/big"
+	"math/big"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -238,12 +238,9 @@ func TestLambda_Parsing(t *testing.T) {
 				Expr: *BuildTestExprTree[*Expr](t,
 					&ExprAdditive{
 						ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-						Left: *BuildTestExprTree[*ExprMultiplicative](t, &Value{
+						Left: *BuildTestExprTree[*ExprMultiplicative](t, &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 15, Line: 1, Column: 16}},
-								Parts:   []string{"x"},
-							},
+							Parts:   []string{"x"},
 						}),
 						Op: OpPlus,
 						Right: BuildTestExprTree[*ExprAdditive](t, &Value{

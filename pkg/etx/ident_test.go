@@ -68,6 +68,15 @@ func TestIdent_Clone(t *testing.T) {
 			want:  &Ident{},
 		},
 		{
+			name: "ASTNode",
+			Input: &Ident{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
+			want: &Ident{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
+		},
+		{
 			name: "Parts",
 			Input: &Ident{
 				Parts: []string{"foo", "bar"},

@@ -32,7 +32,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -60,7 +60,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -91,7 +91,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
@@ -119,7 +119,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
@@ -137,7 +137,7 @@ func TestMap_Parsing(t *testing.T) {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
@@ -169,7 +169,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
@@ -187,7 +187,7 @@ func TestMap_Parsing(t *testing.T) {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
@@ -219,7 +219,7 @@ func TestMap_Parsing(t *testing.T) {
 				Entries: []*MapEntry{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 6, Line: 2, Column: 5}},
@@ -237,7 +237,7 @@ func TestMap_Parsing(t *testing.T) {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
-						Key: Value{
+						Key: MapKey{
 							ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
 							Ident: &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 16, Line: 3, Column: 5}},
@@ -277,17 +277,25 @@ func TestMap_Clone(t *testing.T) {
 			want:  nil,
 		},
 		{
-			name:  "Empty",
-			input: &ValueMap{},
-			want:  &ValueMap{},
+			name: "Empty",
+			input: &ValueMap{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
+			want: &ValueMap{
+				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
+			},
 		},
 		{
 			name: "Values",
 			input: &ValueMap{
-				Entries: []*MapEntry{},
+				Entries: []*MapEntry{
+					{ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}}},
+				},
 			},
 			want: &ValueMap{
-				Entries: []*MapEntry{},
+				Entries: []*MapEntry{
+					{ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}}},
+				},
 			},
 		},
 	}
@@ -321,11 +329,11 @@ func TestMap_Children(t *testing.T) {
 			name: "Entries",
 			input: &ValueMap{
 				Entries: []*MapEntry{
-					{},
+					{ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}}},
 				},
 			},
 			want: []Node{
-				&MapEntry{},
+				&MapEntry{ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}}},
 			},
 		},
 	}
@@ -359,10 +367,8 @@ func TestMap_String(t *testing.T) {
 			input: &ValueMap{
 				Entries: []*MapEntry{
 					{
-						Key: Value{
-							Ident: &Ident{
-								Parts: []string{"a"},
-							},
+						Key: MapKey{
+							Ident: &Ident{Parts: []string{"a"}},
 						},
 						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
@@ -380,20 +386,16 @@ func TestMap_String(t *testing.T) {
 			input: &ValueMap{
 				Entries: []*MapEntry{
 					{
-						Key: Value{
-							Ident: &Ident{
-								Parts: []string{"a"},
-							},
+						Key: MapKey{
+							Ident: &Ident{Parts: []string{"a"}},
 						},
 						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `1`},
 						}),
 					},
 					{
-						Key: Value{
-							Ident: &Ident{
-								Parts: []string{"b"},
-							},
+						Key: MapKey{
+							Ident: &Ident{Parts: []string{"b"}},
 						},
 						Value: *BuildTestExprTree[*Expr](t, &Value{
 							Number: &ValueNumber{Value: big.NewFloat(1), Source: `2`},
@@ -444,14 +446,29 @@ func TestMapEntry_Clone(t *testing.T) {
 			},
 		},
 		{
-			name: "Values",
+			name: "Key",
 			input: &MapEntry{
-				Key:   Value{},
-				Value: *BuildTestExprTree[*Expr](t, &Value{}),
+				Key: MapKey{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
 			},
 			want: &MapEntry{
-				Key:   Value{},
-				Value: *BuildTestExprTree[*Expr](t, &Value{}),
+				Key: MapKey{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+		{
+			name: "Value",
+			input: &MapEntry{
+				Value: Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+			want: &MapEntry{
+				Value: Expr{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
 			},
 		},
 	}
@@ -473,7 +490,7 @@ func TestMapEntry_Children(t *testing.T) {
 			name:  "Empty",
 			input: MapEntry{},
 			want: []Node{
-				&Value{},
+				&MapKey{},
 				&Expr{},
 			},
 		},
@@ -484,36 +501,28 @@ func TestMapEntry_Children(t *testing.T) {
 			},
 			want: []Node{
 				&Comment{Multiline: "foo"},
-				&Value{},
+				&MapKey{},
 				&Expr{},
 			},
 		},
 		{
 			name: "Key",
 			input: MapEntry{
-				Key: Value{
-					Ident: &Ident{Parts: []string{"a"}},
-				},
+				Key: MapKey{Ident: &Ident{Parts: []string{"a"}}},
 			},
 			want: []Node{
-				&Value{
-					Ident: &Ident{Parts: []string{"a"}},
-				},
+				&MapKey{Ident: &Ident{Parts: []string{"a"}}},
 				&Expr{},
 			},
 		},
 		{
 			name: "Value",
 			input: MapEntry{
-				Value: *BuildTestExprTree[*Expr](t, &Value{
-					Ident: &Ident{Parts: []string{"a"}},
-				}),
+				Value: *BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"a"}}),
 			},
 			want: []Node{
-				&Value{},
-				BuildTestExprTree[*Expr](t, &Value{
-					Ident: &Ident{Parts: []string{"a"}},
-				}),
+				&MapKey{},
+				BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"a"}}),
 			},
 		},
 	}
@@ -540,7 +549,7 @@ func TestMapEntry_String(t *testing.T) {
 		{
 			name: "Values",
 			input: &MapEntry{
-				Key: Value{
+				Key: MapKey{
 					Ident: &Ident{
 						Parts: []string{"a"},
 					},
@@ -555,7 +564,7 @@ func TestMapEntry_String(t *testing.T) {
 			name: "Comment",
 			input: &MapEntry{
 				Comment: &Comment{SingleLine: []string{"// foo"}},
-				Key: Value{
+				Key: MapKey{
 					Ident: &Ident{
 						Parts: []string{"a"},
 					},
@@ -567,6 +576,160 @@ func TestMapEntry_String(t *testing.T) {
 			want: `
 // foo
 a = 1`[1:],
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testStringer(t, tt.wantPanic, tt.want, tt.input)
+		})
+	}
+}
+
+// /////////////////////////////////////
+
+func TestMapKey_Clone(t *testing.T) {
+	tests := []struct {
+		name  string
+		input *MapKey
+		want  *MapKey
+	}{
+		{
+			name:  "Nil",
+			input: nil,
+			want:  nil,
+		},
+		{
+			name:  "Empty",
+			input: &MapKey{},
+			want:  &MapKey{},
+		},
+		{
+			name: "ASTNode",
+			input: &MapKey{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &MapKey{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "Ident",
+			input: &MapKey{
+				Ident: &Ident{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+			want: &MapKey{
+				Ident: &Ident{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+		{
+			name: "Str",
+			input: &MapKey{
+				Str: &ValueString{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+			want: &MapKey{
+				Str: &ValueString{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testCloner[*MapKey](t, tt.want, tt.input)
+		})
+	}
+}
+
+func TestMapKey_Children(t *testing.T) {
+	tests := []struct {
+		name  string
+		input MapKey
+		want  []Node
+	}{
+		{
+			name:  "Empty",
+			input: MapKey{},
+			want:  nil,
+		},
+		{
+			name: "Ident",
+			input: MapKey{
+				Ident: &Ident{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+			want: []Node{
+				&Ident{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+		{
+			name: "Str",
+			input: MapKey{
+				Str: &ValueString{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+			want: []Node{
+				&ValueString{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.input.Children())
+		})
+	}
+}
+
+func TestMapKey_String(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     *MapKey
+		wantPanic bool
+		want      string
+	}{
+		{
+			name:      "Nil",
+			input:     nil,
+			wantPanic: true,
+		},
+		{
+			name:      "Empty",
+			input:     &MapKey{},
+			wantPanic: true,
+		},
+		{
+			name: "Ident",
+			input: &MapKey{
+				Ident: &Ident{
+					Parts: []string{"a"},
+				},
+			},
+			want: `a`,
+		},
+		{
+			name: "Str",
+			input: &MapKey{
+				Str: &ValueString{
+					Fragment: []*StringFragment{
+						{Text: "a"},
+					},
+				},
+			},
+			want: `"a"`,
 		},
 	}
 

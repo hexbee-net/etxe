@@ -233,7 +233,7 @@ func TestParse(t *testing.T) {
 										Key: "attr",
 										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Str: &etx.ValueString{
 											Fragment: []*etx.StringFragment{
-												{Expr: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Ident: &etx.Ident{Parts: []string{"expr"}}})},
+												{Expr: etx.BuildTestExprTree[*etx.Expr](t, &etx.Ident{Parts: []string{"expr"}})},
 												{Text: "-string"},
 											},
 										}}),
@@ -242,7 +242,7 @@ func TestParse(t *testing.T) {
 								[]*etx.BlockItem{
 									{Attribute: &etx.Attribute{
 										Key:   "attr",
-										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{Ident: &etx.Ident{Parts: []string{"ident"}}}),
+										Value: etx.BuildTestExprTree[*etx.Expr](t, &etx.Ident{Parts: []string{"ident"}}),
 									}},
 								},
 								[]*etx.BlockItem{
@@ -308,17 +308,15 @@ func TestParse(t *testing.T) {
 											Map: &etx.ValueMap{
 												Entries: []*etx.MapEntry{
 													{
-														Key: etx.Value{
-															Ident: &etx.Ident{
-																Parts: []string{"a"},
-															},
+														Key: etx.MapKey{
+															Ident: &etx.Ident{Parts: []string{"a"}},
 														},
 														Value: *etx.BuildTestExprTree[*etx.Expr](t, &etx.Value{
 															Number: &etx.ValueNumber{Value: big.NewFloat(1), Source: `1`},
 														}),
 													},
 													{
-														Key: etx.Value{
+														Key: etx.MapKey{
 															Str: &etx.ValueString{
 																Fragment: []*etx.StringFragment{{Text: "b"}},
 															},
@@ -337,7 +335,7 @@ func TestParse(t *testing.T) {
 											Map: &etx.ValueMap{
 												Entries: []*etx.MapEntry{
 													{
-														Key: etx.Value{
+														Key: etx.MapKey{
 															Ident: &etx.Ident{
 																Parts: []string{"a"},
 															},
@@ -347,7 +345,7 @@ func TestParse(t *testing.T) {
 														}),
 													},
 													{
-														Key: etx.Value{
+														Key: etx.MapKey{
 															Str: &etx.ValueString{
 																Fragment: []*etx.StringFragment{{Text: "b"}},
 															},

@@ -69,13 +69,11 @@ func BuildTestExprTree[E any](t *testing.T, value interface{}) E {
 
 	var build func(interface{}, reflect.Type) interface{}
 	build = func(value interface{}, stop reflect.Type) interface{} {
-		if stop != nil && reflect.TypeOf(value) == stop {
+		if (stop != nil && reflect.TypeOf(value) == stop) || (reflect.TypeOf(value) == reflect.TypeOf(&Expr{})) {
 			return value
 		}
 
 		switch v := value.(type) {
-		case *Expr:
-			return v
 		case *ExprConditional:
 			return &Expr{ASTNode: v.ASTNode, Left: v}
 		case *ExprLogicalOr:
@@ -103,9 +101,9 @@ func BuildTestExprTree[E any](t *testing.T, value interface{}) E {
 		case *ExprPostfix:
 			return build(&ExprUnary{ASTNode: v.ASTNode, Right: *v}, stop)
 		case *ExprPrimary:
-			return build(&ExprPostfix{ASTNode: v.ASTNode, Left: *v}, stop)
-		case *ExprInvocation:
-			return build(&ExprPrimary{ASTNode: v.ASTNode, Invocation: v}, stop)
+			return build(&ExprPostfix{ASTNode: v.ASTNode, Value: *v}, stop)
+		case *Ident:
+			return build(&ExprPrimary{ASTNode: v.ASTNode, Ident: v}, stop)
 		case *Value:
 			return build(&ExprPrimary{ASTNode: v.ASTNode, Value: v}, stop)
 		default:

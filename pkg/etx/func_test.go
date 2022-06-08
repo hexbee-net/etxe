@@ -271,12 +271,9 @@ def foo() {
 				Body: []*FuncStatement{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
-						Expr: BuildTestExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
-							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 2, Column: 2}},
-								Parts:   []string{"a"},
-							},
+							Parts:   []string{"a"},
 						}),
 					},
 				},
@@ -356,12 +353,9 @@ def foo() {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
-						Expr: BuildTestExprTree[*Expr](t, &Value{
+						Expr: BuildTestExprTree[*Expr](t, &Ident{
 							ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
-							Ident: &Ident{
-								ASTNode: ASTNode{Pos: Position{Offset: 32, Line: 3, Column: 2}},
-								Parts:   []string{"a"},
-							},
+							Parts:   []string{"a"},
 						}),
 					},
 				},

@@ -93,11 +93,11 @@ func (e *ExprIf) Children() (children []Node) {
 func (e ExprIf) String() string {
 	switch {
 	case e.Left == nil:
-		return fmt.Sprintf("if %s { }", e.Condition)
+		return fmt.Sprintf("if %s { }", e.Condition.String())
 	case e.Right == nil:
-		return fmt.Sprintf("if %s {\n%s\n}", e.Condition, indent(e.Left.String(), indentationChar))
+		return fmt.Sprintf("if %s {\n%s\n}", e.Condition.String(), indent(e.Left.String(), indentationChar))
 	default:
-		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition, indent(e.Left.String(), indentationChar), indent(e.Right.String(), indentationChar))
+		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition.String(), indent(e.Left.String(), indentationChar), indent(e.Right.String(), indentationChar))
 
 	}
 }
@@ -137,7 +137,7 @@ func (e *ExprSwitch) Children() (children []Node) {
 func (e ExprSwitch) String() string {
 	switch len(e.Cases) {
 	case 0:
-		return fmt.Sprintf("switch %s { }", e.Selector)
+		return fmt.Sprintf("switch %s { }", e.Selector.String())
 
 	default:
 		cases := make([]string, 0, len(e.Cases))
@@ -145,7 +145,7 @@ func (e ExprSwitch) String() string {
 			cases = append(cases, c.String())
 		}
 
-		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector, indent(strings.Join(cases, "\n"), indentationChar))
+		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector.String(), indent(strings.Join(cases, "\n"), indentationChar))
 	}
 }
 
@@ -250,11 +250,11 @@ func (e ExprConditional) String() string {
 	if e.ConditionOp {
 		switch {
 		case e.TrueExpr != nil && e.FalseExpr != nil:
-			return fmt.Sprintf("%s ? %s : %s", e.Condition, e.TrueExpr, e.FalseExpr)
+			return fmt.Sprintf("%s ? %s : %s", e.Condition.String(), e.TrueExpr.String(), e.FalseExpr.String())
 		case e.TrueExpr != nil && e.FalseExpr == nil:
-			return fmt.Sprintf("%s ? %s : null", e.Condition, e.TrueExpr)
+			return fmt.Sprintf("%s ? %s : null", e.Condition.String(), e.TrueExpr.String())
 		case e.TrueExpr == nil && e.FalseExpr != nil:
-			return fmt.Sprintf("%s ? null : %s", e.Condition, e.FalseExpr)
+			return fmt.Sprintf("%s ? null : %s", e.Condition.String(), e.FalseExpr.String())
 		default:
 			return fmt.Sprintf("%s ? null : null", e.Condition)
 		}
@@ -305,7 +305,7 @@ func (e ExprLogicalOr) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -350,7 +350,7 @@ func (e ExprLogicalAnd) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -395,7 +395,7 @@ func (e ExprBitwiseOr) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -440,7 +440,7 @@ func (e ExprBitwiseXor) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -485,7 +485,7 @@ func (e ExprBitwiseAnd) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -530,7 +530,7 @@ func (e ExprEquality) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -575,7 +575,7 @@ func (e ExprRelational) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -620,7 +620,7 @@ func (e ExprShift) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -665,7 +665,7 @@ func (e ExprAdditive) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -710,7 +710,7 @@ func (e ExprMultiplicative) String() string {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left, e.Op, e.Right)
+	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -741,7 +741,7 @@ func (e *ExprUnary) Children() (children []Node) {
 }
 
 func (e ExprUnary) String() string {
-	return fmt.Sprintf("%v%v", e.Op, e.Right)
+	return fmt.Sprintf("%v%v", e.Op, e.Right.String())
 }
 
 // /////////////////////////////////////
@@ -749,8 +749,9 @@ func (e ExprUnary) String() string {
 type ExprPostfix struct {
 	ASTNode
 
-	Left  ExprPrimary `parser:"@@"             json:"left,omitempty"`
-	Right *Expr       `parser:"[ '[' @@ ']' ]" json:"right,omitempty"`
+	Value ExprPrimary  `parser:"@@"             json:"value,omitempty"`
+	Index *Expr        `parser:"[ '[' @@ ']' ]" json:"index,omitempty"`
+	Post  *ExprPostfix `parser:"[ '.' @@ ]"     json:"post,omitempty"`
 }
 
 func (e *ExprPostfix) Clone() *ExprPostfix {
@@ -760,27 +761,35 @@ func (e *ExprPostfix) Clone() *ExprPostfix {
 
 	return &ExprPostfix{
 		ASTNode: e.ASTNode.Clone(),
-		Left:    *e.Left.Clone(),
-		Right:   e.Right.Clone(),
+		Value:   *e.Value.Clone(),
+		Index:   e.Index.Clone(),
+		Post:    e.Post.Clone(),
 	}
 }
 
 func (e *ExprPostfix) Children() (children []Node) {
-	children = append(children, &e.Left)
+	children = append(children, &e.Value)
 
-	if e.Right != nil {
-		children = append(children, e.Right)
+	if e.Index != nil {
+		children = append(children, e.Index)
 	}
 
 	return
 }
 
 func (e ExprPostfix) String() string {
-	if e.Right != nil {
-		return fmt.Sprintf("%v[%v]", e.Left, e.Right)
+	var sb strings.Builder
+	sb.WriteString(e.Value.String())
+
+	if e.Index != nil {
+		mustFprintf(&sb, "[%v]", e.Index.String())
 	}
 
-	return e.Left.String()
+	if e.Post != nil {
+		mustFprintf(&sb, ".%v", e.Post.String())
+	}
+
+	return sb.String()
 }
 
 // /////////////////////////////////////
@@ -788,9 +797,11 @@ func (e ExprPostfix) String() string {
 type ExprPrimary struct {
 	ASTNode
 
-	SubExpression *Expr           `parser:"(  '(' @@ ')'  " json:"sub_expression,omitempty"`
-	Invocation    *ExprInvocation `parser:"  | @@         " json:"invocation,omitempty"`
-	Value         *Value          `parser:"  | @@        )" json:"value,omitempty"`
+	SubExpression *Expr                   `parser:"(   ( '(' @@ ')' )           " json:"sub_expression,omitempty"`
+	Value         *Value                  `parser:"  | @@                       " json:"value,omitempty"`
+	Ident         *Ident                  `parser:"  | ( @@                     " json:"ident"`
+	Monads        []*ExprInvocationParams `parser:"      [ ( '(' @@ ')' )+ ]    " json:"monads,omitempty"`
+	Post          *ExprPostfix            `parser:"      [ '.' @@          ] ) )" json:"post,omitempty"`
 }
 
 func (e *ExprPrimary) Clone() *ExprPrimary {
@@ -801,90 +812,68 @@ func (e *ExprPrimary) Clone() *ExprPrimary {
 	return &ExprPrimary{
 		ASTNode:       e.ASTNode.Clone(),
 		SubExpression: e.SubExpression.Clone(),
-		Invocation:    e.Invocation.Clone(),
+		Ident:         e.Ident.Clone(),
+		Monads:        cloneCollection(e.Monads),
+		Post:          e.Post.Clone(),
 		Value:         e.Value.Clone(),
 	}
 }
 
 func (e *ExprPrimary) Children() (children []Node) {
-	switch {
-	case e.SubExpression != nil:
+	if e.SubExpression != nil {
 		children = append(children, e.SubExpression)
-	case e.Invocation != nil:
-		children = append(children, e.Invocation)
-	case e.Value != nil:
-		children = append(children, e.Value)
+	}
 
+	if e.Ident != nil {
+		children = append(children, e.Ident)
+	}
+
+	for _, item := range e.Monads {
+		children = append(children, item)
+	}
+
+	if e.Post != nil {
+		children = append(children, e.Post)
+	}
+
+	if e.Value != nil {
+		children = append(children, e.Value)
 	}
 
 	return
 }
 
 func (e ExprPrimary) String() string {
-	switch {
-	case e.SubExpression != nil:
+	if e.SubExpression != nil {
 		return e.SubExpression.String()
-	case e.Invocation != nil:
-		return e.Invocation.String()
-	case e.Value != nil:
+	}
+
+	if e.Value != nil {
 		return e.Value.String()
-	default:
-		return TokenNull
-	}
-}
-
-// /////////////////////////////////////
-
-type ExprInvocation struct {
-	ASTNode
-
-	Ident   Ident                   `parser:"@@"              json:"ident"`
-	Monads  []*ExprInvocationParams `parser:"( '(' @@ ')' )+" json:"monads,omitempty"`
-	Postfix *ExprPostfix            `parser:"[ '.' @@ ]"      json:"postfix,omitempty"`
-}
-
-func (e *ExprInvocation) Clone() *ExprInvocation {
-	if e == nil {
-		return nil
 	}
 
-	return &ExprInvocation{
-		ASTNode: e.ASTNode.Clone(),
-		Ident:   *e.Ident.Clone(),
-		Monads:  cloneCollection(e.Monads),
-		Postfix: e.Postfix.Clone(),
-	}
-}
+	var sb strings.Builder
 
-func (e ExprInvocation) Children() (children []Node) {
-	children = append(children, &e.Ident)
-
-	for _, item := range e.Monads {
-		children = append(children, item)
+	if e.Ident == nil {
+		panic("identifier not set")
 	}
 
-	if e.Postfix != nil {
-		children = append(children, e.Postfix)
-	}
+	sb.WriteString(e.Ident.String())
 
-	return
-}
-
-func (e ExprInvocation) String() string {
-	invocationParams := "()"
 	if len(e.Monads) != 0 {
 		params := make([]string, 0, len(e.Monads))
 		for _, p := range e.Monads {
-			params = append(params, fmt.Sprintf("(%v)", p))
+			params = append(params, fmt.Sprintf("(%v)", p.String()))
 		}
-		invocationParams = strings.Join(params, "")
+		sb.WriteString(strings.Join(params, ""))
 	}
 
-	if e.Postfix != nil {
-		return fmt.Sprintf("%v%v.%v", e.Ident, invocationParams, e.Postfix)
+	if e.Post != nil {
+		sb.WriteString(".")
+		sb.WriteString(e.Post.String())
 	}
 
-	return fmt.Sprintf("%v%v", e.Ident, invocationParams)
+	return sb.String()
 }
 
 // /////////////////////////////////////

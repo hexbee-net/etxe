@@ -300,3 +300,71 @@ func TestNumber_String(t *testing.T) {
 		})
 	}
 }
+
+func TestNumber_Capture(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		Input     []string
+		wantErr   bool
+		wantPanic bool
+		want      *ValueNumber
+	}{
+		{
+			name:      "No values",
+			Input:     []string{},
+			wantErr:   false,
+			wantPanic: true,
+		},
+		{
+			name:      "Regular number",
+			Input:     []string{"1"},
+			wantErr:   false,
+			wantPanic: false,
+			want: &ValueNumber{
+				Value:  big.NewFloat(1),
+				Source: "1",
+			},
+		},
+		{
+			name:      "Non-prefixed octal number",
+			Input:     []string{"0123"},
+			wantErr:   false,
+			wantPanic: false,
+			want: &ValueNumber{
+				Value:  big.NewFloat(0o123),
+				Source: "0o123",
+			},
+		},
+		{
+			name:      "Invalid number",
+			Input:     []string{"foo"},
+			wantErr:   true,
+			wantPanic: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := &ValueNumber{}
+
+			if tt.wantPanic {
+				assert.Panics(t, func() {
+					_ = res.Capture(tt.Input)
+				})
+				return
+			}
+
+			err := res.Capture(tt.Input)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.Equal(t, tt.want, res)
+		})
+	}
+
+}

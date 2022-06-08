@@ -484,7 +484,7 @@ func TestBlockItem_Parsing(t *testing.T) {
 							Entries: []*MapEntry{
 								{
 									ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-									Key: Value{
+									Key: MapKey{
 										ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
 										Str: &ValueString{
 											ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},

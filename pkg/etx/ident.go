@@ -25,6 +25,7 @@ func (i *Ident) Clone() *Ident {
 	}
 
 	return &Ident{
-		Parts: i.Parts,
+		ASTNode: i.ASTNode.Clone(),
+		Parts:   cloneStrings(i.Parts),
 	}
 }

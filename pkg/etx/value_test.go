@@ -73,18 +73,6 @@ func TestValue_Parsing(t *testing.T) {
 			},
 		},
 		{
-			name:    "Ident",
-			input:   `var`,
-			wantErr: false,
-			want: &Value{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Ident: &Ident{
-					ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Parts:   []string{"var"},
-				},
-			},
-		},
-		{
 			name: "Heredoc - Empty",
 			input: `
 <<FOO
@@ -212,78 +200,34 @@ FOO`[1:],
 					Entries: []*MapEntry{
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
-							Key: Value{
+							Key: MapKey{
 								ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 2, Line: 1, Column: 3}},
 									Parts:   []string{"foo"},
 								},
 							},
-							Value: *BuildTestExprTree[*Expr](t, &Value{
+							Value: *BuildTestExprTree[*Expr](t, &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
-								Ident: &Ident{
-									ASTNode: ASTNode{Pos: Position{Offset: 8, Line: 1, Column: 9}},
-									Parts:   []string{"bar"},
-								},
+								Parts:   []string{"bar"},
 							}),
 						},
 						{
 							ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
-							Key: Value{
+							Key: MapKey{
 								ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 								Ident: &Ident{
 									ASTNode: ASTNode{Pos: Position{Offset: 14, Line: 1, Column: 15}},
 									Parts:   []string{"baz"},
 								},
 							},
-							Value: *BuildTestExprTree[*Expr](t, &Value{
+							Value: *BuildTestExprTree[*Expr](t, &Ident{
 								ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
-								Ident: &Ident{
-									ASTNode: ASTNode{Pos: Position{Offset: 20, Line: 1, Column: 21}},
-									Parts:   []string{"qux"},
-								},
+								Parts:   []string{"qux"},
 							}),
 						},
 					},
 				},
-			},
-		},
-		{
-			name: "Single-line comment",
-			input: `
-// foo
-null`[1:],
-			wantErr: false,
-			want: &Value{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:    ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					SingleLine: []string{"// foo"},
-				},
-				Null: true,
-			},
-		},
-		{
-			name: "Single-line comment - separated",
-			input: `
-// foo
-
-null`[1:],
-			wantErr: true,
-		},
-		{
-			name: "Multi-line comment",
-			input: `
-/* foo */
-null`[1:],
-			wantErr: false,
-			want: &Value{
-				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-				Comment: &Comment{
-					ASTNode:   ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
-					Multiline: "/* foo */\n",
-				},
-				Null: true,
 			},
 		},
 	}
@@ -312,15 +256,6 @@ func TestValue_Clone(t *testing.T) {
 			name:  "Empty",
 			input: &Value{},
 			want:  &Value{},
-		},
-		{
-			name: "Comments",
-			input: &Value{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: &Value{
-				Comment: &Comment{Multiline: "foo"},
-			},
 		},
 		{
 			name: "ASTNode",
@@ -359,19 +294,6 @@ func TestValue_Clone(t *testing.T) {
 			want: &Value{
 				Str: &ValueString{
 					Fragment: []*StringFragment{},
-				},
-			},
-		},
-		{
-			name: "Ident Value",
-			input: &Value{
-				Ident: &Ident{
-					Parts: []string{"foo"},
-				},
-			},
-			want: &Value{
-				Ident: &Ident{
-					Parts: []string{"foo"},
 				},
 			},
 		},
@@ -454,15 +376,6 @@ func TestValue_Children(t *testing.T) {
 			want:  nil,
 		},
 		{
-			name: "Comment",
-			input: &Value{
-				Comment: &Comment{Multiline: "foo"},
-			},
-			want: []Node{
-				&Comment{Multiline: "foo"},
-			},
-		},
-		{
 			name: "Bool Value",
 			input: &Value{
 				Bool: &ValueBool{Value: true},
@@ -490,19 +403,6 @@ func TestValue_Children(t *testing.T) {
 			want: []Node{
 				&ValueString{
 					Fragment: []*StringFragment{},
-				},
-			},
-		},
-		{
-			name: "Ident Value",
-			input: &Value{
-				Ident: &Ident{
-					Parts: []string{"foo"},
-				},
-			},
-			want: []Node{
-				&Ident{
-					Parts: []string{"foo"},
 				},
 			},
 		},
@@ -623,15 +523,6 @@ func TestValue_String(t *testing.T) {
 			want: `""`,
 		},
 		{
-			name: "Ident Value",
-			input: &Value{
-				Ident: &Ident{
-					Parts: []string{"foo"},
-				},
-			},
-			want: "foo",
-		},
-		{
 			name: "Heredoc Value",
 			input: &Value{
 				Heredoc: &Heredoc{
@@ -668,17 +559,6 @@ FOO`[1:],
 				},
 			},
 			want: "{}",
-		},
-
-		{
-			name: "Comment",
-			input: &Value{
-				Comment: &Comment{SingleLine: []string{"// foo"}},
-				Null:    true,
-			},
-			want: `
-// foo
-null`[1:],
 		},
 	}
 

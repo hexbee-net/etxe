@@ -599,21 +599,21 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 			want:  &TypeEnumItem{},
 		},
 		{
-			name: "EmptyLine",
-			Input: &TypeEnumItem{
-				EmptyLine: "\n",
-			},
-			want: &TypeEnumItem{
-				EmptyLine: "\n",
-			},
-		},
-		{
 			name: "ASTNode",
 			Input: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "EmptyLine",
+			Input: &TypeEnumItem{
+				EmptyLine: "\n",
+			},
+			want: &TypeEnumItem{
+				EmptyLine: "\n",
 			},
 		},
 		{
@@ -637,10 +637,10 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		{
 			name: "Value",
 			Input: &TypeEnumItem{
-				Value: *BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				Value: *BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}}),
 			},
 			want: &TypeEnumItem{
-				Value: *BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				Value: *BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}}),
 			},
 		},
 	}
@@ -741,6 +741,13 @@ func TestTypeEnumItem_String(t *testing.T) {
 				Comment: &Comment{SingleLine: []string{"// foo"}},
 			},
 			want: "// foo\n",
+		},
+		{
+			name: "Empty Line",
+			input: &TypeEnumItem{
+				EmptyLine: "\n",
+			},
+			want: "\n",
 		},
 	}
 
@@ -1060,21 +1067,21 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 			want:  &TypeObjectItem{},
 		},
 		{
-			name: "EmptyLine",
-			Input: &TypeObjectItem{
-				EmptyLine: "\n",
-			},
-			want: &TypeObjectItem{
-				EmptyLine: "\n",
-			},
-		},
-		{
 			name: "ASTNode",
 			Input: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "EmptyLine",
+			Input: &TypeObjectItem{
+				EmptyLine: "\n",
+			},
+			want: &TypeObjectItem{
+				EmptyLine: "\n",
 			},
 		},
 		{
@@ -1208,6 +1215,13 @@ func TestTypeObjectItem_String(t *testing.T) {
 				Comment: &Comment{SingleLine: []string{"// foo"}},
 			},
 			want: "// foo\n",
+		},
+		{
+			name: "Empty Line",
+			input: &TypeObjectItem{
+				EmptyLine: "\n",
+			},
+			want: "\n",
 		},
 	}
 

@@ -194,14 +194,10 @@ func TestString_Parsing(t *testing.T) {
 				Fragment: []*StringFragment{
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 1, Column: 2}},
-						Expr: BuildTestExprTree[*Expr](t,
-							&Value{
-								ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
-								Ident: &Ident{
-									ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
-									Parts:   []string{"foo"},
-								},
-							}),
+						Expr: BuildTestExprTree[*Expr](t, &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 3, Line: 1, Column: 4}},
+							Parts:   []string{"foo"},
+						}),
 					},
 				},
 			},
@@ -219,14 +215,10 @@ func TestString_Parsing(t *testing.T) {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-						Expr: BuildTestExprTree[*Expr](t,
-							&Value{
-								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-								Ident: &Ident{
-									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-									Parts:   []string{"foo"},
-								},
-							}),
+						Expr: BuildTestExprTree[*Expr](t, &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+							Parts:   []string{"foo"},
+						}),
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
@@ -271,14 +263,10 @@ func TestString_Parsing(t *testing.T) {
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 7, Line: 1, Column: 8}},
-						Directive: BuildTestExprTree[*Expr](t,
-							&Value{
-								ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-								Ident: &Ident{
-									ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
-									Parts:   []string{"foo"},
-								},
-							}),
+						Directive: BuildTestExprTree[*Expr](t, &Ident{
+							ASTNode: ASTNode{Pos: Position{Offset: 9, Line: 1, Column: 10}},
+							Parts:   []string{"foo"},
+						}),
 					},
 					{
 						ASTNode: ASTNode{Pos: Position{Offset: 13, Line: 1, Column: 14}},
@@ -403,14 +391,14 @@ func TestString_Clone(t *testing.T) {
 			input: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
 			want: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
@@ -420,14 +408,14 @@ func TestString_Clone(t *testing.T) {
 			input: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
 			want: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
@@ -550,7 +538,7 @@ func TestString_String(t *testing.T) {
 			input: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
@@ -561,7 +549,7 @@ func TestString_String(t *testing.T) {
 			input: &ValueString{
 				Fragment: []*StringFragment{
 					{Text: `hello `},
-					{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+					{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 					{Text: ` world`},
 				},
 			},
@@ -613,13 +601,13 @@ func TestStringFragment_Clone(t *testing.T) {
 		},
 		{
 			name:  "Expression",
-			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
-			want:  &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
+			want:  &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 		},
 		{
 			name:  "Directive",
-			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
-			want:  &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
+			want:  &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 		},
 	}
 
@@ -660,16 +648,16 @@ func TestStringFragment_Children(t *testing.T) {
 		},
 		{
 			name:  "Expression",
-			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 			want: []Node{
-				BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}}),
 			},
 		},
 		{
 			name:  "Directive",
-			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 			want: []Node{
-				BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}}),
+				BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}}),
 			},
 		},
 	}
@@ -717,12 +705,12 @@ func TestStringFragment_String(t *testing.T) {
 		},
 		{
 			name:  "Expression",
-			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Expr: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 			want:  `${foo}`,
 		},
 		{
 			name:  "Directive",
-			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Value{Ident: &Ident{Parts: []string{"foo"}}})},
+			input: &StringFragment{Directive: BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}})},
 			want:  `%{foo}`,
 		},
 	}

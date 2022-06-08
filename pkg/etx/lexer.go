@@ -42,8 +42,6 @@ const (
 	OpDot               = `.`
 
 	TokenWhitespace = "whitespace"
-
-	TokenNull = `null`
 )
 
 const (
@@ -84,7 +82,6 @@ func lexRules() lexer.Rules {
 			{Name: `Else`, Pattern: `\b(else)\b`},
 			{Name: `Switch`, Pattern: `\b(switch)\b`},
 			{Name: `Case`, Pattern: `\b(case)\b`},
-			{Name: `Default`, Pattern: `\b(default)\b`},
 
 			{Name: `BlockStart`, Pattern: regexp.QuoteMeta(OpLBrace)},
 			{Name: `BlockEnd`, Pattern: regexp.QuoteMeta(OpRBrace)},

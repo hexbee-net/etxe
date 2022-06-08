@@ -240,3 +240,589 @@ XXXMarry me.`[1:],
 		})
 	}
 }
+
+func TestBuildTestExprTree(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     any
+		want      *Expr
+		wantPanic bool
+	}{
+		{
+			name: "Expr",
+			input: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+		},
+		{
+			name: "ExprConditional",
+			input: &ExprConditional{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				},
+			},
+		},
+		{
+			name: "ExprLogicalOr",
+			input: &ExprLogicalOr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprLogicalAnd",
+			input: &ExprLogicalAnd{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprBitwiseOr",
+			input: &ExprBitwiseOr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprBitwiseXor",
+			input: &ExprBitwiseXor{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprBitwiseAnd",
+			input: &ExprBitwiseAnd{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprEquality",
+			input: &ExprEquality{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprRelational",
+			input: &ExprRelational{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprShift",
+			input: &ExprShift{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprAdditive",
+			input: &ExprAdditive{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprMultiplicative",
+			input: &ExprMultiplicative{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprUnary",
+			input: &ExprUnary{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															Left: ExprUnary{
+																ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprPostfix",
+			input: &ExprPostfix{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															Left: ExprUnary{
+																ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																Right: ExprPostfix{
+																	ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "ExprPrimary",
+			input: &ExprPrimary{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															Left: ExprUnary{
+																ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																Right: ExprPostfix{
+																	ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																	Value: ExprPrimary{
+																		ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Ident",
+			input: &Ident{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															Left: ExprUnary{
+																ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																Right: ExprPostfix{
+																	ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																	Value: ExprPrimary{
+																		ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																		Ident: &Ident{
+																			ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Value",
+			input: &Value{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+			},
+			want: &Expr{
+				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+				Left: &ExprConditional{
+					ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+					Condition: ExprLogicalOr{
+						ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+						Left: ExprLogicalAnd{
+							ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+							Left: ExprBitwiseOr{
+								ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+								Left: ExprBitwiseXor{
+									ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+									Left: ExprBitwiseAnd{
+										ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+										Left: ExprEquality{
+											ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+											Left: ExprRelational{
+												ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+												Left: ExprShift{
+													ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+													Left: ExprAdditive{
+														ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+														Left: ExprMultiplicative{
+															ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+															Left: ExprUnary{
+																ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																Right: ExprPostfix{
+																	ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																	Value: ExprPrimary{
+																		ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																		Value: &Value{
+																			ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "Invalid type",
+			input:     &ValueString{},
+			wantPanic: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.wantPanic {
+				assert.Panics(t, func() {
+					BuildTestExprTree[*Expr](t, tt.input)
+				})
+				return
+			}
+
+			assert.Equal(t, tt.want, BuildTestExprTree[*Expr](t, tt.input))
+		})
+	}
+}
