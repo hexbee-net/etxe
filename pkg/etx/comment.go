@@ -26,7 +26,7 @@ func (c *Comment) Children() (children []Node) {
 	return
 }
 
-func (c Comment) String() string {
+func (c Comment) FormattedString() string {
 	if c.Multiline != "" {
 		return c.Multiline
 	}

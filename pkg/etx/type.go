@@ -42,16 +42,16 @@ func (n *Type) Children() (children []Node) {
 	return
 }
 
-func (n Type) String() string {
+func (n Type) FormattedString() string {
 	var sb strings.Builder
 
 	mustFprintf(&sb, "type %s ", n.Label)
 
 	switch {
 	case n.Enum != nil:
-		mustFprintf(&sb, "enum {%v\n}", indent(n.Enum.String(), indentationChar))
+		mustFprintf(&sb, "enum {%s\n}", indent(n.Enum.FormattedString(), indentationChar))
 	case n.Object != nil:
-		mustFprintf(&sb, "object {%v\n}", indent(n.Object.String(), indentationChar))
+		mustFprintf(&sb, "object {%s\n}", indent(n.Object.FormattedString(), indentationChar))
 	default:
 		panic(repr.String(n, repr.Hide(Position{})))
 	}
@@ -86,7 +86,7 @@ func (n *TypeEnum) Children() (children []Node) {
 	return
 }
 
-func (n TypeEnum) String() string {
+func (n TypeEnum) FormattedString() string {
 	var sb strings.Builder
 
 	maxLabelLength := 0
@@ -98,7 +98,7 @@ func (n TypeEnum) String() string {
 
 	for _, item := range n.Items {
 		fillLength := maxLabelLength - len(item.Label)
-		mustFprintf(&sb, "\n%v:%v %v", item.Label, strings.Repeat(" ", fillLength), item.Value)
+		mustFprintf(&sb, "\n%s:%s %s", item.Label, strings.Repeat(" ", fillLength), item.Value.FormattedString())
 	}
 
 	return sb.String()
@@ -139,14 +139,14 @@ func (n *TypeEnumItem) Children() (children []Node) {
 	return
 }
 
-func (n *TypeEnumItem) String() string {
+func (n TypeEnumItem) FormattedString() string {
 	switch {
 	case n.Comment != nil:
-		return n.Comment.String()
+		return n.Comment.FormattedString()
 	case n.EmptyLine != "":
 		return n.EmptyLine
 	default:
-		return fmt.Sprintf("%v: %v", n.Label, n.Value.String())
+		return fmt.Sprintf("%s: %s", n.Label, n.Value.FormattedString())
 	}
 }
 
@@ -179,7 +179,7 @@ func (n *TypeObject) Children() (children []Node) {
 	return
 }
 
-func (n TypeObject) String() string {
+func (n TypeObject) FormattedString() string {
 	var sb strings.Builder
 
 	maxLabelLength := 0
@@ -191,7 +191,7 @@ func (n TypeObject) String() string {
 
 	for _, item := range n.Items {
 		fillLength := maxLabelLength - len(item.Label)
-		mustFprintf(&sb, "\n%v:%v %v", item.Label, strings.Repeat(" ", fillLength), item.Type)
+		mustFprintf(&sb, "\n%s:%s %s", item.Label, strings.Repeat(" ", fillLength), item.Type.FormattedString())
 	}
 
 	return sb.String()
@@ -232,13 +232,13 @@ func (n *TypeObjectItem) Children() (children []Node) {
 	return
 }
 
-func (n TypeObjectItem) String() string {
+func (n TypeObjectItem) FormattedString() string {
 	switch {
 	case n.Comment != nil:
-		return n.Comment.String()
+		return n.Comment.FormattedString()
 	case n.EmptyLine != "":
 		return n.EmptyLine
 	default:
-		return fmt.Sprintf("%v: %v", n.Label, n.Type.String())
+		return fmt.Sprintf("%s: %s", n.Label, n.Type.FormattedString())
 	}
 }

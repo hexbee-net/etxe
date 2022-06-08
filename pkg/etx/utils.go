@@ -15,6 +15,10 @@ type Cloner[C any] interface {
 	Clone() C
 }
 
+type FormattedStringer interface {
+	FormattedString() string
+}
+
 func cloneCollection[T Cloner[T]](src []T) []T {
 	if src == nil {
 		return nil

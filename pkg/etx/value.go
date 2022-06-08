@@ -81,7 +81,7 @@ func (v *Value) Children() (children []Node) {
 	return
 }
 
-func (v Value) String() string {
+func (v Value) FormattedString() string {
 	var sb strings.Builder
 
 	switch {
@@ -89,22 +89,22 @@ func (v Value) String() string {
 		sb.WriteString("null")
 
 	case v.Bool != nil:
-		mustFprintf(&sb, "%v", *v.Bool)
+		mustFprintf(&sb, "%s", v.Bool.FormattedString())
 
 	case v.Number != nil:
-		sb.WriteString(v.Number.String())
+		sb.WriteString(v.Number.FormattedString())
 
 	case v.Str != nil:
-		sb.WriteString(v.Str.String())
+		sb.WriteString(v.Str.FormattedString())
 
 	case v.Heredoc != nil:
-		sb.WriteString(v.Heredoc.String())
+		sb.WriteString(v.Heredoc.FormattedString())
 
 	case v.List != nil:
-		sb.WriteString(v.List.String())
+		sb.WriteString(v.List.FormattedString())
 
 	case v.Map != nil:
-		sb.WriteString(v.Map.String())
+		sb.WriteString(v.Map.FormattedString())
 
 	default:
 		panic(repr.String(v, repr.Hide(lexer.Position{})))
@@ -145,7 +145,7 @@ func (v *ValueBool) Children() (children []Node) {
 	return
 }
 
-func (v ValueBool) String() string {
+func (v ValueBool) FormattedString() string {
 	return strconv.FormatBool(v.Value)
 }
 
@@ -199,7 +199,7 @@ func (v *ValueNumber) Children() (children []Node) {
 	return
 }
 
-func (v ValueNumber) String() string {
+func (v ValueNumber) FormattedString() string {
 	if v.Source == "" {
 		return v.Value.String()
 	}
@@ -236,13 +236,13 @@ func (v *Heredoc) Children() (children []Node) {
 	return
 }
 
-func (v Heredoc) String() string {
+func (v Heredoc) FormattedString() string {
 	var sb strings.Builder
 
-	mustFprintf(&sb, "<<%v", v.Delimiter.String())
+	mustFprintf(&sb, "<<%s", v.Delimiter.FormattedString())
 
 	for _, fragment := range v.Fragments {
-		sb.WriteString(fragment.String())
+		sb.WriteString(fragment.FormattedString())
 	}
 
 	sb.WriteString("\n")
@@ -278,7 +278,7 @@ func (v *HeredocDelimiter) Clone() *HeredocDelimiter {
 	}
 }
 
-func (v HeredocDelimiter) String() string {
+func (v HeredocDelimiter) FormattedString() string {
 	if v.Delimiter == "" {
 		panic("empty heredoc delimiter")
 	}
@@ -323,12 +323,12 @@ func (f *HeredocFragment) Children() (children []Node) {
 	return
 }
 
-func (f HeredocFragment) String() string {
+func (f HeredocFragment) FormattedString() string {
 	switch {
 	case f.Expr != nil:
-		return fmt.Sprintf("${ %s }", f.Expr)
+		return fmt.Sprintf("${ %s }", f.Expr.FormattedString())
 	case f.Directive != nil:
-		return fmt.Sprintf("%%{ %s }", f.Directive)
+		return fmt.Sprintf("%%{ %s }", f.Directive.FormattedString())
 	case f.Text != "":
 		return f.Text
 	default:
@@ -363,13 +363,13 @@ func (v *ValueString) Children() (children []Node) {
 	return
 }
 
-func (v ValueString) String() string {
+func (v ValueString) FormattedString() string {
 	var sb strings.Builder
 
 	sb.WriteString(`"`)
 
 	for _, f := range v.Fragment {
-		sb.WriteString(f.String())
+		sb.WriteString(f.FormattedString())
 	}
 
 	sb.WriteString(`"`)
@@ -414,16 +414,16 @@ func (f *StringFragment) Children() (children []Node) {
 	return
 }
 
-func (f StringFragment) String() string {
+func (f StringFragment) FormattedString() string {
 	switch {
 	case f.Escaped != "":
 		return fmt.Sprintf("\\%s", f.Escaped)
 	case f.Unicode != "":
 		return fmt.Sprintf("\\u%s", f.Unicode)
 	case f.Expr != nil:
-		return fmt.Sprintf("${%s}", f.Expr)
+		return fmt.Sprintf("${%s}", f.Expr.FormattedString())
 	case f.Directive != nil:
-		return fmt.Sprintf("%%{%s}", f.Directive)
+		return fmt.Sprintf("%%{%s}", f.Directive.FormattedString())
 	case f.Text != "":
 		return f.Text
 	default:
@@ -458,7 +458,7 @@ func (v *ValueList) Children() (children []Node) {
 	return
 }
 
-func (v ValueList) String() string {
+func (v ValueList) FormattedString() string {
 	if len(v.Items) == 0 {
 		return "[]"
 	}
@@ -467,7 +467,7 @@ func (v ValueList) String() string {
 	sb.WriteString("[\n")
 
 	for _, e := range v.Items {
-		sb.WriteString(indent(e.String(), indentationChar))
+		sb.WriteString(indent(e.FormattedString(), indentationChar))
 	}
 
 	sb.WriteString("]")
@@ -508,14 +508,14 @@ func (v *ListItem) Children() (children []Node) {
 	return
 }
 
-func (v ListItem) String() string {
+func (v ListItem) FormattedString() string {
 	switch {
 	case v.EmptyLine != "":
 		return v.EmptyLine
 	case v.Comment != nil:
-		return v.Comment.String()
+		return v.Comment.FormattedString()
 	case v.Value != nil:
-		return fmt.Sprintf("%v,\n", v.Value.String())
+		return fmt.Sprintf("%s,\n", v.Value.FormattedString())
 	default:
 		panic("item not set")
 	}
@@ -548,7 +548,7 @@ func (v *ValueMap) Children() (children []Node) {
 	return
 }
 
-func (v ValueMap) String() string {
+func (v ValueMap) FormattedString() string {
 	if len(v.Entries) == 0 {
 		return "{}"
 	}
@@ -557,7 +557,7 @@ func (v ValueMap) String() string {
 	sb.WriteString("{\n")
 
 	for _, e := range v.Entries {
-		sb.WriteString(indent(fmt.Sprintf("%s: %s", e.Key, e.Value), indentationChar))
+		sb.WriteString(indent(fmt.Sprintf("%s: %s", e.Key.FormattedString(), e.Value.FormattedString()), indentationChar))
 		sb.WriteString(",\n")
 	}
 
@@ -599,14 +599,14 @@ func (v *MapEntry) Children() (children []Node) {
 	return
 }
 
-func (v MapEntry) String() string {
+func (v MapEntry) FormattedString() string {
 	var sb strings.Builder
 
 	if v.Comment != nil {
-		sb.WriteString(v.Comment.String())
+		sb.WriteString(v.Comment.FormattedString())
 	}
 
-	mustFprintf(&sb, "%v = %v", v.Key, v.Value)
+	mustFprintf(&sb, "%s = %s", v.Key.FormattedString(), v.Value.FormattedString())
 
 	return sb.String()
 }
@@ -642,12 +642,12 @@ func (v *MapKey) Children() (children []Node) {
 	return
 }
 
-func (v MapKey) String() string {
+func (v MapKey) FormattedString() string {
 	switch {
 	case v.Ident != nil:
-		return v.Ident.String()
+		return v.Ident.FormattedString()
 	case v.Str != nil:
-		return v.Str.String()
+		return v.Str.FormattedString()
 	default:
 		panic("key is not set")
 	}

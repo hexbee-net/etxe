@@ -34,7 +34,7 @@ func (n *Block) Children() (children []Node) {
 	return
 }
 
-func (n Block) String() string {
+func (n Block) FormattedString() string {
 	if n.Name == "" {
 		return ""
 	}
@@ -44,14 +44,14 @@ func (n Block) String() string {
 	sb.WriteString(n.Name)
 
 	for _, item := range n.Labels {
-		mustFprintf(&sb, ` "%v"`, item)
+		mustFprintf(&sb, ` "%s"`, item)
 	}
 
 	if len(n.Body) != 0 {
 		sb.WriteString(" {\n")
 
 		for _, item := range n.Body {
-			sb.WriteString(indent(item.String(), indentationChar))
+			sb.WriteString(indent(item.FormattedString(), indentationChar))
 		}
 
 		sb.WriteString("\n}")
@@ -104,18 +104,18 @@ func (n *BlockItem) Children() (children []Node) {
 	return
 }
 
-func (n BlockItem) String() string {
+func (n BlockItem) FormattedString() string {
 	var sb strings.Builder
 
 	if n.Comment != nil {
-		sb.WriteString(n.Comment.String())
+		sb.WriteString(n.Comment.FormattedString())
 	}
 
 	switch {
 	case n.Block != nil:
-		sb.WriteString(n.Block.String())
+		sb.WriteString(n.Block.FormattedString())
 	case n.Attribute != nil:
-		sb.WriteString(n.Attribute.String())
+		sb.WriteString(n.Attribute.FormattedString())
 	default:
 	}
 

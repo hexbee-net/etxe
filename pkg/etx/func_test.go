@@ -526,7 +526,7 @@ func TestFunc_Children(t *testing.T) {
 	}
 }
 
-func TestFunc_String(t *testing.T) {
+func TestFunc_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -753,7 +753,7 @@ func TestFuncParameter_Children(t *testing.T) {
 	}
 }
 
-func TestFuncParameter_String(t *testing.T) {
+func TestFuncParameter_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1006,7 +1006,7 @@ func TestFuncStatement_Children(t *testing.T) {
 	}
 }
 
-func TestFuncStatement_String(t *testing.T) {
+func TestFuncStatement_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1298,7 +1298,7 @@ func TestFuncDecl_Children(t *testing.T) {
 	}
 }
 
-func TestFuncDecl_String(t *testing.T) {
+func TestFuncDecl_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

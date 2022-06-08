@@ -123,7 +123,7 @@ func TestIdent_Children(t *testing.T) {
 	}
 }
 
-func TestIdent_String(t *testing.T) {
+func TestIdent_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

@@ -464,7 +464,7 @@ func TestString_Children(t *testing.T) {
 	}
 }
 
-func TestString_String(t *testing.T) {
+func TestString_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -669,7 +669,7 @@ func TestStringFragment_Children(t *testing.T) {
 	}
 }
 
-func TestStringFragment_String(t *testing.T) {
+func TestStringFragment_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

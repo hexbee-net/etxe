@@ -139,7 +139,7 @@ func TestAttribute_Children(t *testing.T) {
 	}
 }
 
-func TestAttribute_String(t *testing.T) {
+func TestAttribute_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

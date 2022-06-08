@@ -350,7 +350,7 @@ func TestList_Children(t *testing.T) {
 	}
 }
 
-func TestList_String(t *testing.T) {
+func TestList_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -521,7 +521,7 @@ func TestListItem_Children(t *testing.T) {
 	}
 }
 
-func TestListItem_String(t *testing.T) {
+func TestListItem_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

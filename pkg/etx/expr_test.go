@@ -4755,7 +4755,7 @@ func TestInvocationParams_Children(t *testing.T) {
 
 // /////////////////////////////////////
 
-func TestExpr_String(t *testing.T) {
+func TestExpr_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -4823,7 +4823,7 @@ func TestExpr_String(t *testing.T) {
 	}
 }
 
-func TestIf_String(t *testing.T) {
+func TestIf_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -4903,7 +4903,7 @@ if foo {
 	}
 }
 
-func TestSwitch_String(t *testing.T) {
+func TestSwitch_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5122,7 +5122,7 @@ switch foo {
 	}
 }
 
-func TestCase_String(t *testing.T) {
+func TestCase_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5224,7 +5224,7 @@ default: {
 	}
 }
 
-func TestConditional_String(t *testing.T) {
+func TestConditional_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5361,7 +5361,7 @@ func TestConditional_String(t *testing.T) {
 	}
 }
 
-func TestLogicalOr_String(t *testing.T) {
+func TestLogicalOr_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5431,7 +5431,7 @@ func TestLogicalOr_String(t *testing.T) {
 	}
 }
 
-func TestLogicalAnd_String(t *testing.T) {
+func TestLogicalAnd_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5501,7 +5501,7 @@ func TestLogicalAnd_String(t *testing.T) {
 	}
 }
 
-func TestBitwiseOr_String(t *testing.T) {
+func TestBitwiseOr_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5571,7 +5571,7 @@ func TestBitwiseOr_String(t *testing.T) {
 	}
 }
 
-func TestBitwiseXor_String(t *testing.T) {
+func TestBitwiseXor_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5641,7 +5641,7 @@ func TestBitwiseXor_String(t *testing.T) {
 	}
 }
 
-func TestBitwiseAnd_String(t *testing.T) {
+func TestBitwiseAnd_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5711,7 +5711,7 @@ func TestBitwiseAnd_String(t *testing.T) {
 	}
 }
 
-func TestEquality_String(t *testing.T) {
+func TestEquality_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5781,7 +5781,7 @@ func TestEquality_String(t *testing.T) {
 	}
 }
 
-func TestRelational_String(t *testing.T) {
+func TestRelational_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5851,7 +5851,7 @@ func TestRelational_String(t *testing.T) {
 	}
 }
 
-func TestShift_String(t *testing.T) {
+func TestShift_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5921,7 +5921,7 @@ func TestShift_String(t *testing.T) {
 	}
 }
 
-func TestAdditive_String(t *testing.T) {
+func TestAdditive_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -5991,7 +5991,7 @@ func TestAdditive_String(t *testing.T) {
 	}
 }
 
-func TestMultiplicative_String(t *testing.T) {
+func TestMultiplicative_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -6061,7 +6061,7 @@ func TestMultiplicative_String(t *testing.T) {
 	}
 }
 
-func TestUnary_String(t *testing.T) {
+func TestUnary_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -6105,7 +6105,7 @@ func TestUnary_String(t *testing.T) {
 	}
 }
 
-func TestPostfix_String(t *testing.T) {
+func TestPostfix_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -6168,7 +6168,7 @@ func TestPostfix_String(t *testing.T) {
 	}
 }
 
-func TestPrimary_String(t *testing.T) {
+func TestPrimary_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -6326,7 +6326,7 @@ func TestPrimary_String(t *testing.T) {
 	}
 }
 
-func TestInvocationParams_String(t *testing.T) {
+func TestInvocationParams_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

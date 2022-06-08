@@ -32,11 +32,11 @@ func (n *Attribute) Children() (children []Node) {
 	return
 }
 
-func (n Attribute) String() string {
+func (n Attribute) FormattedString() string {
 	var sb strings.Builder
 
 	if n.Value != nil {
-		mustFprintf(&sb, "%v: %v", n.Key, n.Value)
+		mustFprintf(&sb, "%s: %s", n.Key, n.Value.FormattedString())
 	} else {
 		sb.WriteString(n.Key)
 	}

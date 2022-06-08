@@ -365,7 +365,7 @@ func TestAST_Children(t *testing.T) {
 	}
 }
 
-func TestAST_String(t *testing.T) {
+func TestAST_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -718,7 +718,7 @@ func TestRootItem_Children(t *testing.T) {
 	}
 }
 
-func TestRootItem_String(t *testing.T) {
+func TestRootItem_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -952,7 +952,7 @@ func TestParameterType_Children(t *testing.T) {
 	}
 }
 
-func TestParameterType_String(t *testing.T) {
+func TestParameterType_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -976,14 +976,14 @@ func TestParameterType_String(t *testing.T) {
 			input: &ParameterType{
 				Ident: &Ident{Parts: []string{"foo"}},
 			},
-			want: Ident{Parts: []string{"foo"}}.String(),
+			want: Ident{Parts: []string{"foo"}}.FormattedString(),
 		},
 		{
 			name: "Func",
 			input: &ParameterType{
 				Func: &FuncSignature{Return: ParameterType{Ident: &Ident{Parts: []string{"foo"}}}},
 			},
-			want: FuncSignature{Return: ParameterType{Ident: &Ident{Parts: []string{"foo"}}}}.String(),
+			want: FuncSignature{Return: ParameterType{Ident: &Ident{Parts: []string{"foo"}}}}.FormattedString(),
 		},
 	}
 
@@ -1160,7 +1160,7 @@ func TestFuncSignature_Children(t *testing.T) {
 	}
 }
 
-func TestFuncSignature_String(t *testing.T) {
+func TestFuncSignature_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

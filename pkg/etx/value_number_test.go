@@ -258,7 +258,7 @@ func TestNumber_Children(t *testing.T) {
 	}
 }
 
-func TestNumber_String(t *testing.T) {
+func TestNumber_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

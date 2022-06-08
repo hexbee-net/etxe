@@ -396,7 +396,7 @@ func TestComment_Children(t *testing.T) {
 	}
 }
 
-func TestComment_String(t *testing.T) {
+func TestComment_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

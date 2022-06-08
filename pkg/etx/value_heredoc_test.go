@@ -322,7 +322,7 @@ func TestHeredoc_Children(t *testing.T) {
 	}
 }
 
-func TestHeredoc_String(t *testing.T) {
+func TestHeredoc_FormattedString(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     *Heredoc
@@ -574,7 +574,7 @@ func TestHeredocFragment_Children(t *testing.T) {
 	}
 }
 
-func TestHeredocFragment_String(t *testing.T) {
+func TestHeredocFragment_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

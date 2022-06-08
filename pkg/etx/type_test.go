@@ -231,7 +231,7 @@ func TestType_Children(t *testing.T) {
 	}
 }
 
-func TestType_String(t *testing.T) {
+func TestType_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -458,7 +458,7 @@ func TestTypeEnum_Children(t *testing.T) {
 	}
 }
 
-func TestTypeEnum_String(t *testing.T) {
+func TestTypeEnum_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -708,7 +708,7 @@ func TestTypeEnumItem_Children(t *testing.T) {
 	}
 }
 
-func TestTypeEnumItem_String(t *testing.T) {
+func TestTypeEnumItem_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -925,7 +925,7 @@ func TestTypeObject_Children(t *testing.T) {
 	}
 }
 
-func TestTypeObject_String(t *testing.T) {
+func TestTypeObject_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -1180,7 +1180,7 @@ func TestTypeObjectItem_Children(t *testing.T) {
 	}
 }
 
-func TestTypeObjectItem_String(t *testing.T) {
+func TestTypeObjectItem_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

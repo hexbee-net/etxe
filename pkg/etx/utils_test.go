@@ -35,7 +35,7 @@ func testRefFields[T any](t *testing.T, testFunc func(assert.TestingT, interface
 		typeField := et.Type().Field(i)
 
 		if field.Kind() == reflect.Ptr && !field.IsNil() {
-			testFunc(t, field.Interface(), at.Field(i).Interface(), fmt.Sprintf("Field name: %v", typeField.Name))
+			testFunc(t, field.Interface(), at.Field(i).Interface(), fmt.Sprintf("Field name: %s", typeField.Name))
 		}
 	}
 }
@@ -83,21 +83,21 @@ func testParser[T any](t *testing.T, input string, want *T, wantErr, compareNode
 	}
 }
 
-func testStringer(t *testing.T, wantPanic bool, want string, input fmt.Stringer, msgAndArgs ...interface{}) {
+func testStringer(t *testing.T, wantPanic bool, want string, input FormattedStringer, msgAndArgs ...interface{}) {
 	t.Helper()
 
 	if wantPanic {
 		if want != "" {
 			assert.PanicsWithValue(t, want, func() {
-				_ = input.String()
+				_ = input.FormattedString()
 			}, msgAndArgs)
 		} else {
 			assert.Panics(t, func() {
-				_ = input.String()
+				_ = input.FormattedString()
 			}, msgAndArgs)
 		}
 	} else {
-		assert.Equal(t, want, input.String())
+		assert.Equal(t, want, input.FormattedString())
 	}
 }
 
@@ -236,7 +236,7 @@ XXXMarry me.`[1:],
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, indent(tt.args.s, tt.args.prefix), "indent(%v, %v)", tt.args.s, tt.args.prefix)
+			assert.Equalf(t, tt.want, indent(tt.args.s, tt.args.prefix), "indent(%s, %s)", tt.args.s, tt.args.prefix)
 		})
 	}
 }

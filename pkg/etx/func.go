@@ -44,33 +44,33 @@ func (n *Func) Children() (children []Node) {
 	return
 }
 
-func (n Func) String() string {
+func (n Func) FormattedString() string {
 	var sb strings.Builder
 
 	params := make([]string, 0, len(n.Parameters))
 	for _, p := range n.Parameters {
-		params = append(params, p.String())
+		params = append(params, p.FormattedString())
 	}
 
-	mustFprintf(&sb, "def %v(%v)", n.Label, strings.Join(params, ", "))
+	mustFprintf(&sb, "def %s(%s)", n.Label, strings.Join(params, ", "))
 
 	switch l := len(n.Return); {
 	case l == 1:
-		mustFprintf(&sb, " %v", n.Return[0].String())
+		mustFprintf(&sb, " %s", n.Return[0].FormattedString())
 	case l > 1:
 		rets := make([]string, 0, l)
 		for _, item := range n.Return {
-			rets = append(rets, item.String())
+			rets = append(rets, item.FormattedString())
 		}
 
-		mustFprintf(&sb, " (%v)", strings.Join(rets, ", "))
+		mustFprintf(&sb, " (%s)", strings.Join(rets, ", "))
 	}
 
 	if len(n.Body) != 0 {
 		sb.WriteString(" {\n")
 
 		for _, b := range n.Body {
-			sb.WriteString(indent(b.String(), indentationChar))
+			sb.WriteString(indent(b.FormattedString(), indentationChar))
 			sb.WriteString("\n")
 		}
 
@@ -111,9 +111,9 @@ func (n *FuncParameter) Children() (children []Node) {
 	return
 }
 
-func (n FuncParameter) String() string {
+func (n FuncParameter) FormattedString() string {
 	if n.Type != nil {
-		return fmt.Sprintf("%v: %v", n.Label, n.Type)
+		return fmt.Sprintf("%s: %s", n.Label, n.Type.FormattedString())
 	}
 
 	return n.Label
@@ -160,14 +160,14 @@ func (n *FuncStatement) Children() (children []Node) {
 	return
 }
 
-func (n FuncStatement) String() string {
+func (n FuncStatement) FormattedString() string {
 	switch {
 	case n.Comment != nil:
-		return n.Comment.String()
+		return n.Comment.FormattedString()
 	case n.Decl != nil:
-		return n.Decl.String()
+		return n.Decl.FormattedString()
 	case n.Expr != nil:
-		return n.Expr.String()
+		return n.Expr.FormattedString()
 	case n.EmptyLine != "":
 		return n.EmptyLine
 	default:
@@ -212,21 +212,21 @@ func (n *FuncDecl) Children() (children []Node) {
 	return
 }
 
-func (n FuncDecl) String() string {
+func (n FuncDecl) FormattedString() string {
 	var sb strings.Builder
 
 	if n.Label == "" {
 		return ""
 	}
 
-	mustFprintf(&sb, "%v %v", n.DeclType, n.Label)
+	mustFprintf(&sb, "%s %s", n.DeclType, n.Label)
 
 	if n.Type != nil {
-		mustFprintf(&sb, ": %s", n.Type.String())
+		mustFprintf(&sb, ": %s", n.Type.FormattedString())
 	}
 
 	if n.Value != nil {
-		mustFprintf(&sb, " = %v", n.Value)
+		mustFprintf(&sb, " = %s", n.Value.FormattedString())
 	}
 
 	return sb.String()

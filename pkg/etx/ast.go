@@ -63,14 +63,14 @@ func (n *AST) Children() (children []Node) {
 	return
 }
 
-func (n AST) String() string {
+func (n AST) FormattedString() string {
 	if len(n.Items) == 0 {
 		return ""
 	}
 
 	items := make([]string, 0, len(n.Items))
 	for _, item := range n.Items {
-		items = append(items, item.String())
+		items = append(items, item.FormattedString())
 	}
 
 	return strings.Join(items, "\n\n") + "\n"
@@ -135,20 +135,20 @@ func (n *RootItem) Children() (children []Node) {
 	return
 }
 
-func (n RootItem) String() string {
+func (n RootItem) FormattedString() string {
 	switch {
 	case n.Decl != nil:
-		return n.Decl.String()
+		return n.Decl.FormattedString()
 	case n.Func != nil:
-		return n.Func.String()
+		return n.Func.FormattedString()
 	case n.Type != nil:
-		return n.Type.String()
+		return n.Type.FormattedString()
 	case n.Block != nil:
-		return n.Block.String()
+		return n.Block.FormattedString()
 	case n.Attribute != nil:
-		return n.Attribute.String()
+		return n.Attribute.FormattedString()
 	case n.Comment != nil:
-		return n.Comment.String()
+		return n.Comment.FormattedString()
 	case n.EmptyLine != "":
 		return n.EmptyLine
 	default:
@@ -189,12 +189,12 @@ func (n *ParameterType) Children() (children []Node) {
 	return
 }
 
-func (n ParameterType) String() string {
+func (n ParameterType) FormattedString() string {
 	switch {
 	case n.Ident != nil:
-		return n.Ident.String()
+		return n.Ident.FormattedString()
 	case n.Func != nil:
-		return n.Func.String()
+		return n.Func.FormattedString()
 	default:
 		panic(repr.String(n, repr.Hide(Position{})))
 	}
@@ -231,15 +231,15 @@ func (n *FuncSignature) Children() (children []Node) {
 	return
 }
 
-func (n FuncSignature) String() string {
+func (n FuncSignature) FormattedString() string {
 	var sb strings.Builder
 
 	params := make([]string, 0, len(n.Parameters))
 	for _, item := range n.Parameters {
-		params = append(params, item.String())
+		params = append(params, item.FormattedString())
 	}
 
-	mustFprintf(&sb, "(%v) %v %v", strings.Join(params, ", "), OpLambdaDef, n.Return.String())
+	mustFprintf(&sb, "(%s) %s %s", strings.Join(params, ", "), OpLambdaDef, n.Return.FormattedString())
 
 	return sb.String()
 }

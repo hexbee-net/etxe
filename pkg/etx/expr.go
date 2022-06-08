@@ -40,14 +40,14 @@ func (e *Expr) Children() (children []Node) {
 	return
 }
 
-func (e Expr) String() string {
+func (e Expr) FormattedString() string {
 	switch {
 	case e.Left != nil:
-		return e.Left.String()
+		return e.Left.FormattedString()
 	case e.If != nil:
-		return e.If.String()
+		return e.If.FormattedString()
 	case e.Switch != nil:
-		return e.Switch.String()
+		return e.Switch.FormattedString()
 	default:
 		panic("expression not set")
 	}
@@ -90,14 +90,14 @@ func (e *ExprIf) Children() (children []Node) {
 	return
 }
 
-func (e ExprIf) String() string {
+func (e ExprIf) FormattedString() string {
 	switch {
 	case e.Left == nil:
-		return fmt.Sprintf("if %s { }", e.Condition.String())
+		return fmt.Sprintf("if %s { }", e.Condition.FormattedString())
 	case e.Right == nil:
-		return fmt.Sprintf("if %s {\n%s\n}", e.Condition.String(), indent(e.Left.String(), indentationChar))
+		return fmt.Sprintf("if %s {\n%s\n}", e.Condition.FormattedString(), indent(e.Left.FormattedString(), indentationChar))
 	default:
-		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition.String(), indent(e.Left.String(), indentationChar), indent(e.Right.String(), indentationChar))
+		return fmt.Sprintf("if %s {\n%s\n} else {\n%s\n}", e.Condition.FormattedString(), indent(e.Left.FormattedString(), indentationChar), indent(e.Right.FormattedString(), indentationChar))
 
 	}
 }
@@ -134,18 +134,18 @@ func (e *ExprSwitch) Children() (children []Node) {
 
 }
 
-func (e ExprSwitch) String() string {
+func (e ExprSwitch) FormattedString() string {
 	switch len(e.Cases) {
 	case 0:
-		return fmt.Sprintf("switch %s { }", e.Selector.String())
+		return fmt.Sprintf("switch %s { }", e.Selector.FormattedString())
 
 	default:
 		cases := make([]string, 0, len(e.Cases))
 		for _, c := range e.Cases {
-			cases = append(cases, c.String())
+			cases = append(cases, c.FormattedString())
 		}
 
-		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector.String(), indent(strings.Join(cases, "\n"), indentationChar))
+		return fmt.Sprintf("switch %s {\n%s\n}", e.Selector.FormattedString(), indent(strings.Join(cases, "\n"), indentationChar))
 	}
 }
 
@@ -184,18 +184,18 @@ func (e *ExprCase) Children() (children []Node) {
 	return
 }
 
-func (e ExprCase) String() string {
+func (e ExprCase) FormattedString() string {
 	switch {
 	case e.Conditions != nil:
 		conditions := make([]string, 0, len(e.Conditions))
 		for _, c := range e.Conditions {
-			conditions = append(conditions, c.String())
+			conditions = append(conditions, c.FormattedString())
 		}
 
-		return fmt.Sprintf("case %s: {\n%s\n}", strings.Join(conditions, ", "), indent(e.Expr.String(), indentationChar))
+		return fmt.Sprintf("case %s: {\n%s\n}", strings.Join(conditions, ", "), indent(e.Expr.FormattedString(), indentationChar))
 
 	case e.Default:
-		return fmt.Sprintf("default: {\n%s\n}", indent(e.Expr.String(), indentationChar))
+		return fmt.Sprintf("default: {\n%s\n}", indent(e.Expr.FormattedString(), indentationChar))
 
 	default:
 		panic("non-default case statement without condition")
@@ -246,21 +246,21 @@ func (e *ExprConditional) Children() (children []Node) {
 	return
 }
 
-func (e ExprConditional) String() string {
+func (e ExprConditional) FormattedString() string {
 	if e.ConditionOp {
 		switch {
 		case e.TrueExpr != nil && e.FalseExpr != nil:
-			return fmt.Sprintf("%s ? %s : %s", e.Condition.String(), e.TrueExpr.String(), e.FalseExpr.String())
+			return fmt.Sprintf("%s ? %s : %s", e.Condition.FormattedString(), e.TrueExpr.FormattedString(), e.FalseExpr.FormattedString())
 		case e.TrueExpr != nil && e.FalseExpr == nil:
-			return fmt.Sprintf("%s ? %s : null", e.Condition.String(), e.TrueExpr.String())
+			return fmt.Sprintf("%s ? %s : null", e.Condition.FormattedString(), e.TrueExpr.FormattedString())
 		case e.TrueExpr == nil && e.FalseExpr != nil:
-			return fmt.Sprintf("%s ? null : %s", e.Condition.String(), e.FalseExpr.String())
+			return fmt.Sprintf("%s ? null : %s", e.Condition.FormattedString(), e.FalseExpr.FormattedString())
 		default:
-			return fmt.Sprintf("%s ? null : null", e.Condition)
+			return fmt.Sprintf("%s ? null : null", e.Condition.FormattedString())
 		}
 	}
 
-	return e.Condition.String()
+	return e.Condition.FormattedString()
 }
 
 // /////////////////////////////////////
@@ -296,16 +296,16 @@ func (e *ExprLogicalOr) Children() (children []Node) {
 	return
 }
 
-func (e ExprLogicalOr) String() string {
+func (e ExprLogicalOr) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -341,16 +341,16 @@ func (e *ExprLogicalAnd) Children() (children []Node) {
 	return
 }
 
-func (e ExprLogicalAnd) String() string {
+func (e ExprLogicalAnd) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -386,16 +386,16 @@ func (e *ExprBitwiseOr) Children() (children []Node) {
 	return
 }
 
-func (e ExprBitwiseOr) String() string {
+func (e ExprBitwiseOr) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -431,16 +431,16 @@ func (e *ExprBitwiseXor) Children() (children []Node) {
 	return
 }
 
-func (e ExprBitwiseXor) String() string {
+func (e ExprBitwiseXor) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -476,16 +476,16 @@ func (e *ExprBitwiseAnd) Children() (children []Node) {
 	return
 }
 
-func (e ExprBitwiseAnd) String() string {
+func (e ExprBitwiseAnd) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -521,16 +521,16 @@ func (e *ExprEquality) Children() (children []Node) {
 	return
 }
 
-func (e ExprEquality) String() string {
+func (e ExprEquality) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -566,16 +566,16 @@ func (e *ExprRelational) Children() (children []Node) {
 	return
 }
 
-func (e ExprRelational) String() string {
+func (e ExprRelational) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -611,16 +611,16 @@ func (e *ExprShift) Children() (children []Node) {
 	return
 }
 
-func (e ExprShift) String() string {
+func (e ExprShift) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -656,16 +656,16 @@ func (e *ExprAdditive) Children() (children []Node) {
 	return
 }
 
-func (e ExprAdditive) String() string {
+func (e ExprAdditive) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -701,16 +701,16 @@ func (e *ExprMultiplicative) Children() (children []Node) {
 	return
 }
 
-func (e ExprMultiplicative) String() string {
+func (e ExprMultiplicative) FormattedString() string {
 	if e.Op == "" {
-		return e.Left.String()
+		return e.Left.FormattedString()
 	}
 
 	if e.Right == nil {
 		panic("operator with <nil> right side")
 	}
 
-	return fmt.Sprintf("%v %v %v", e.Left.String(), e.Op, e.Right.String())
+	return fmt.Sprintf("%s %s %s", e.Left.FormattedString(), e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -740,8 +740,8 @@ func (e *ExprUnary) Children() (children []Node) {
 	return
 }
 
-func (e ExprUnary) String() string {
-	return fmt.Sprintf("%v%v", e.Op, e.Right.String())
+func (e ExprUnary) FormattedString() string {
+	return fmt.Sprintf("%s%s", e.Op, e.Right.FormattedString())
 }
 
 // /////////////////////////////////////
@@ -777,16 +777,16 @@ func (e *ExprPostfix) Children() (children []Node) {
 	return
 }
 
-func (e ExprPostfix) String() string {
+func (e ExprPostfix) FormattedString() string {
 	var sb strings.Builder
-	sb.WriteString(e.Value.String())
+	sb.WriteString(e.Value.FormattedString())
 
 	if e.Index != nil {
-		mustFprintf(&sb, "[%v]", e.Index.String())
+		mustFprintf(&sb, "[%s]", e.Index.FormattedString())
 	}
 
 	if e.Post != nil {
-		mustFprintf(&sb, ".%v", e.Post.String())
+		mustFprintf(&sb, ".%s", e.Post.FormattedString())
 	}
 
 	return sb.String()
@@ -843,13 +843,13 @@ func (e *ExprPrimary) Children() (children []Node) {
 	return
 }
 
-func (e ExprPrimary) String() string {
+func (e ExprPrimary) FormattedString() string {
 	if e.SubExpression != nil {
-		return e.SubExpression.String()
+		return e.SubExpression.FormattedString()
 	}
 
 	if e.Value != nil {
-		return e.Value.String()
+		return e.Value.FormattedString()
 	}
 
 	var sb strings.Builder
@@ -858,19 +858,19 @@ func (e ExprPrimary) String() string {
 		panic("identifier not set")
 	}
 
-	sb.WriteString(e.Ident.String())
+	sb.WriteString(e.Ident.FormattedString())
 
 	if len(e.Monads) != 0 {
 		params := make([]string, 0, len(e.Monads))
 		for _, p := range e.Monads {
-			params = append(params, fmt.Sprintf("(%v)", p.String()))
+			params = append(params, fmt.Sprintf("(%s)", p.FormattedString()))
 		}
 		sb.WriteString(strings.Join(params, ""))
 	}
 
 	if e.Post != nil {
 		sb.WriteString(".")
-		sb.WriteString(e.Post.String())
+		sb.WriteString(e.Post.FormattedString())
 	}
 
 	return sb.String()
@@ -903,10 +903,10 @@ func (e *ExprInvocationParams) Children() (children []Node) {
 	return
 }
 
-func (e ExprInvocationParams) String() string {
+func (e ExprInvocationParams) FormattedString() string {
 	params := make([]string, 0, len(e.Values))
 	for _, p := range e.Values {
-		params = append(params, p.String())
+		params = append(params, p.FormattedString())
 	}
 
 	return strings.Join(params, ", ")

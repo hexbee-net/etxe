@@ -321,7 +321,7 @@ func TestBlock_Children(t *testing.T) {
 	}
 }
 
-func TestBlock_String(t *testing.T) {
+func TestBlock_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -651,7 +651,7 @@ func TestBlockItem_Children(t *testing.T) {
 	}
 }
 
-func TestBlockItem_String(t *testing.T) {
+func TestBlockItem_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -675,14 +675,14 @@ func TestBlockItem_String(t *testing.T) {
 			input: &BlockItem{
 				Attribute: &Attribute{Key: "foo"},
 			},
-			want: Attribute{Key: "foo"}.String(),
+			want: Attribute{Key: "foo"}.FormattedString(),
 		},
 		{
 			name: "Sub-block",
 			input: &BlockItem{
 				Block: &Block{Name: "resource"},
 			},
-			want: Block{Name: "resource"}.String(),
+			want: Block{Name: "resource"}.FormattedString(),
 		},
 		{
 			name: "Comment",

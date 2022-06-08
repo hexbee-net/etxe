@@ -40,19 +40,19 @@ func (n *Lambda) Children() (children []Node) {
 	return
 }
 
-func (n Lambda) String() string {
+func (n Lambda) FormattedString() string {
 	var sb strings.Builder
 
 	if n.Comment != nil {
-		sb.WriteString(n.Comment.String())
+		sb.WriteString(n.Comment.FormattedString())
 	}
 
 	params := make([]string, 0, len(n.Parameters))
 	for _, p := range n.Parameters {
-		params = append(params, p.String())
+		params = append(params, p.FormattedString())
 	}
 
-	mustFprintf(&sb, "(%s) %s %s", strings.Join(params, ", "), OpLambda, n.Expr.String())
+	mustFprintf(&sb, "(%s) %s %s", strings.Join(params, ", "), OpLambda, n.Expr.FormattedString())
 
 	return sb.String()
 }
@@ -86,9 +86,9 @@ func (n *LambdaParameter) Children() (children []Node) {
 	return
 }
 
-func (n LambdaParameter) String() string {
+func (n LambdaParameter) FormattedString() string {
 	if n.Type != nil {
-		return fmt.Sprintf("%v: %v", n.Label, n.Type)
+		return fmt.Sprintf("%s: %s", n.Label, n.Type.FormattedString())
 	}
 
 	return n.Label

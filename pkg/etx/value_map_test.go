@@ -345,7 +345,7 @@ func TestMap_Children(t *testing.T) {
 	}
 }
 
-func TestMap_String(t *testing.T) {
+func TestMap_FormattedString(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     *ValueMap
@@ -534,7 +534,7 @@ func TestMapEntry_Children(t *testing.T) {
 	}
 }
 
-func TestMapEntry_String(t *testing.T) {
+func TestMapEntry_FormattedString(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     *MapEntry
@@ -694,7 +694,7 @@ func TestMapKey_Children(t *testing.T) {
 	}
 }
 
-func TestMapKey_String(t *testing.T) {
+func TestMapKey_FormattedString(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     *MapKey

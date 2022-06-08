@@ -434,7 +434,7 @@ func TestLambda_Children(t *testing.T) {
 	}
 }
 
-func TestLambda_String(t *testing.T) {
+func TestLambda_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -645,7 +645,7 @@ func TestLambdaParameter_Children(t *testing.T) {
 	}
 }
 
-func TestLambdaParameter_String(t *testing.T) {
+func TestLambdaParameter_FormattedString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

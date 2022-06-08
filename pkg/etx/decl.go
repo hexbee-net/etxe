@@ -43,21 +43,21 @@ func (n *Decl) Children() (children []Node) {
 	return
 }
 
-func (n Decl) String() string {
+func (n Decl) FormattedString() string {
 	var sb strings.Builder
 
 	if n.Label == "" {
 		return sb.String()
 	}
 
-	mustFprintf(&sb, "%v %v", n.DeclType, n.Label)
+	mustFprintf(&sb, "%s %s", n.DeclType, n.Label)
 
 	if n.Type != nil {
-		mustFprintf(&sb, ": %v", n.Type)
+		mustFprintf(&sb, ": %s", n.Type.FormattedString())
 	}
 
 	if n.Value != nil {
-		mustFprintf(&sb, " = %v", n.Value)
+		mustFprintf(&sb, " = %s", n.Value.FormattedString())
 	}
 
 	return sb.String()
