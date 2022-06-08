@@ -54,22 +54,22 @@ func TestIdent_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *Ident
+		input *Ident
 		want  *Ident
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &Ident{},
+			input: &Ident{},
 			want:  &Ident{},
 		},
 		{
 			name: "ASTNode",
-			Input: &Ident{
+			input: &Ident{
 				ASTNode: ASTNode{Pos: Position{Offset: 0, Line: 1, Column: 1}},
 			},
 			want: &Ident{
@@ -78,7 +78,7 @@ func TestIdent_Clone(t *testing.T) {
 		},
 		{
 			name: "Parts",
-			Input: &Ident{
+			input: &Ident{
 				Parts: []string{"foo", "bar"},
 			},
 			want: &Ident{
@@ -89,7 +89,7 @@ func TestIdent_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*Ident](t, tt.want, tt.Input.Clone())
+			testCloner[*Ident](t, tt.want, tt.input.Clone())
 		})
 	}
 }

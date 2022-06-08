@@ -297,22 +297,22 @@ func TestAST_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *AST
+		input *AST
 		want  *AST
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &AST{},
+			input: &AST{},
 			want:  &AST{},
 		},
 		{
 			name: "Item",
-			Input: &AST{
+			input: &AST{
 				Items: []*RootItem{
 					{Attribute: &Attribute{Key: "foo"}},
 				},
@@ -327,7 +327,7 @@ func TestAST_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*AST](t, tt.want, tt.Input.Clone())
+			testCloner[*AST](t, tt.want, tt.input.Clone())
 		})
 	}
 }

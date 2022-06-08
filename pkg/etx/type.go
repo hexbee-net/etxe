@@ -11,8 +11,8 @@ type Type struct {
 	ASTNode
 
 	Label  string      `parser:"'type' @Ident"                        json:"label"`
-	Enum   *TypeEnum   `parser:"(   Enum   '{' [ LF+ ] @@ "      json:"enum,omitempty"`
-	Object *TypeObject `parser:"  | Object '{' [ LF+ ] @@ ) '}'" json:"object,omitempty"`
+	Enum   *TypeEnum   `parser:"(   'enum'   '{' [ LF+ ] @@ "      json:"enum,omitempty"`
+	Object *TypeObject `parser:"  | 'object' '{' [ LF+ ] @@ ) '}'" json:"object,omitempty"`
 }
 
 func (n *Type) Clone() *Type {

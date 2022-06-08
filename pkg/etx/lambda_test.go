@@ -323,22 +323,22 @@ func TestLambda_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *Lambda
+		input *Lambda
 		want  *Lambda
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &Lambda{},
+			input: &Lambda{},
 			want:  &Lambda{},
 		},
 		{
 			name: "ASTNode",
-			Input: &Lambda{
+			input: &Lambda{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &Lambda{
@@ -347,7 +347,7 @@ func TestLambda_Clone(t *testing.T) {
 		},
 		{
 			name: "Comments",
-			Input: &Lambda{
+			input: &Lambda{
 				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &Lambda{
@@ -356,7 +356,7 @@ func TestLambda_Clone(t *testing.T) {
 		},
 		{
 			name: "Parameters",
-			Input: &Lambda{
+			input: &Lambda{
 				Parameters: []*LambdaParameter{{Label: "foo"}},
 			},
 			want: &Lambda{
@@ -365,7 +365,7 @@ func TestLambda_Clone(t *testing.T) {
 		},
 		{
 			name: "Expr",
-			Input: &Lambda{
+			input: &Lambda{
 				Expr: *BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &Lambda{
@@ -376,7 +376,7 @@ func TestLambda_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*Lambda](t, tt.want, tt.Input.Clone())
+			testCloner[*Lambda](t, tt.want, tt.input.Clone())
 		})
 	}
 }
@@ -552,22 +552,22 @@ func TestLambdaParameter_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *LambdaParameter
+		input *LambdaParameter
 		want  *LambdaParameter
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &LambdaParameter{},
+			input: &LambdaParameter{},
 			want:  &LambdaParameter{},
 		},
 		{
 			name: "ASTNode",
-			Input: &LambdaParameter{
+			input: &LambdaParameter{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &LambdaParameter{
@@ -576,7 +576,7 @@ func TestLambdaParameter_Clone(t *testing.T) {
 		},
 		{
 			name: "Label",
-			Input: &LambdaParameter{
+			input: &LambdaParameter{
 				Label: "foo",
 			},
 			want: &LambdaParameter{
@@ -585,7 +585,7 @@ func TestLambdaParameter_Clone(t *testing.T) {
 		},
 		{
 			name: "Type",
-			Input: &LambdaParameter{
+			input: &LambdaParameter{
 				Type: &ParameterType{
 					Ident: &Ident{Parts: []string{"foo"}},
 				},
@@ -600,7 +600,7 @@ func TestLambdaParameter_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*LambdaParameter](t, tt.want, tt.Input.Clone())
+			testCloner[*LambdaParameter](t, tt.want, tt.input.Clone())
 		})
 	}
 }

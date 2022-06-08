@@ -126,22 +126,22 @@ func TestType_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *Type
+		input *Type
 		want  *Type
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &Type{},
+			input: &Type{},
 			want:  &Type{},
 		},
 		{
 			name: "ASTNode",
-			Input: &Type{
+			input: &Type{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &Type{
@@ -150,7 +150,7 @@ func TestType_Clone(t *testing.T) {
 		},
 		{
 			name: "Label",
-			Input: &Type{
+			input: &Type{
 				Label: "foo",
 			},
 			want: &Type{
@@ -159,7 +159,7 @@ func TestType_Clone(t *testing.T) {
 		},
 		{
 			name: "Enum",
-			Input: &Type{
+			input: &Type{
 				Enum: &TypeEnum{Items: []*TypeEnumItem{{Label: "foo"}}},
 			},
 			want: &Type{
@@ -168,7 +168,7 @@ func TestType_Clone(t *testing.T) {
 		},
 		{
 			name: "Object",
-			Input: &Type{
+			input: &Type{
 				Object: &TypeObject{Items: []*TypeObjectItem{{Label: "foo"}}},
 			},
 			want: &Type{
@@ -179,7 +179,7 @@ func TestType_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*Type](t, tt.want, tt.Input.Clone())
+			testCloner[*Type](t, tt.want, tt.input.Clone())
 		})
 	}
 }
@@ -387,22 +387,22 @@ func TestTypeEnum_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *TypeEnum
+		input *TypeEnum
 		want  *TypeEnum
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &TypeEnum{},
+			input: &TypeEnum{},
 			want:  &TypeEnum{},
 		},
 		{
 			name: "ASTNode",
-			Input: &TypeEnum{
+			input: &TypeEnum{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeEnum{
@@ -411,7 +411,7 @@ func TestTypeEnum_Clone(t *testing.T) {
 		},
 		{
 			name: "Items",
-			Input: &TypeEnum{
+			input: &TypeEnum{
 				Items: []*TypeEnumItem{{Label: "foo"}},
 			},
 			want: &TypeEnum{
@@ -422,7 +422,7 @@ func TestTypeEnum_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*TypeEnum](t, tt.want, tt.Input.Clone())
+			testCloner[*TypeEnum](t, tt.want, tt.input.Clone())
 		})
 	}
 }
@@ -585,22 +585,22 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *TypeEnumItem
+		input *TypeEnumItem
 		want  *TypeEnumItem
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &TypeEnumItem{},
+			input: &TypeEnumItem{},
 			want:  &TypeEnumItem{},
 		},
 		{
 			name: "ASTNode",
-			Input: &TypeEnumItem{
+			input: &TypeEnumItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeEnumItem{
@@ -609,7 +609,7 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		},
 		{
 			name: "EmptyLine",
-			Input: &TypeEnumItem{
+			input: &TypeEnumItem{
 				EmptyLine: "\n",
 			},
 			want: &TypeEnumItem{
@@ -618,7 +618,7 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Comments",
-			Input: &TypeEnumItem{
+			input: &TypeEnumItem{
 				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &TypeEnumItem{
@@ -627,7 +627,7 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Label",
-			Input: &TypeEnumItem{
+			input: &TypeEnumItem{
 				Label: "foo",
 			},
 			want: &TypeEnumItem{
@@ -636,7 +636,7 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Value",
-			Input: &TypeEnumItem{
+			input: &TypeEnumItem{
 				Value: *BuildTestExprTree[*Expr](t, &Ident{Parts: []string{"foo"}}),
 			},
 			want: &TypeEnumItem{
@@ -647,7 +647,7 @@ func TestTypeEnumItem_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*TypeEnumItem](t, tt.want, tt.Input.Clone())
+			testCloner[*TypeEnumItem](t, tt.want, tt.input.Clone())
 		})
 	}
 }
@@ -854,22 +854,22 @@ func TestTypeObject_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *TypeObject
+		input *TypeObject
 		want  *TypeObject
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &TypeObject{},
+			input: &TypeObject{},
 			want:  &TypeObject{},
 		},
 		{
 			name: "ASTNode",
-			Input: &TypeObject{
+			input: &TypeObject{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeObject{
@@ -878,7 +878,7 @@ func TestTypeObject_Clone(t *testing.T) {
 		},
 		{
 			name: "Items",
-			Input: &TypeObject{
+			input: &TypeObject{
 				Items: []*TypeObjectItem{{Label: "foo"}},
 			},
 			want: &TypeObject{
@@ -889,7 +889,7 @@ func TestTypeObject_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*TypeObject](t, tt.want, tt.Input.Clone())
+			testCloner[*TypeObject](t, tt.want, tt.input.Clone())
 		})
 	}
 }
@@ -1053,22 +1053,22 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *TypeObjectItem
+		input *TypeObjectItem
 		want  *TypeObjectItem
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &TypeObjectItem{},
+			input: &TypeObjectItem{},
 			want:  &TypeObjectItem{},
 		},
 		{
 			name: "ASTNode",
-			Input: &TypeObjectItem{
+			input: &TypeObjectItem{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &TypeObjectItem{
@@ -1077,7 +1077,7 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 		},
 		{
 			name: "EmptyLine",
-			Input: &TypeObjectItem{
+			input: &TypeObjectItem{
 				EmptyLine: "\n",
 			},
 			want: &TypeObjectItem{
@@ -1086,7 +1086,7 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Comments",
-			Input: &TypeObjectItem{
+			input: &TypeObjectItem{
 				Comment: &Comment{Multiline: "foo"},
 			},
 			want: &TypeObjectItem{
@@ -1095,7 +1095,7 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Label",
-			Input: &TypeObjectItem{
+			input: &TypeObjectItem{
 				Label: "foo",
 			},
 			want: &TypeObjectItem{
@@ -1104,7 +1104,7 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 		},
 		{
 			name: "Type",
-			Input: &TypeObjectItem{
+			input: &TypeObjectItem{
 				Type: ParameterType{Ident: &Ident{Parts: []string{"foo"}}},
 			},
 			want: &TypeObjectItem{
@@ -1115,7 +1115,7 @@ func TestTypeObjectItem_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*TypeObjectItem](t, tt.want, tt.Input.Clone())
+			testCloner[*TypeObjectItem](t, tt.want, tt.input.Clone())
 		})
 	}
 }

@@ -1177,22 +1177,22 @@ func TestFuncDecl_Clone(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		Input *FuncDecl
+		input *FuncDecl
 		want  *FuncDecl
 	}{
 		{
 			name:  "Nil",
-			Input: nil,
+			input: nil,
 			want:  nil,
 		},
 		{
 			name:  "Empty",
-			Input: &FuncDecl{},
+			input: &FuncDecl{},
 			want:  &FuncDecl{},
 		},
 		{
 			name: "ASTNode",
-			Input: &FuncDecl{
+			input: &FuncDecl{
 				ASTNode: ASTNode{Pos: Position{Offset: 1, Line: 2, Column: 3}},
 			},
 			want: &FuncDecl{
@@ -1201,7 +1201,7 @@ func TestFuncDecl_Clone(t *testing.T) {
 		},
 		{
 			name: "DeclType",
-			Input: &FuncDecl{
+			input: &FuncDecl{
 				DeclType: "val",
 			},
 			want: &FuncDecl{
@@ -1210,7 +1210,7 @@ func TestFuncDecl_Clone(t *testing.T) {
 		},
 		{
 			name: "Label",
-			Input: &FuncDecl{
+			input: &FuncDecl{
 				Label: "foo",
 			},
 			want: &FuncDecl{
@@ -1219,7 +1219,7 @@ func TestFuncDecl_Clone(t *testing.T) {
 		},
 		{
 			name: "Type",
-			Input: &FuncDecl{
+			input: &FuncDecl{
 				Type: &ParameterType{Ident: &Ident{Parts: []string{"number"}}},
 			},
 			want: &FuncDecl{
@@ -1228,7 +1228,7 @@ func TestFuncDecl_Clone(t *testing.T) {
 		},
 		{
 			name: "Value",
-			Input: &FuncDecl{
+			input: &FuncDecl{
 				Value: BuildTestExprTree[*Expr](t, &Value{Number: &ValueNumber{Value: big.NewFloat(1), Source: "1"}}),
 			},
 			want: &FuncDecl{
@@ -1239,7 +1239,7 @@ func TestFuncDecl_Clone(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			testCloner[*FuncDecl](t, tt.want, tt.Input.Clone())
+			testCloner[*FuncDecl](t, tt.want, tt.input.Clone())
 		})
 	}
 }

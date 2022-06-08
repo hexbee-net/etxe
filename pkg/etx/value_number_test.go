@@ -15,143 +15,143 @@ func TestNumber_Parsing(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		Input   string
+		input   string
 		wantErr bool
 		want    *ValueNumber
 	}{
 		{
 			name:    "Int - Implicit Positive",
-			Input:   `1234`,
+			input:   `1234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234), Source: `1234`},
 		},
 		{
 			name:    "Int - Implicit Positive with Underscores",
-			Input:   `12_34`,
+			input:   `12_34`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234), Source: `12_34`},
 		},
 
 		{
 			name:    "Float - Implicit Positive",
-			Input:   `1234.56`,
+			input:   `1234.56`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234.56), Source: `1234.56`},
 		},
 		{
 			name:    "Float - Implicit Positive with Underscores",
-			Input:   `12_34.5_6`,
+			input:   `12_34.5_6`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234.56), Source: `12_34.5_6`},
 		},
 
 		{
 			name:    "Float - Implicit Positive - Empty Integer",
-			Input:   `.56`,
+			input:   `.56`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(.56), Source: `.56`},
 		},
 
 		{
 			name:    "Float - Implicit Positive - Empty Fractional",
-			Input:   `1234.`,
+			input:   `1234.`,
 			wantErr: true,
 			want:    &ValueNumber{Value: nil, Source: `1234.`},
 		},
 
 		{
 			name:    "Int - Exponent - Implicit Positive",
-			Input:   `1234e2`,
+			input:   `1234e2`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234e2), Source: `1234e2`},
 		},
 		{
 			name:    "Int - Exponent - Implicit Positive with Underscores",
-			Input:   `12_34e1_2`,
+			input:   `12_34e1_2`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234e12), Source: `12_34e1_2`},
 		},
 
 		{
 			name:    "Float - Exponent - Implicit Positive",
-			Input:   `1234.56e2`,
+			input:   `1234.56e2`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(1234.56e2), Source: `1234.56e2`},
 		},
 
 		{
 			name:    "Float - Implicit Positive - Empty integer and fractional",
-			Input:   `.`,
+			input:   `.`,
 			wantErr: true,
 			want:    &ValueNumber{Value: nil, Source: `.`},
 		},
 
 		{
 			name:    "Hex - Implicit Positive",
-			Input:   `0x1234`,
+			input:   `0x1234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0x1234), Source: `0x1234`},
 		},
 		{
 			name:    "Hex - Implicit Positive - Capital X",
-			Input:   `0X1234`,
+			input:   `0X1234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0x1234), Source: `0X1234`},
 		},
 		{
 			name:    "Hex - Implicit Positive with Underscores",
-			Input:   `0x12_34`,
+			input:   `0x12_34`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0x1234), Source: `0x12_34`},
 		},
 
 		{
 			name:    "Bin - Implicit Positive",
-			Input:   `0b1010`,
+			input:   `0b1010`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0b1010), Source: `0b1010`},
 		},
 		{
 			name:    "Bin - Implicit Positive - Capital B",
-			Input:   `0B1010`,
+			input:   `0B1010`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0b1010), Source: `0B1010`},
 		},
 		{
 			name:    "Bin - Implicit Positive with Underscores",
-			Input:   `0b10_10`,
+			input:   `0b10_10`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0b1010), Source: `0b10_10`},
 		},
 
 		{
 			name:    "Oct - Implicit Positive",
-			Input:   `0o1234`,
+			input:   `0o1234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0o1234), Source: `0o1234`},
 		},
 		{
 			name:    "Oct - Implicit Positive - Capital O",
-			Input:   `0O1234`,
+			input:   `0O1234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0o1234), Source: `0O1234`},
 		},
 		{
 			name:    "Oct - Implicit Positive with Underscores",
-			Input:   `0o12_34`,
+			input:   `0o12_34`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0o1234), Source: `0o12_34`},
 		},
 
 		{
 			name:    "Oct - 0-prefix - Implicit Positive",
-			Input:   `01234`,
+			input:   `01234`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0o1234), Source: `0o1234`},
 		},
 		{
 			name:    "Oct - 0-prefix - Implicit Positive with Underscores",
-			Input:   `012_34`,
+			input:   `012_34`,
 			wantErr: false,
 			want:    &ValueNumber{Value: big.NewFloat(0o1234), Source: `0o12_34`},
 		},
@@ -166,7 +166,7 @@ func TestNumber_Parsing(t *testing.T) {
 			parser := participle.MustBuild(&Num{}, participle.Lexer(lexer.MustStateful(lexRules())))
 
 			res := &Num{}
-			err := parser.ParseString("", tt.Input, res)
+			err := parser.ParseString("", tt.input, res)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -306,20 +306,20 @@ func TestNumber_Capture(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		Input     []string
+		input     []string
 		wantErr   bool
 		wantPanic bool
 		want      *ValueNumber
 	}{
 		{
 			name:      "No values",
-			Input:     []string{},
+			input:     []string{},
 			wantErr:   false,
 			wantPanic: true,
 		},
 		{
 			name:      "Regular number",
-			Input:     []string{"1"},
+			input:     []string{"1"},
 			wantErr:   false,
 			wantPanic: false,
 			want: &ValueNumber{
@@ -329,7 +329,7 @@ func TestNumber_Capture(t *testing.T) {
 		},
 		{
 			name:      "Non-prefixed octal number",
-			Input:     []string{"0123"},
+			input:     []string{"0123"},
 			wantErr:   false,
 			wantPanic: false,
 			want: &ValueNumber{
@@ -339,7 +339,7 @@ func TestNumber_Capture(t *testing.T) {
 		},
 		{
 			name:      "Invalid number",
-			Input:     []string{"foo"},
+			input:     []string{"foo"},
 			wantErr:   true,
 			wantPanic: false,
 		},
@@ -351,12 +351,12 @@ func TestNumber_Capture(t *testing.T) {
 
 			if tt.wantPanic {
 				assert.Panics(t, func() {
-					_ = res.Capture(tt.Input)
+					_ = res.Capture(tt.input)
 				})
 				return
 			}
 
-			err := res.Capture(tt.Input)
+			err := res.Capture(tt.input)
 
 			if tt.wantErr {
 				assert.Error(t, err)

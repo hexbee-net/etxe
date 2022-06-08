@@ -8,7 +8,7 @@ import (
 type Func struct {
 	ASTNode
 
-	Label      string           `parser:"Func @Ident "                     json:"label"`
+	Label      string           `parser:"'def' @Ident "                     json:"label"`
 	Parameters []*FuncParameter `parser:"'(' [ @@ (',' @@)* ] ')'"         json:"parameters,omitempty"`
 	Return     []*ParameterType `parser:"('(' [ @@ (',' @@)* ] ')' | @@)?" json:"return,omitempty"`
 	Body       []*FuncStatement `parser:"[ LF+ ] '{' [ LF+ ] @@ * '}' "    json:"body,omitempty"`
@@ -180,7 +180,7 @@ func (n FuncStatement) FormattedString() string {
 type FuncDecl struct {
 	ASTNode
 
-	DeclType string         `parser:"@(Const | Val)" json:"decl_type"`
+	DeclType string         `parser:"@('const' | 'val')" json:"decl_type"`
 	Label    string         `parser:"@Ident"         json:"label"`
 	Type     *ParameterType `parser:"[ ':' @@ ]"     json:"type,omitempty"`
 	Value    *Expr          `parser:"[ '=' @@     ]" json:"value,omitempty"`

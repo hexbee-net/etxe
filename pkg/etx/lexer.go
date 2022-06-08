@@ -56,16 +56,6 @@ const (
 func lexRules() lexer.Rules {
 	return lexer.Rules{
 		lexerRoot: {
-			{Name: `Input`, Pattern: `\b(input)\b`},
-			{Name: `Output`, Pattern: `\b(output)\b`},
-			{Name: `Const`, Pattern: `\b(const)\b`},
-			{Name: `Val`, Pattern: `\b(val)\b`},
-			{Name: `Type`, Pattern: `\b(type)\b`},
-			{Name: `Enum`, Pattern: `\b(enum)\b`},
-			{Name: `Object`, Pattern: `\b(object)\b`},
-			{Name: `Func`, Pattern: `\b(def)\b`},
-			{Name: `Return`, Pattern: `\b(return)\b`},
-
 			lexer.Include(lexerCore),
 		},
 		lexerCore: {
