@@ -21,6 +21,8 @@ const grpcStdioBuffer = 1 * 1024
 
 // grpcStdioServer implements the Stdio service and streams stdout/stderr.
 type grpcStdioServer struct {
+	plugin.UnimplementedGRPCStdioServer
+
 	stdoutCh <-chan []byte
 	stderrCh <-chan []byte
 }

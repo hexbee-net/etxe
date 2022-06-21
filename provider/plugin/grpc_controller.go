@@ -8,6 +8,7 @@ import (
 // GRPCControllerServer handles shutdown calls to terminate the server when the
 // plugin client is closed.
 type grpcControllerServer struct {
+	plugin.UnimplementedGRPCControllerServer
 	server *GRPCServer
 }
 
@@ -16,7 +17,7 @@ type grpcControllerServer struct {
 func (s *grpcControllerServer) Shutdown(ctx context.Context, _ *plugin.Empty) (*plugin.Empty, error) {
 	resp := &plugin.Empty{}
 
-	// TODO: figure out why GracefullStop doesn't work.
-	s.server.Stop()
+	// TODO: figure out why GracefulStop doesn't work.
+	s.server.GracefulStop()
 	return resp, nil
 }

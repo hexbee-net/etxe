@@ -1,9 +1,13 @@
 package plugin
 
 import (
+	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/hexbee-net/etxe/internal/plugin"
+	"go.uber.org/zap"
+	"io"
 	"net"
 
 	"google.golang.org/grpc"
@@ -15,7 +19,17 @@ import (
 
 const GRPCServiceName = "plugin"
 
+// GRPCServerConfig is the extra configuration passed along for consumers
+// to facilitate using GRPC plugins.
+type GRPCServerConfig struct {
+	StdoutAddr string `json:"stdout_addr"`
+	StderrAddr string `json:"stderr_addr"`
+}
+
 type GRPCServer struct {
+	// Plugins are the list of plugins to serve.
+	Plugins map[string]Plugin
+
 	// Server is the actual server that will accept connections.
 	// This will be used for plugin registration as well.
 	Server func([]grpc.ServerOption) *grpc.Server
@@ -24,8 +38,19 @@ type GRPCServer struct {
 	// If this is nil, the connection will not have transport security.
 	TLS *tls.Config
 
-	server *grpc.Server
-	broker *GRPCBroker
+	// DoneCh is the channel that is closed when this server has exited.
+	DoneCh chan struct{}
+
+	// Stdout / Stderr are the readers for stdout/stderr that will be copied
+	// to the stdout/stderr connection that is output.
+	Stdout io.Reader
+	Stderr io.Reader
+
+	config      GRPCServerConfig
+	server      *grpc.Server
+	broker      *GRPCBroker
+	stdioServer *grpcStdioServer
+	logger      *zap.Logger
 }
 
 func (s *GRPCServer) Init() error {
@@ -73,12 +98,33 @@ func (s *GRPCServer) Init() error {
 	return nil
 }
 
+// Config is the GRPCServerConfig encoded as JSON then base64.
 func (s *GRPCServer) Config() string {
-	// TODO implement me
-	panic("implement me")
+	// Create a buffer that will contain our final contents
+	var buf bytes.Buffer
+
+	// Wrap the base64 encoding with JSON encoding.
+	if err := json.NewEncoder(&buf).Encode(s.config); err != nil {
+		// We panic since ths shouldn't happen under any scenario. We
+		// carefully control the structure being encoded here and it should
+		// always be successful.
+		panic(err)
+	}
+
+	return buf.String()
 }
 
 func (s *GRPCServer) Serve(listener net.Listener) {
 	// TODO implement me
 	panic("implement me")
+}
+
+// Stop calls Stop on the underlying grpc.Server
+func (s *GRPCServer) Stop() {
+	s.server.Stop()
+}
+
+// GracefulStop calls GracefulStop on the underlying grpc.Server
+func (s *GRPCServer) GracefulStop() {
+	s.server.GracefulStop()
 }
