@@ -161,7 +161,7 @@ val b2 = a2(2)
 ////////////////////////////////////////////////////////////////////////////////
 // Attributes
 
-attribute "revision" "2"{
+meta "revision" "2"{
     from = 1
     changes = {
         resource.old_name = resource.new_name
