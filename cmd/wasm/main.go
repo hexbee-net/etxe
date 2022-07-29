@@ -4,6 +4,7 @@ package wasm
 
 import (
 	"strings"
+
 	"syscall/js"
 
 	"github.com/hexbee-net/etxe/pkg/etx"

@@ -1,0 +1,6 @@
+packages:
+  - "app/**"
+  - "libs/**"
+  - "tests/**"
+  - "tools/**"
+  - "!**/dist/**"

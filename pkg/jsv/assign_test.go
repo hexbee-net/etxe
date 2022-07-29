@@ -4,9 +4,10 @@ package jsv
 
 import (
 	"reflect"
-	"syscall/js"
 	"testing"
 	"unsafe"
+
+	"syscall/js"
 )
 
 func TestAssignToAll(t *testing.T) {
