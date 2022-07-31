@@ -1,28 +1,15 @@
-/** @jsxImportSource @emotion/react */
-
-import type React from "react";
-import type { FC } from 'react'
-import { css } from '@emotion/react'
-import {animated} from "react-spring";
-
-
-const drawerStyle = (width: string, zIndex?: string) => css({
-  position: "absolute",
-  pointerEvents: "all",
-  backgroundColor: "white",
-  height: "100%",
-  width: `${width}px`,
-  zIndex: zIndex ?? -1,
-})
+import styled from "styled-components";
+import { animated } from "react-spring";
 
 interface DrawerProps {
   width: string;
-  zIndex?: string;
-  children?: React.ReactNode;
 }
 
-export const Drawer: FC<DrawerProps> = ({width, zIndex, children}) => (
-  <animated.div css={drawerStyle(width, zIndex)}>
-    {children}
-  </animated.div>
-)
+export const Drawer = styled(animated.div)<DrawerProps>`
+  position: absolute;
+  pointer-events: all;
+  background-color: white;
+  height: 100%;
+  width: ${({ width }) => width}px;
+  z-index: ${1};
+`;
