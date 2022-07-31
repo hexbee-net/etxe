@@ -1,0 +1,10 @@
+{
+  "extends": "@etxe/tsconfig/tsconfig.json",
+
+  "include": ["./**/*"],
+  "exclude": ["node_modules/*"],
+
+  "compilerOptions": {
+    "jsxImportSource": "@emotion/react",
+  }
+}
